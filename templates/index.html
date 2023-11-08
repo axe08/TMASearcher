@@ -9,6 +9,20 @@
         th {
             cursor: pointer; /* clickable column */
         }
+        .button {
+            background-color: dodgerblue;
+            border:none;
+            color:white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 16px;
+        }
+        .button:hover {
+            background-color: cadetblue;
+        }
     </style>
 </head>
 <body class="p-3">
@@ -27,7 +41,7 @@
                     <input type="text" name="date" placeholder="Date (YYYY-MM-DD)"><p>Eg. 2022-10</p>
                     <input type="text" name="notes" placeholder="Show Notes Search"><p>Currently only works on an exact match</p>
                     <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
-                    <button type="submit">Search</button>
+                    <button class = "button">Search</button>
                 </form>
             </div>
             <div class="col-md-3">
@@ -64,18 +78,18 @@
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("resultsTable");
     switching = true;
-    // Set the sorting direction to ascending:
+    // Set the sorting direction:
     dir = "asc";
     // loop that will continue until no switching has been done:
     while (switching) {
-        // Start by saying: no switching is done:
+        // Start with no switching:
         switching = false;
         rows = table.getElementsByTagName("TR");
         // Loop through all table rows (except the first, which contains table headers):
         for (i = 1; i < (rows.length - 1); i++) {
-            // Start by saying there should be no switching:
+            // Start with no switching:
             shouldSwitch = false;
-            // Get the two elements you want to compare, one from current row and one from the next:
+            // Get the two elements to compare, one from current row and one from the next:
             x = rows[i].getElementsByTagName("TD")[n];
             y = rows[i + 1].getElementsByTagName("TD")[n];
             // Check if the two rows should switch place, based on the direction, asc or desc:
@@ -113,7 +127,7 @@
     // Clear the results count
     $('.results-count').text('');
 
-    // Update the hidden field with the current podcast
+    // Update the hidden field with the current podcast selected
     $('#currentPodcast').val(podcastName);
 
     // Fetch recent episodes for the specified podcast
@@ -122,7 +136,7 @@
         type: 'get',
         data: { podcast: podcastName },
         success: function(data) {
-            // Update your results table with the new data
+            // Update results table with data
             var resultsBody = $('#resultsBody');
             resultsBody.empty();
             $.each(data, function(index, podcast) {
