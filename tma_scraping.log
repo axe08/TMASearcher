@@ -1,0 +1,122 @@
+2023-11-08 14:57:17,227:INFO:Scraped: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 14:57:17,236:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,237:INFO:Scraped: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 14:57:17,245:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,247:INFO:Scraped: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 14:57:17,254:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,256:INFO:Scraped: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 14:57:17,263:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,264:INFO:Scraped: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 14:57:17,272:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,273:INFO:Scraped: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 14:57:17,282:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,283:INFO:Scraped: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 14:57:17,291:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,292:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 14:57:17,300:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,302:INFO:Scraped: 11-3-23 Segment 2 Lisa Ann
+2023-11-08 14:57:17,309:ERROR:Error inserting episode into database: UNIQUE constraint failed: PODCASTS.URL
+2023-11-08 14:57:17,310:INFO:Scraped: 11-3-23 Segment 1 We Wore Tuxedos
+2023-11-08 14:57:20,313:INFO:Finished scraping the requested pages.
+2023-11-08 15:11:19,721:INFO:Scraped: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 15:11:19,728:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,729:INFO:Scraped: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 15:11:19,735:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,736:INFO:Scraped: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 15:11:19,743:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,744:INFO:Scraped: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 15:11:19,750:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,751:INFO:Scraped: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 15:11:19,757:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,758:INFO:Scraped: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 15:11:19,764:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,765:INFO:Scraped: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 15:11:19,771:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,772:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 15:11:19,779:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,780:INFO:Scraped: 11-3-23 Segment 2 Lisa Ann
+2023-11-08 15:11:19,786:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:11:19,787:INFO:Scraped: 11-3-23 Segment 1 We Wore Tuxedos
+2023-11-08 15:11:22,790:INFO:Finished scraping the requested pages.
+2023-11-08 15:47:46,355:INFO:Scraped: 11-8-23 Segment 2 Lights, Camera, Ken
+2023-11-08 15:47:46,363:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,364:INFO:Scraped: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 15:47:46,371:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,372:INFO:Scraped: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 15:47:46,380:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,381:INFO:Scraped: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 15:47:46,388:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,389:INFO:Scraped: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 15:47:46,396:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,397:INFO:Scraped: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 15:47:46,404:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,406:INFO:Scraped: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 15:47:46,413:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,414:INFO:Scraped: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 15:47:46,422:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,423:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 15:47:46,431:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 15:47:46,432:INFO:Scraped: 11-3-23 Segment 2 Lisa Ann
+2023-11-08 15:47:49,435:INFO:Finished scraping the requested pages.
+2023-11-08 16:48:47,795:INFO:Scraped: 11-8-23 Segment 3 Jeremy Rutherford and EMOTD
+2023-11-08 16:48:47,805:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,806:INFO:Scraped: 11-8-23 Segment 2 Lights, Camera, Ken
+2023-11-08 16:48:47,816:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,817:INFO:Scraped: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 16:48:47,826:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,828:INFO:Scraped: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 16:48:47,836:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,838:INFO:Scraped: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 16:48:47,846:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,847:INFO:Scraped: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 16:48:47,856:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,857:INFO:Scraped: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 16:48:47,867:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,868:INFO:Scraped: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 16:48:47,877:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,878:INFO:Scraped: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 16:48:47,887:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:48:47,889:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 16:48:50,889:INFO:Finished scraping the requested pages.
+2023-11-08 16:50:39,844:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,846:INFO:Scraped: Apple TV Lead MLS Analyst, Taylor Twellman
+2023-11-08 16:50:39,854:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,855:INFO:Scraped: Balloon Party with Tim McKernan – November 7th, 2023
+2023-11-08 16:50:39,863:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,864:INFO:Scraped: Our Blues Insider, Jeremy Rutherford
+2023-11-08 16:50:39,872:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,873:INFO:Scraped: Balloon Party with Tim McKernan – November 6th, 2023
+2023-11-08 16:50:39,881:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,882:INFO:Scraped: Gabe DeArmond of PowerMizzou.com
+2023-11-08 16:50:39,889:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,891:INFO:Scraped: Balloon Party with Tim McKernan – November 3rd, 2023
+2023-11-08 16:50:39,899:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,900:INFO:Scraped: Balloon Party with Tim McKernan – November 2nd, 2023
+2023-11-08 16:50:39,908:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,909:INFO:Scraped: Balloon Party with Tim McKernan – November 1st, 2023
+2023-11-08 16:50:39,916:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,917:INFO:Scraped: Apple TV Lead MLS Analyst, Taylor Twellman
+2023-11-08 16:50:39,925:ERROR:Error inserting episode into database: UNIQUE constraint failed: Balloon.URL
+2023-11-08 16:50:39,926:INFO:Scraped: Balloon Party with Tim McKernan – October 31st, 2023
+2023-11-08 16:50:42,927:INFO:Finished scraping the requested pages.
+2023-11-08 16:56:12,372:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,373:INFO:Scraped: 11-8-23 Segment 3 Jeremy Rutherford and EMOTD
+2023-11-08 16:56:12,382:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,383:INFO:Scraped: 11-8-23 Segment 2 Lights, Camera, Ken
+2023-11-08 16:56:12,391:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,392:INFO:Scraped: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 16:56:12,400:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,401:INFO:Scraped: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 16:56:12,409:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,411:INFO:Scraped: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 16:56:12,419:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,420:INFO:Scraped: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 16:56:12,428:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,429:INFO:Scraped: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 16:56:12,438:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,439:INFO:Scraped: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 16:56:12,446:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,447:INFO:Scraped: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 16:56:12,455:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
+2023-11-08 16:56:12,456:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 16:56:15,456:INFO:Finished scraping the requested pages.

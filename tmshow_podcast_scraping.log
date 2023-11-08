@@ -1,0 +1,42 @@
+2023-11-08 15:10:42,346:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,347:INFO:Scraped: Ep. 589 – QFTA: What’s Ja Rule’s Opinion On This?
+2023-11-08 15:10:42,354:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,356:INFO:Scraped: Ep. 588 – QFTA: It’s Georgia Week
+2023-11-08 15:10:42,363:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,364:INFO:Scraped: Ep. 587 – QFTA: We Don’t Have To Take Our Clothes Off
+2023-11-08 15:10:42,372:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,373:INFO:Scraped: Ep. 586 – QFTA: Confessions of an Economic Podcast Man
+2023-11-08 15:10:42,380:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,381:INFO:Scraped: Ep. 585 – QFTA: Stop Tickling Me
+2023-11-08 15:10:42,389:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,390:INFO:Scraped: Ep. 584 – “All Women Are Bi-Curious”, A Special Podcast with Lern
+2023-11-08 15:10:42,396:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,398:INFO:Scraped: Ep. 583 – QFTA: F**king The Fats in 1983
+2023-11-08 15:10:42,404:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,406:INFO:Scraped: Ep. 582 – QFTA: Why Not Missouri?
+2023-11-08 15:10:42,412:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,413:INFO:Scraped: Ep. 581 – QFTA: Nuts and Bolts, and All of the Things
+2023-11-08 15:10:42,421:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 15:10:42,422:INFO:Scraped: Ep. 580 – QFTA: I Don’t Know What To Do Anymore
+2023-11-08 15:10:45,423:INFO:Finished scraping the requested pages.
+2023-11-08 16:57:51,870:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,871:INFO:Scraped: Ep. 589 – QFTA: What’s Ja Rule’s Opinion On This?
+2023-11-08 16:57:51,878:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,879:INFO:Scraped: Ep. 588 – QFTA: It’s Georgia Week
+2023-11-08 16:57:51,885:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,886:INFO:Scraped: Ep. 587 – QFTA: We Don’t Have To Take Our Clothes Off
+2023-11-08 16:57:51,893:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,894:INFO:Scraped: Ep. 586 – QFTA: Confessions of an Economic Podcast Man
+2023-11-08 16:57:51,901:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,902:INFO:Scraped: Ep. 585 – QFTA: Stop Tickling Me
+2023-11-08 16:57:51,909:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,910:INFO:Scraped: Ep. 584 – “All Women Are Bi-Curious”, A Special Podcast with Lern
+2023-11-08 16:57:51,919:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,920:INFO:Scraped: Ep. 583 – QFTA: F**king The Fats in 1983
+2023-11-08 16:57:51,927:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,928:INFO:Scraped: Ep. 582 – QFTA: Why Not Missouri?
+2023-11-08 16:57:51,935:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,936:INFO:Scraped: Ep. 581 – QFTA: Nuts and Bolts, and All of the Things
+2023-11-08 16:57:51,948:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
+2023-11-08 16:57:51,949:INFO:Scraped: Ep. 580 – QFTA: I Don’t Know What To Do Anymore
+2023-11-08 16:57:54,953:INFO:Finished scraping the requested pages.

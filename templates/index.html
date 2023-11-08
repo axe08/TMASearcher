@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Podcast Search</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        th {
+            cursor: pointer; /* clickable column */
+        }
+    </style>
+</head>
+<body class="p-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9">
+                <h1>TMA Search</h1>
+                <div>
+                    <a href="#" onclick="fetchPodcast('TMA')">TMA</a> |
+                    <a href="#" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a> |
+                    <a href="#" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>
+                    <p>Clicking above will load the last 30 days but search looks through the whole database</p>
+                </div>
+                <form id="searchForm">
+                    <input type="text" name="title" placeholder="Title Keyword"><br><br>
+                    <input type="text" name="date" placeholder="Date (YYYY-MM-DD)"><p>Eg. 2022-10</p>
+                    <input type="text" name="notes" placeholder="Show Notes Search"><p>Currently only works on an exact match</p>
+                    <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+            <div class="col-md-3">
+                <h2>Feature Ideas</h2>
+                <p>Here are some ideas for features I might implement:</p>
+                <ul>
+                    <li>Advanced search options</li>
+                    <li>Random Episode</li>
+                    <li>Popular Searches</li>
+                    <li>TMA Eras - This seems really hard but I think would be cool</li>
+                    <!-- Add more feature ideas here -->
+                </ul>
+                <p>Feel free to reach out to me at alextmasearcher@gmail.com for ideas, requests, bugs, and whatever.<br>
+                11/8 - Database should be updating on a schedule now</p>
+            </div>
+        </div>
+        <div id="results" class="mt-4">
+            <p class="results-count"></p>
+            <table class="table" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Title</th>
+                        <th onclick="sortTable(1)">Date</th>
+                        <th onclick="sortTable(2)">Show Notes</th>
+                        <th>Listen</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                </tbody>
+            </table>
+        </div>
+    <script>
+        function sortTable(n) {
+    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    table = document.getElementById("resultsTable");
+    switching = true;
+    // Set the sorting direction to ascending:
+    dir = "asc";
+    // loop that will continue until no switching has been done:
+    while (switching) {
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.getElementsByTagName("TR");
+        // Loop through all table rows (except the first, which contains table headers):
+        for (i = 1; i < (rows.length - 1); i++) {
+            // Start by saying there should be no switching:
+            shouldSwitch = false;
+            // Get the two elements you want to compare, one from current row and one from the next:
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            // Check if the two rows should switch place, based on the direction, asc or desc:
+            if (dir == "asc") {
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    // If so, mark as a switch and break the loop:
+                    shouldSwitch= true;
+                    break;
+                }
+            } else if (dir == "desc") {
+                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                    // If so, mark as a switch and break the loop:
+                    shouldSwitch= true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            // If a switch has been marked, make the switch and mark that a switch has been done:
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            // Each time a switch is done, increase this count by 1:
+            switchcount ++;
+        } else {
+            // If no switching has been done AND the direction is "asc", set the direction to "desc" and run the while loop again.
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
+}
+
+        function fetchPodcast(podcastName) {
+    // Clear the results count
+    $('.results-count').text('');
+
+    // Update the hidden field with the current podcast
+    $('#currentPodcast').val(podcastName);
+
+    // Fetch recent episodes for the specified podcast
+    $.ajax({
+        url: '/recent_episodes',
+        type: 'get',
+        data: { podcast: podcastName },
+        success: function(data) {
+            // Update your results table with the new data
+            var resultsBody = $('#resultsBody');
+            resultsBody.empty();
+            $.each(data, function(index, podcast) {
+                var rowHtml =
+                    '<tr>' +
+                        '<td>' + podcast.title + '</td>' +
+                        '<td>' + podcast.date + '</td>' +
+                        '<td>' + podcast.show_notes + '</td>' +
+                        '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
+                    '</tr>';
+                resultsBody.append(rowHtml);
+            });
+        },
+        error: function() {
+            $('#resultsBody').html('<tr><td colspan="4">An error has occurred</td></tr>');
+        }
+    });
+}
+
+
+
+        $(document).ready(function() {
+            // Fetch recent episodes when the page loads
+            $.ajax({
+                url: '/recent_episodes',
+                type: 'get',
+                success: function(data) {
+                    var resultsBody = $('#resultsBody');
+                    resultsBody.empty(); // Clear the previous results
+                    // Populate the table with the recent episodes
+                    $.each(data, function(index, podcast) {
+                        var rowHtml =
+                            '<tr>' +
+                                '<td>' + podcast.title + '</td>' +
+                                '<td>' + podcast.date + '</td>' +
+                                '<td>' + podcast.show_notes + '</td>' +
+                                '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
+                            '</tr>';
+                        resultsBody.append(rowHtml);
+                    });
+                },
+                error: function() {
+                    var resultsBody = $('#resultsBody');
+                    resultsBody.empty();
+                    resultsBody.append('<tr><td colspan="4">An error has occurred</td></tr>');
+                }
+            });
+
+            // Attach the submit event to the search form
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent the form from submitting via the browser
+                var form = $(this);
+                $.ajax({
+                    url: '/search',
+                    type: 'get',
+                    data: form.serialize(), // Serialize the form data
+                    success: function(data) {
+                        var resultsCount = $('.results-count');
+                        var resultsBody = $('#resultsBody');
+                        resultsBody.empty(); // Clear the previous results
+                        resultsCount.text(data.count + ' episodes found'); // Update the results count
+
+                        // Populate the table with the search results
+                        $.each(data.podcasts, function(index, podcast) {
+                            var rowHtml =
+                                '<tr>' +
+                                    '<td>' + podcast.title + '</td>' +
+                                    '<td>' + podcast.date + '</td>' +
+                                    '<td>' + podcast.show_notes + '</td>' +
+                                    '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
+                                '</tr>';
+                            resultsBody.append(rowHtml);
+                        });
+                    },
+                    error: function() {
+                        var resultsBody = $('#resultsBody');
+                        resultsBody.empty();
+                        resultsBody.append('<tr><td colspan="4">An error has occurred during the search</td></tr>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
