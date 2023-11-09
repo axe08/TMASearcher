@@ -10,25 +10,26 @@ import os
 # Change the working directory
 #os.chdir('/home/axe08admin/Web_App')
 
-print("Script started")
-logging.info("Script started")
-
-LOG_FILE_PATH = '/home/axe08admin/Web_App/tma_scraping.log'
+# Construct the paths dynamically based on the current file's directory
+current_directory = os.path.dirname(os.path.abspath(__file__))
+log_file_path = os.path.join(current_directory, 'tma_scraping.log')
+database_path = os.path.join(current_directory, 'TMASTL.db')
 
 # Setup logging with timestamp
 logging.basicConfig(
-    filename='tma_scraping.log',
+    filename=log_file_path,
     level=logging.INFO,
     format='%(asctime)s:%(levelname)s:%(message)s',
     force=True
 )
 
-# Full path to the database
-DATABASE_PATH = '/home/axe08admin/Web_App/TMASTL.db'
+# Note the start of the script
+print("Script started")
+logging.info("Script started")
 
 # Database setup function
 def setup_database():
-    conn = sqlite3.connect(DATABASE_PATH)
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS TMA (
@@ -41,21 +42,37 @@ def setup_database():
     ''')
     conn.commit()
     conn.close()
-
-# Function to insert episode data into the database
-def insert_episode(title, date, url, show_notes):
-    conn = sqlite3.connect(DATABASE_PATH)
+# Check if an episode already exists in the database to cut down on url unique constraint error
+def episode_exists(url, table_name):
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
     try:
-        cursor.execute('''
-            INSERT INTO TMA (TITLE, DATE, URL, SHOW_NOTES)
-            VALUES (?, ?, ?, ?)
-        ''', (title, date, url, show_notes))
-        conn.commit()
-    except sqlite3.IntegrityError as e:
-        logging.error(f"Error inserting episode into database: {e}")
+        cursor.execute(f"SELECT 1 FROM {table_name} WHERE URL = ?", (url,))
+        return cursor.fetchone() is not None
+    except sqlite3.Error as e:
+        logging.error(f"Database error: {e}")
     finally:
         conn.close()
+
+# Function to insert episode data into the database if it does not exist yet based on url
+def insert_episode(title, date, url, show_notes, table_name):
+    if not episode_exists(url, table_name):
+        conn = sqlite3.connect(database_path)
+        cursor = conn.cursor()
+        try:
+            cursor.execute(f'''
+                INSERT INTO {table_name} (TITLE, DATE, URL, SHOW_NOTES)
+                VALUES (?, ?, ?, ?)
+            ''', (title, date, url, show_notes))
+            conn.commit()
+            logging.info(f"Successfully inserted: {title}")  # Log the success message
+        except sqlite3.IntegrityError as e:
+            logging.error(f"Error inserting episode into database: {e}")
+        finally:
+            conn.close()
+    else:
+        logging.info(f"Episode already exists: {title}")
+
 
 def convert_date_format(date_str):
     # Convert from "MONTH DAY, YEAR" to "YYYY-MM-DD"
@@ -69,7 +86,7 @@ def scrape_latest_podcasts(pages_to_scrape):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0'
     }
-    delay = 3  # delay timer when scraping multiple pages
+    delay = 3  #Delay timer when searching multiple pages
 
     for page_num in range(1, pages_to_scrape + 1):
         try:
@@ -83,12 +100,12 @@ def scrape_latest_podcasts(pages_to_scrape):
                     episode_title = episode.select_one('.post-title a').text
                     episode_url = episode.select_one('.post-title a')['href']
                     episode_date = episode.select_one('.byline time').text.strip()
-                    # Convert the date format here before inserting into the database
+                    # Convert date format here before inserting into the database
                     episode_date_formatted = convert_date_format(episode_date)
                     episode_notes = episode.select_one('.the_content').get_text(separator="\n").strip()
                     episode_notes_cleaned = episode_notes.replace("Learn more about your ad choices. Visit megaphone.fm/adchoices", "").strip()
                     # Use the formatted date for insertion
-                    insert_episode(episode_title, episode_date_formatted, episode_url, episode_notes_cleaned)
+                    insert_episode(episode_title, episode_date_formatted, episode_url, episode_notes_cleaned, 'TMA')
                     logging.info(f"Scraped: {episode_title}")
 
             else:
@@ -102,5 +119,5 @@ def scrape_latest_podcasts(pages_to_scrape):
 
     logging.info("Finished scraping the requested pages.")
 
-# Run the scrape function for specific number of pages
+# Run the scrape function for a specific number of pages
 scrape_latest_podcasts(1)

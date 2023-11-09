@@ -40,3 +40,25 @@
 2023-11-08 16:57:51,948:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMShow.URL
 2023-11-08 16:57:51,949:INFO:Scraped: Ep. 580 â€“ QFTA: I Donâ€™t Know What To Do Anymore
 2023-11-08 16:57:54,953:INFO:Finished scraping the requested pages.
+2023-11-08 20:59:31,335:INFO:Script started
+2023-11-08 20:59:32,012:INFO:Episode already exists: Ep. 589 – QFTA: What’s Ja Rule’s Opinion On This?
+2023-11-08 20:59:32,012:INFO:Scraped: Ep. 589 – QFTA: What’s Ja Rule’s Opinion On This?
+2023-11-08 20:59:32,013:INFO:Episode already exists: Ep. 588 – QFTA: It’s Georgia Week
+2023-11-08 20:59:32,013:INFO:Scraped: Ep. 588 – QFTA: It’s Georgia Week
+2023-11-08 20:59:32,013:INFO:Episode already exists: Ep. 587 – QFTA: We Don’t Have To Take Our Clothes Off
+2023-11-08 20:59:32,013:INFO:Scraped: Ep. 587 – QFTA: We Don’t Have To Take Our Clothes Off
+2023-11-08 20:59:32,015:INFO:Episode already exists: Ep. 586 – QFTA: Confessions of an Economic Podcast Man
+2023-11-08 20:59:32,015:INFO:Scraped: Ep. 586 – QFTA: Confessions of an Economic Podcast Man
+2023-11-08 20:59:32,016:INFO:Episode already exists: Ep. 585 – QFTA: Stop Tickling Me
+2023-11-08 20:59:32,016:INFO:Scraped: Ep. 585 – QFTA: Stop Tickling Me
+2023-11-08 20:59:32,016:INFO:Episode already exists: Ep. 584 – “All Women Are Bi-Curious”, A Special Podcast with Lern
+2023-11-08 20:59:32,017:INFO:Scraped: Ep. 584 – “All Women Are Bi-Curious”, A Special Podcast with Lern
+2023-11-08 20:59:32,017:INFO:Episode already exists: Ep. 583 – QFTA: F**king The Fats in 1983
+2023-11-08 20:59:32,017:INFO:Scraped: Ep. 583 – QFTA: F**king The Fats in 1983
+2023-11-08 20:59:32,018:INFO:Episode already exists: Ep. 582 – QFTA: Why Not Missouri?
+2023-11-08 20:59:32,018:INFO:Scraped: Ep. 582 – QFTA: Why Not Missouri?
+2023-11-08 20:59:32,018:INFO:Episode already exists: Ep. 581 – QFTA: Nuts and Bolts, and All of the Things
+2023-11-08 20:59:32,019:INFO:Scraped: Ep. 581 – QFTA: Nuts and Bolts, and All of the Things
+2023-11-08 20:59:32,019:INFO:Episode already exists: Ep. 580 – QFTA: I Don’t Know What To Do Anymore
+2023-11-08 20:59:32,019:INFO:Scraped: Ep. 580 – QFTA: I Don’t Know What To Do Anymore
+2023-11-08 20:59:35,020:INFO:Finished scraping the requested pages.

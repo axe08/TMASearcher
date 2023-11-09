@@ -120,3 +120,25 @@
 2023-11-08 16:56:12,455:ERROR:Error inserting episode into database: UNIQUE constraint failed: TMA.URL
 2023-11-08 16:56:12,456:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
 2023-11-08 16:56:15,456:INFO:Finished scraping the requested pages.
+2023-11-08 20:57:19,290:INFO:Script started
+2023-11-08 20:57:19,655:INFO:Episode already exists: 11-8-23 Segment 3 Jeremy Rutherford and EMOTD
+2023-11-08 20:57:19,655:INFO:Scraped: 11-8-23 Segment 3 Jeremy Rutherford and EMOTD
+2023-11-08 20:57:19,656:INFO:Episode already exists: 11-8-23 Segment 2 Lights, Camera, Ken
+2023-11-08 20:57:19,656:INFO:Scraped: 11-8-23 Segment 2 Lights, Camera, Ken
+2023-11-08 20:57:19,656:INFO:Episode already exists: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 20:57:19,656:INFO:Scraped: 11-8-23 Segment 1 The People vs. Ken Strode
+2023-11-08 20:57:19,657:INFO:Episode already exists: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 20:57:19,657:INFO:Scraped: 11-7-23 Segment 3 Big Jim, Undercover Agent and EMOTD
+2023-11-08 20:57:19,658:INFO:Episode already exists: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 20:57:19,658:INFO:Scraped: 11-7-23 Segment 2 Offseason Feather Talk
+2023-11-08 20:57:19,658:INFO:Episode already exists: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 20:57:19,658:INFO:Scraped: 11-7-23 Segment 1 TMA Swap Meet
+2023-11-08 20:57:19,659:INFO:Episode already exists: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 20:57:19,659:INFO:Scraped: 11-6-23 Segment 3 Gabe DeArmond and EMOTD
+2023-11-08 20:57:19,659:INFO:Episode already exists: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 20:57:19,660:INFO:Scraped: 11-6-23 Segment 2 Crying and Dancing Alone
+2023-11-08 20:57:19,660:INFO:Episode already exists: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 20:57:19,660:INFO:Scraped: 11-6-23 Segment 1 Missouri at Georgia and Wooden Spoons
+2023-11-08 20:57:19,661:INFO:Episode already exists: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 20:57:19,661:INFO:Scraped: 11-3-23 Segment 3 World Series Ratings and EMOTD
+2023-11-08 20:57:22,661:INFO:Finished scraping the requested pages.
