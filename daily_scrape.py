@@ -69,7 +69,7 @@ def scrape_latest_podcasts(pages_to_scrape):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0'
     }
-    delay = 3  # Be ethical with your scraping delay
+    delay = 3  # delay timer when scraping multiple pages
 
     for page_num in range(1, pages_to_scrape + 1):
         try:
@@ -102,5 +102,5 @@ def scrape_latest_podcasts(pages_to_scrape):
 
     logging.info("Finished scraping the requested pages.")
 
-# Run the scrape function
+# Run the scrape function for specific number of pages
 scrape_latest_podcasts(1)

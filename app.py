@@ -38,7 +38,7 @@ def get_podcast_data():
     # Validate the podcast_name against a predefined list of valid names
     valid_podcasts = {'TMA': 'TMA', 'The Tim McKernan Show': 'TMShow', 'Balloon Party': 'Balloon'}
 
-    table_name = valid_podcasts.get(podcast_name)  # This will return None if the podcast_name is not valid
+    table_name = valid_podcasts.get(podcast_name)  # Return None if the podcast_name is not valid
 
     if table_name is not None:
         conn = sqlite3.connect(db_path)
@@ -81,7 +81,7 @@ def search():
 
     # Validate the podcast_name against a predefined list of valid names
     valid_podcasts = {'TMA': 'TMA', 'The Tim McKernan Show': 'TMShow', 'Balloon Party': 'Balloon'}
-    table_name = valid_podcasts.get(current_podcast)  # This will return None if the podcast_name is not valid
+    table_name = valid_podcasts.get(current_podcast)  # return None if the podcast_name is not valid
 
     if table_name is not None:
         search_results = search_database(table_name, title, date, notes)  # Pass the correct table name
