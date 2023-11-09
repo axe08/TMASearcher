@@ -1,77 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Podcast Search</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        th {
-            cursor: pointer; /* clickable column */
-        }
-        .button {
-            background-color: dodgerblue;
-            border:none;
-            color:white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            cursor: pointer;
-            border-radius: 16px;
-        }
-        .button:hover {
-            background-color: cadetblue;
-        }
-    </style>
-</head>
-<body class="p-3">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-9">
-                <h1>TMA Search</h1>
-                <div>
-                    <a href="#" onclick="fetchPodcast('TMA')">TMA</a> |
-                    <a href="#" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a> |
-                    <a href="#" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>
-                    <p>Clicking above will load the last 30 days but search looks through the whole database</p>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Podcast Search</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <style>
+            th {
+                cursor: pointer; /* clickable column */
+            }
+            .custom-button {
+                background-color: dodgerblue;
+                border: none;
+                color: white;
+                padding: 10px 20px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                cursor: pointer;
+                border-radius: 16px;
+            }
+            .custom-button:hover {
+                background-color: cadetblue;
+            }
+        </style>
+    </head>
+    <body class="bg-light">
+        <div class="container my-3">
+            <h1 class="text-center mb-4">TMA Search</h1>
+            <div class="row mb-3">
+                <div class="col-md-9">
+                    <div class="d-flex flex-wrap justify-content-between mb-2">
+                        <a href="#" class="btn btn-link" onclick="fetchPodcast('TMA')">TMA</a>
+                        <a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
+                        <a href="#" class="btn btn-link" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>
+                    </div>
+                    <p>Clicking above will load the last 30 days but search looks through the whole database.</p>
+                    <form id="searchForm" class="mb-4">
+                        <div class="form-group">
+                            <input type="text" class="form-control mb-2" name="title" placeholder="Title Keyword">
+                            <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
+                            <input type="text" class="form-control mb-2" name="notes" placeholder="Show Notes Search">
+                            <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
+                            <button type="submit" class="btn custom-button">Search</button>
+                        </div>
+                    </form>
                 </div>
-                <form id="searchForm">
-                    <input type="text" name="title" placeholder="Title Keyword"><br><br>
-                    <input type="text" name="date" placeholder="Date (YYYY-MM-DD)"><p>Eg. 2022-10</p>
-                    <input type="text" name="notes" placeholder="Show Notes Search"><p>Currently only works on an exact match</p>
-                    <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
-                    <button class = "button">Search</button>
-                </form>
+                <div class="col-md-3">
+                    <h2>Feature Ideas</h2>
+                    <p>Here are some ideas for features I might implement:</p>
+                    <ul>
+                        <li>Advanced search options</li>
+                        <li>Random Episode</li>
+                        <li>Popular Searches</li>
+                        <li>TMA Eras - This seems really hard but I think would be cool</li>
+                        <!-- Add more feature ideas here -->
+                    </ul>
+                    <p>Contact us at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
+                    <p>Database updates are scheduled regularly.</p>
+                </div>
             </div>
-            <div class="col-md-3">
-                <h2>Feature Ideas</h2>
-                <p>Here are some ideas for features I might implement:</p>
-                <ul>
-                    <li>Advanced search options</li>
-                    <li>Random Episode</li>
-                    <li>Popular Searches</li>
-                    <li>TMA Eras - This seems really hard but I think would be cool</li>
-                    <!-- Add more feature ideas here -->
-                </ul>
-                <p>Feel free to reach out to me at alextmasearcher@gmail.com for ideas, requests, bugs, and whatever.<br>
-                11/8 - Database should be updating on a schedule now</p>
+            <div id="results" class="mt-4">
+                <div class="table-responsive">
+                    <table class="table" id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0)">Title</th>
+                                <th onclick="sortTable(1)">Date</th>
+                                <th onclick="sortTable(2)">Show Notes</th>
+                                <th>Listen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                            <!-- Results will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div id="results" class="mt-4">
-            <p class="results-count"></p>
-            <table class="table" id="resultsTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)">Title</th>
-                        <th onclick="sortTable(1)">Date</th>
-                        <th onclick="sortTable(2)">Show Notes</th>
-                        <th>Listen</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsBody">
-                </tbody>
-            </table>
         </div>
     <script>
         function sortTable(n) {
