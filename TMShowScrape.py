@@ -10,12 +10,12 @@ import os
 # Change the working directory
 #os.chdir('/home/axe08admin/Web_App')
 
-# Construct the paths dynamically based on the current file's directory
+# Construct paths dynamically based on the current file's directory
 current_directory = os.path.dirname(os.path.abspath(__file__))
 log_file_path = os.path.join(current_directory, 'tmshow_podcast_scraping.log')
 database_path = os.path.join(current_directory, 'TMASTL.db')
 
-# Setup logging with timestamp
+# Setup logging
 logging.basicConfig(
     filename=log_file_path,
     level=logging.INFO,
@@ -23,11 +23,11 @@ logging.basicConfig(
     force=True
 )
 
-# Note the start of the script
+# Print Script Start
 print("Script started")
 logging.info("Script started")
 
-# Database setup function
+# Database setup
 def setup_database():
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
@@ -54,7 +54,7 @@ def episode_exists(url, table_name):
     finally:
         conn.close()
 
-# Function to insert episode data into the database if it does not exist yet based on url
+# Insert episode data into the database if it does not exist yet based on url
 def insert_episode(title, date, url, show_notes, table_name):
     if not episode_exists(url, table_name):
         conn = sqlite3.connect(database_path)
@@ -65,7 +65,7 @@ def insert_episode(title, date, url, show_notes, table_name):
                 VALUES (?, ?, ?, ?)
             ''', (title, date, url, show_notes))
             conn.commit()
-            logging.info(f"Successfully inserted: {title}")  # Log the success message
+            logging.info(f"Successfully inserted: {title}")
         except sqlite3.IntegrityError as e:
             logging.error(f"Error inserting episode into database: {e}")
         finally:
@@ -79,7 +79,7 @@ def convert_date_format(date_str):
     date_obj = datetime.strptime(date_str, '%B %d, %Y')
     return date_obj.strftime('%Y-%m-%d')
 
-# Modified function to scrape the specified number of pages
+# Scrape the specified number of pages
 def scrape_latest_podcasts(pages_to_scrape):
     setup_database()
     base_url = 'https://www.tmastl.com/podcasts/the-tim-mckernan-show/'
@@ -100,11 +100,11 @@ def scrape_latest_podcasts(pages_to_scrape):
                     episode_title = episode.select_one('.post-title a').text
                     episode_url = episode.select_one('.post-title a')['href']
                     episode_date = episode.select_one('.byline time').text.strip()
-                    # Convert date format here before inserting into the database
+                    # Convert date format before inserting into the database
                     episode_date_formatted = convert_date_format(episode_date)
                     episode_notes = episode.select_one('.the_content').get_text(separator="\n").strip()
                     episode_notes_cleaned = episode_notes.replace("Learn more about your ad choices. Visit megaphone.fm/adchoices", "").strip()
-                    # Use the formatted date for insertion
+                    # Use formatted date for insertion O.o
                     insert_episode(episode_title, episode_date_formatted, episode_url, episode_notes_cleaned, 'TMShow')
                     logging.info(f"Scraped: {episode_title}")
 
