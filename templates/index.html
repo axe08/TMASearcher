@@ -58,8 +58,8 @@
                         <li>Episode Ratings/Likes?</li>
                         <!-- Add more feature ideas here -->
                     </ul>
-                    <p>Contact me at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
-                    <p>11/08/23 - Implemented a responsive layout which should help mobile browsing out a bit. Still need to tweak it a bit more.</p>
+                    <p>Contact us at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
+                    <p>11/13 - Implemented a spotify button to ideally launch the episode in spotify</p>
                 </div>
             </div>
             <div id="results" class="mt-4">
@@ -71,6 +71,7 @@
                                 <th onclick="sortTable(1)">Date</th>
                                 <th onclick="sortTable(2)">Show Notes</th>
                                 <th>Listen</th>
+                                <th>Spotify</th>
                             </tr>
                         </thead>
                         <tbody id="resultsBody">
@@ -81,6 +82,50 @@
             </div>
         </div>
     <script>
+    function createTableRow(podcast) {
+        return '<tr>' +
+                    '<td>' + podcast.title + '</td>' +
+                    '<td>' + podcast.date + '</td>' +
+                    '<td>' + podcast.show_notes + '</td>' +
+                    '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
+                    '<td><button onclick="searchSpotify(\'' + podcast.title.replace(/'/g, "\\'") + '\')" class="btn btn-secondary">Spotify</button></td>' +
+               '</tr>';
+    }
+function searchSpotify(episodeTitle) {
+    var currentPodcast = $('#currentPodcast').val();
+
+    // Spotify show mappings
+    var spotifyShowIdMap = {
+        'TMA': '5J1llB45yFxThCOZhhY6R9',
+        'Balloon Party': '1ksryirpx66HWJnZFtMEo0',
+        'The Tim McKernan Show': '4cy7U6F2fIlh18fwlMAczC'
+    };
+
+    var spotifyShowId = spotifyShowIdMap[currentPodcast];
+
+    if (!spotifyShowId) {
+        alert('Spotify Show ID not found for the selected podcast.');
+        return;
+    }
+
+    $.ajax({
+        url: '/search_spotify',
+        type: 'get',
+        data: { title: episodeTitle, showId: spotifyShowId },
+        success: function(data) {
+            if (data.spotifyUrl) {
+                window.open(data.spotifyUrl, '_blank');
+            } else {
+                alert('Episode not found on Spotify.');
+            }
+        },
+        error: function() {
+            alert('Error occurred while searching Spotify.');
+        }
+    });
+}
+
+
         function sortTable(n) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
     table = document.getElementById("resultsTable");
@@ -130,7 +175,7 @@
     }
 }
 
-        function fetchPodcast(podcastName) {
+    function fetchPodcast(podcastName) {
     // Clear the results count
     $('.results-count').text('');
 
@@ -147,18 +192,12 @@
             var resultsBody = $('#resultsBody');
             resultsBody.empty();
             $.each(data, function(index, podcast) {
-                var rowHtml =
-                    '<tr>' +
-                        '<td>' + podcast.title + '</td>' +
-                        '<td>' + podcast.date + '</td>' +
-                        '<td>' + podcast.show_notes + '</td>' +
-                        '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
-                    '</tr>';
+                var rowHtml = createTableRow(podcast);
                 resultsBody.append(rowHtml);
             });
         },
         error: function() {
-            $('#resultsBody').html('<tr><td colspan="4">An error has occurred</td></tr>');
+            $('#resultsBody').html('<tr><td colspan="5">An error has occurred</td></tr>');
         }
     });
 }
@@ -168,29 +207,23 @@
         $(document).ready(function() {
             // Fetch recent episodes when the page loads
             $.ajax({
-                url: '/recent_episodes',
-                type: 'get',
-                success: function(data) {
-                    var resultsBody = $('#resultsBody');
-                    resultsBody.empty(); // Clear the previous results
-                    // Populate the table with the recent episodes
-                    $.each(data, function(index, podcast) {
-                        var rowHtml =
-                            '<tr>' +
-                                '<td>' + podcast.title + '</td>' +
-                                '<td>' + podcast.date + '</td>' +
-                                '<td>' + podcast.show_notes + '</td>' +
-                                '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
-                            '</tr>';
-                        resultsBody.append(rowHtml);
-                    });
-                },
-                error: function() {
-                    var resultsBody = $('#resultsBody');
-                    resultsBody.empty();
-                    resultsBody.append('<tr><td colspan="4">An error has occurred</td></tr>');
-                }
-            });
+    url: '/recent_episodes',
+    type: 'get',
+    success: function(data) {
+        var resultsBody = $('#resultsBody');
+        resultsBody.empty(); // Clear the previous results
+        // Populate the table with the recent episodes
+        $.each(data, function(index, podcast) {
+            var rowHtml = createTableRow(podcast);
+            resultsBody.append(rowHtml);
+        });
+    },
+    error: function() {
+        var resultsBody = $('#resultsBody');
+        resultsBody.empty();
+        resultsBody.append('<tr><td colspan="5">An error has occurred</td></tr>');
+    }
+});
 
             // Attach the submit event to the search form
             $('#searchForm').on('submit', function(e) {
@@ -208,14 +241,8 @@
 
                         // Populate the table with the search results
                         $.each(data.podcasts, function(index, podcast) {
-                            var rowHtml =
-                                '<tr>' +
-                                    '<td>' + podcast.title + '</td>' +
-                                    '<td>' + podcast.date + '</td>' +
-                                    '<td>' + podcast.show_notes + '</td>' +
-                                    '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
-                                '</tr>';
-                            resultsBody.append(rowHtml);
+    var rowHtml = createTableRow(podcast);
+    resultsBody.append(rowHtml);
                         });
                     },
                     error: function() {

@@ -3,9 +3,45 @@ import sqlite3
 from flask import render_template
 from datetime import datetime, timedelta
 import os
+import requests
+from dotenv import load_dotenv
+load_dotenv('spot.env')
+
 
 app = Flask(__name__)
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
+
+def get_spotify_access_token():
+    client_id = os.environ.get('SPOTIFY_CLIENT_ID')
+    client_secret = os.environ.get('SPOTIFY_CLIENT_SECRET')
+
+    response = requests.post(
+        'https://accounts.spotify.com/api/token',
+        data={'grant_type': 'client_credentials'},
+        auth=(client_id, client_secret)
+    )
+    if response.status_code != 200:
+        raise Exception('Failed to retrieve Spotify access token')
+    return response.json()['access_token']
+
+@app.route('/search_spotify', methods=['GET'])
+def search_spotify():
+    title = request.args.get('title')
+    showId = request.args.get('showId')
+    access_token = get_spotify_access_token()
+
+    headers = {'Authorization': f'Bearer {access_token}'}
+    response = requests.get(f'https://api.spotify.com/v1/shows/{showId}/episodes', headers=headers)
+
+    if response.status_code == 200:
+        episodes = response.json().get('items', [])
+        for episode in episodes:
+            if episode['name'].lower() == title.lower():
+                return jsonify({'spotifyUrl': episode['external_urls']['spotify']})
+        
+        return jsonify({'error': 'Episode not found on Spotify'}), 404
+    else:
+        return jsonify({'error': 'Failed to fetch data from Spotify'}), response.status_code
 
 @app.route('/')
 def index():
@@ -101,4 +137,3 @@ def search():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
