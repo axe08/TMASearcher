@@ -4,7 +4,10 @@ from flask import render_template
 from datetime import datetime, timedelta
 import os
 import requests
+from urllib.parse import quote
 from dotenv import load_dotenv
+from fuzzywuzzy import fuzz
+
 load_dotenv('spot.env')
 
 
@@ -30,18 +33,23 @@ def search_spotify():
     showId = request.args.get('showId')
     access_token = get_spotify_access_token()
 
+    # URL-encode the title for the query
+    encoded_title = quote(title)
+
     headers = {'Authorization': f'Bearer {access_token}'}
-    response = requests.get(f'https://api.spotify.com/v1/shows/{showId}/episodes', headers=headers)
+    response = requests.get(f'https://api.spotify.com/v1/shows/{showId}/episodes?query={encoded_title}&type=episode', headers=headers)
 
     if response.status_code == 200:
         episodes = response.json().get('items', [])
         for episode in episodes:
-            if episode['name'].lower() == title.lower():
+            # Using fuzzy matching for a more flexible comparison
+            if fuzz.partial_ratio(episode['name'].lower(), title.lower()) > 80:  # Adjust this threshold as needed
                 return jsonify({'spotifyUrl': episode['external_urls']['spotify']})
         
         return jsonify({'error': 'Episode not found on Spotify'}), 404
     else:
         return jsonify({'error': 'Failed to fetch data from Spotify'}), response.status_code
+
 
 @app.route('/')
 def index():
