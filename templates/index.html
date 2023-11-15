@@ -58,8 +58,8 @@
                         <li>Episode Ratings/Likes?</li>
                         <!-- Add more feature ideas here -->
                     </ul>
-                    <p>Contact us at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
-                    <p>11/13 - Implemented a spotify button that uses the spotify api to search for the episode and launch it.</p>
+                    <p>Contact me at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
+                    <p>11/14 - Spotify button should work now assuming the episode is in spotify. If you find an episode that gives and error, but you can find it in spotify, let me know.</p>
                 </div>
             </div>
             <div id="results" class="mt-4">
@@ -91,27 +91,18 @@
                     '<td><button onclick="searchSpotify(\'' + podcast.title.replace(/'/g, "\\'") + '\')" class="btn btn-secondary">Spotify</button></td>' +
                '</tr>';
     }
-function searchSpotify(episodeTitle) {
+    function searchSpotify(episodeTitle) {
     var currentPodcast = $('#currentPodcast').val();
 
-    // Spotify show mappings
-    var spotifyShowIdMap = {
-        'TMA': '5J1llB45yFxThCOZhhY6R9',
-        'Balloon Party': '1ksryirpx66HWJnZFtMEo0',
-        'The Tim McKernan Show': '4cy7U6F2fIlh18fwlMAczC'
-    };
-
-    var spotifyShowId = spotifyShowIdMap[currentPodcast];
-
-    if (!spotifyShowId) {
-        alert('Spotify Show ID not found for the selected podcast.');
+    if (!currentPodcast) {
+        alert('Current podcast not selected.');
         return;
     }
 
     $.ajax({
         url: '/search_spotify',
         type: 'get',
-        data: { title: episodeTitle, showId: spotifyShowId },
+        data: { title: episodeTitle, currentPodcast: currentPodcast },
         success: function(data) {
             if (data.spotifyUrl) {
                 window.open(data.spotifyUrl, '_blank');
@@ -124,6 +115,7 @@ function searchSpotify(episodeTitle) {
         }
     });
 }
+
 
 
         function sortTable(n) {

@@ -1,13 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import sqlite3
-from flask import render_template
-from datetime import datetime, timedelta
 import os
 import requests
+from datetime import datetime, timedelta
 from urllib.parse import quote
 from dotenv import load_dotenv
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
+# Load environment variables
 load_dotenv('spot.env')
 
 
@@ -15,6 +15,7 @@ app = Flask(__name__)
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
 
 def get_spotify_access_token():
+    """Retrieve Spotify access token."""
     client_id = os.environ.get('SPOTIFY_CLIENT_ID')
     client_secret = os.environ.get('SPOTIFY_CLIENT_SECRET')
 
@@ -27,33 +28,47 @@ def get_spotify_access_token():
         raise Exception('Failed to retrieve Spotify access token')
     return response.json()['access_token']
 
-@app.route('/search_spotify', methods=['GET'])
-def search_spotify():
-    title = request.args.get('title')
-    showId = request.args.get('showId')
-    access_token = get_spotify_access_token()
-
-    # URL-encode the title for the query
-    encoded_title = quote(title)
-
-    headers = {'Authorization': f'Bearer {access_token}'}
-    response = requests.get(f'https://api.spotify.com/v1/shows/{showId}/episodes?query={encoded_title}&type=episode', headers=headers)
-
-    if response.status_code == 200:
-        episodes = response.json().get('items', [])
-        for episode in episodes:
-            # Using fuzzy matching for a more flexible comparison
-            if fuzz.partial_ratio(episode['name'].lower(), title.lower()) > 80:  # Adjust this threshold as needed
-                return jsonify({'spotifyUrl': episode['external_urls']['spotify']})
-        
-        return jsonify({'error': 'Episode not found on Spotify'}), 404
-    else:
-        return jsonify({'error': 'Failed to fetch data from Spotify'}), response.status_code
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/search_spotify', methods=['GET'])
+def search_spotify():
+    title = request.args.get('title')
+    current_podcast = request.args.get('currentPodcast')
+
+    podcast_table_map = {
+        'TMA': 'TMASpot',
+        'Balloon Party': 'BalloonSpot',
+        'The Tim McKernan Show': 'TMShowSpot'
+    }
+
+    table_name = podcast_table_map.get(current_podcast)
+    if not table_name:
+        return jsonify({'error': 'Invalid podcast name'}), 400
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT Title, URL FROM {table_name}")
+        episodes = cursor.fetchall()
+
+        # Use fuzzy matching to find the best match
+        match = process.extractOne(title, [ep[0] for ep in episodes], score_cutoff=80)
+        if match:
+            matched_title = match[0]  # Only retrieve the matched title
+            # Find the URL of the matched title
+            url = next((ep[1] for ep in episodes if ep[0] == matched_title), None)
+            if url:
+                return jsonify({'spotifyUrl': url})
+            else:
+                return jsonify({'error': 'URL not found for matched episode'}), 404
+        else:
+            return jsonify({'error': 'Episode not found'}), 404
+    except sqlite3.Error as e:
+        return jsonify({'error': f'Database error: {e}'}), 500
+    finally:
+        conn.close()
 
 @app.route('/recent_episodes', methods=['GET'])
 def recent_episodes():
