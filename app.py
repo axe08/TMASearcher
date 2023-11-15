@@ -113,18 +113,36 @@ def get_podcast_data():
         return jsonify({'error': 'Invalid podcast name'}), 400
 
 
-def search_database(table_name, title, date, notes):
+def search_database(table_name, title, date, notes, match_type):
     try:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            query = f"""
-            SELECT TITLE, DATE, URL, SHOW_NOTES
-            FROM {table_name}
-            WHERE TITLE LIKE ?
-              AND DATE LIKE ?
-              AND SHOW_NOTES LIKE ?;
-            """
-            cursor.execute(query, ('%' + title + '%', '%' + date + '%', '%' + notes + '%'))
+
+            # Split title and notes into separate keywords
+            title_keywords = title.split()
+            notes_keywords = notes.split()
+
+            # Start building the query
+            query = f"SELECT TITLE, DATE, URL, SHOW_NOTES FROM {table_name} WHERE "
+
+            # Add conditions for title keywords and notes
+            title_conditions = ["TITLE LIKE ?" for _ in title_keywords]
+            notes_conditions = ["SHOW_NOTES LIKE ?" for _ in notes_keywords]
+
+            # Combine all conditions based on match type
+            operator = " AND " if match_type == "all" else " OR "
+            all_conditions = title_conditions + notes_conditions
+
+            # Include date condition only if date is provided
+            if date:
+                all_conditions.append("DATE LIKE ?")
+                params = ['%' + kw + '%' for kw in title_keywords + notes_keywords] + ['%' + date + '%']
+            else:
+                params = ['%' + kw + '%' for kw in title_keywords + notes_keywords]
+
+            query += operator.join(all_conditions) + ";"
+
+            cursor.execute(query, params)
             rows = cursor.fetchall()
             return rows
     except sqlite3.Error as e:
@@ -137,13 +155,15 @@ def search():
     date = request.args.get('date', '')
     notes = request.args.get('notes', '')
     current_podcast = request.args.get('currentPodcast', 'TMA')  # Default to TMA if not provided
+    match_type = request.args.get('matchType', 'all')
 
     # Validate the podcast_name against a predefined list of valid names
     valid_podcasts = {'TMA': 'TMA', 'The Tim McKernan Show': 'TMShow', 'Balloon Party': 'Balloon'}
     table_name = valid_podcasts.get(current_podcast)  # return None if the podcast_name is not valid
 
     if table_name is not None:
-        search_results = search_database(table_name, title, date, notes)  # Pass the correct table name
+        # Pass the correct table name and match type
+        search_results = search_database(table_name, title, date, notes, match_type)  
         podcasts = [
             {'title': row[0], 'date': row[1], 'url': row[2], 'show_notes': row[3]}
             for row in search_results

@@ -39,9 +39,18 @@
                     <p>Clicking above will load the last 30 days but search looks through the whole database.</p>
                     <form id="searchForm" class="mb-4">
                         <div class="form-group">
-                            <input type="text" class="form-control mb-2" name="title" placeholder="Title Keyword">
+                            <div class="form-group">
+                                <label for="matchType">Match Type:</label>
+                                <select class="form-control" id="matchType" name="matchType">
+                                    <option value="all">Match Against All Keywords</option>
+                                    <option value="any">Match Against Any Keywords</option>
+                                </select>
+                                <p>Match all will look for all of your keywords within the title or show notes<br>
+                                    Match any will look for the presence of any of your keywords</p>
+                            </div>
+                            <input type="text" class="form-control mb-2" name="title" placeholder="Title Keywords (Seperate with a space)">
                             <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
-                            <input type="text" class="form-control mb-2" name="notes" placeholder="Show Notes Search">
+                            <input type="text" class="form-control mb-2" name="notes" placeholder="Show Notes Keywords (Seperate with a space)">
                             <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
                             <button type="submit" class="btn custom-button">Search</button>
                         </div>
@@ -224,7 +233,7 @@
                 $.ajax({
                     url: '/search',
                     type: 'get',
-                    data: form.serialize(), // Serialize the form data
+                    data: form.serialize() + '&matchType=' + $('#matchType').val(), // Include the match type in the search query
                     success: function(data) {
                         var resultsCount = $('.results-count');
                         var resultsBody = $('#resultsBody');
