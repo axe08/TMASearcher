@@ -42,11 +42,14 @@
                             <div class="form-group">
                                 <label for="matchType">Match Type:</label>
                                 <select class="form-control" id="matchType" name="matchType">
-                                    <option value="all">Match Against All Keywords</option>
+                                    <option value="all">Match All Keywords</option>
                                     <option value="any">Match Against Any Keywords</option>
+                                    <option value="exact">Exact Match</option>
                                 </select>
-                                <p>Match all will look for all of your keywords within the title or show notes<br>
-                                    Match any will look for the presence of any of your keywords</p>
+                                <p><ul><li>Match all keywords looks for all of your keywords in the title or show notes. Eg. "Iggy Fontbonne Bowling" returns results where Iggy <b>and</b> Fontbonne <b>and</b> bowling are in the results.</li>
+                                            <li>Match any will look for the presence of any of your keywords. Honestly, don't have a great example on when to use this.</li>
+                                <li>Exact Match searches for a specific keyword or string of words. e.g. Audio Postcard or TMA Live</li>
+                                </ul></p>
                             </div>
                             <input type="text" class="form-control mb-2" name="title" placeholder="Title Keywords (Seperate with a space)">
                             <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
@@ -68,7 +71,7 @@
                         <!-- Add more feature ideas here -->
                     </ul>
                     <p>Contact me at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
-                    <p>11/14 - Spotify button should work now assuming the episode is in spotify. If you find an episode that gives and error, but you can find it in spotify, let me know.</p>
+                    <p>11/15 - Enhanced the search functionality a bit.</p>
                 </div>
             </div>
             <div id="results" class="mt-4">

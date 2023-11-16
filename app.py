@@ -117,30 +117,49 @@ def search_database(table_name, title, date, notes, match_type):
     try:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-
-            # Split title and notes into separate keywords
-            title_keywords = title.split()
-            notes_keywords = notes.split()
-
-            # Start building the query
             query = f"SELECT TITLE, DATE, URL, SHOW_NOTES FROM {table_name} WHERE "
+            conditions = []
+            params = []
 
-            # Add conditions for title keywords and notes
-            title_conditions = ["TITLE LIKE ?" for _ in title_keywords]
-            notes_conditions = ["SHOW_NOTES LIKE ?" for _ in notes_keywords]
+            # Function to standardize apostrophes
+            def standardize_apostrophes(text):
+                return text.replace("'", "’") if text else text
 
-            # Combine all conditions based on match type
-            operator = " AND " if match_type == "all" else " OR "
-            all_conditions = title_conditions + notes_conditions
+            # Adjust search terms
+            std_title = standardize_apostrophes(title)
+            std_notes = standardize_apostrophes(notes)
 
-            # Include date condition only if date is provided
-            if date:
-                all_conditions.append("DATE LIKE ?")
-                params = ['%' + kw + '%' for kw in title_keywords + notes_keywords] + ['%' + date + '%']
+            # Prepare conditions for title and notes
+            if match_type == 'exact':
+                if std_title:
+                    conditions.append("REPLACE(TITLE, '''', '’') LIKE ?")
+                    params.append(f'%{std_title}%')
+                if std_notes:
+                    conditions.append("REPLACE(SHOW_NOTES, '''', '’') LIKE ?")
+                    params.append(f'%{std_notes}%')
             else:
-                params = ['%' + kw + '%' for kw in title_keywords + notes_keywords]
+                for word in std_title.split():
+                    conditions.append("REPLACE(TITLE, '''', '’') LIKE ?")
+                    params.append(f'%{word}%')
+                for word in std_notes.split():
+                    conditions.append("REPLACE(SHOW_NOTES, '''', '’') LIKE ?")
+                    params.append(f'%{word}%')
 
-            query += operator.join(all_conditions) + ";"
+            # Date condition
+            if date:
+                conditions.append("DATE LIKE ?")
+                params.append(f'%{date}%')
+
+            # Constructing the query based on conditions
+            if match_type == 'all':
+                query += " AND ".join(conditions) if conditions else "1 = 1"
+            elif match_type == 'any':
+                query += "(" + " OR ".join(conditions) + ")" if conditions else "1 = 1"
+            else:  # For 'exact' and other cases
+                query += " AND ".join(conditions) if conditions else "1 = 1"
+
+            # Finalize query
+            query += ";"
 
             cursor.execute(query, params)
             rows = cursor.fetchall()
@@ -148,6 +167,7 @@ def search_database(table_name, title, date, notes, match_type):
     except sqlite3.Error as e:
         print(f"An error occurred during database operation: {e}")
         return []
+
 
 @app.route('/search', methods=['GET'])
 def search():
