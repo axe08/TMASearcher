@@ -24,9 +24,60 @@
             .custom-button:hover {
                 background-color: cadetblue;
             }
+            #back-to-top {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #007bff; /* Bootstrap primary color */
+                color: white;
+                border: none;
+                border-radius: 50%;
+                padding: 10px;
+                cursor: pointer;
+                display: none; /* Hidden by default */
+    }
+            body.dark-mode {
+            background-color: #121212; /* Dark background */
+            color: #ffffff; /* Light text */
+            }
+            .dark-mode .custom-button {
+            background-color: #222; /* Darker background color for buttons */
+            color: #ffffff; /* Light text color for buttons */
+            }
+
+            .dark-mode a {
+            color: rgb(18, 45, 61); /* Lighter text color for links */
+            font-weight: bold;
+            }
+
+            .dark-mode table {
+            background-color: #333; /* Darker background color for tables */
+            }
+            table tbody {
+            color: #333; /* Normal mode text color */
+            }
+
+            body.dark-mode table tbody {
+            color: #ccc; /* Dark mode text color */
+            }
+            /* Style for table header cells (column titles) in light mode */
+    table th {
+        background-color: #007bff; /* Background color for column titles in light mode */
+        color: white; /* Text color for column titles in light mode */
+        cursor: pointer; /* Make the column titles clickable */
+    }
+
+    /* Style for table header cells (column titles) in dark mode */
+    body.dark-mode table th {
+        background-color: #222; /* Background color for column titles in dark mode */
+        color: #ffffff; /* Text color for column titles in dark mode */
+    }
+/* Add other dark mode styles as needed */
+
+
         </style>
     </head>
-    <body class="bg-light">
+    <body>
         <div class="container my-3">
             <h1 class="text-center mb-4">TMA Search</h1>
             <div class="row mb-3">
@@ -60,6 +111,9 @@
                     </form>
                 </div>
                 <div class="col-md-3">
+                    <!-- Dark Mode Toggle Button -->
+                    <button id="dark-mode-toggle">Toggle Dark Mode</button>
+
                     <h2>Feature Ideas</h2>
                     <p>Here are some ideas for features I might implement:</p>
                     <ul>
@@ -87,13 +141,31 @@
                             </tr>
                         </thead>
                         <tbody id="resultsBody">
-                            <!-- Results will be inserted here by JavaScript -->
+                            <!-- Results be inserted here by JavaScript -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+        <!-- Back to Top Button -->
+    <button id="back-to-top" title="Go to top" style="display: none;">↑ Top</button>
     <script>
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    
+    // Save the user's preference in local storage
+    if(document.body.classList.contains('dark-mode')) {
+        localStorage.setItem('darkMode', 'enabled');
+    } else {
+        localStorage.setItem('darkMode', 'disabled');
+    }
+});
+
+// Check for saved user preference, if any, on page load
+if(localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+}
+
     function createTableRow(podcast) {
         return '<tr>' +
                     '<td>' + podcast.title + '</td>' +
@@ -231,32 +303,50 @@
 
             // Attach the submit event to the search form
             $('#searchForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent the form from submitting via the browser
-                var form = $(this);
-                $.ajax({
-                    url: '/search',
-                    type: 'get',
-                    data: form.serialize() + '&matchType=' + $('#matchType').val(), // Include the match type in the search query
-                    success: function(data) {
-                        var resultsCount = $('.results-count');
-                        var resultsBody = $('#resultsBody');
-                        resultsBody.empty(); // Clear the previous results
-                        resultsCount.text(data.count + ' episodes found'); // Update the results count
+    e.preventDefault(); // Prevent the form from submitting via the browser
+    var form = $(this);
 
-                        // Populate the table with the search results
-                        $.each(data.podcasts, function(index, podcast) {
-    var rowHtml = createTableRow(podcast);
-    resultsBody.append(rowHtml);
-                        });
-                    },
-                    error: function() {
-                        var resultsBody = $('#resultsBody');
-                        resultsBody.empty();
-                        resultsBody.append('<tr><td colspan="4">An error has occurred during the search</td></tr>');
-                    }
-                });
+    $.ajax({
+        url: '/search',
+        type: 'get',
+        data: form.serialize() + '&matchType=' + $('#matchType').val(), // Include the match type in the search query
+        success: function(data) {
+            var resultsCount = $('.results-count');
+            var resultsBody = $('#resultsBody');
+            resultsBody.empty(); // Clear the previous results
+            resultsCount.text(data.count + ' episodes found'); // Update the results count
+
+            // Populate the table with the search results
+            $.each(data.podcasts, function(index, podcast) {
+                var rowHtml = createTableRow(podcast);
+                resultsBody.append(rowHtml);
             });
+
+            // Scroll to the results section
+            $('#results').get(0).scrollIntoView({behavior: 'smooth'});
+        },
+        error: function() {
+            var resultsBody = $('#resultsBody');
+            resultsBody.empty();
+            resultsBody.append('<tr><td colspan="4">An error has occurred during the search</td></tr>');
+        }
+    });
+});
         });
+        var backToTopButton = document.getElementById("back-to-top");
+
+    window.onscroll = function() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            backToTopButton.style.display = "block";
+        } else {
+            backToTopButton.style.display = "none";
+        }
+    };
+
+    backToTopButton.onclick = function() {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
+    };
     </script>
 </body>
 </html>
