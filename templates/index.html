@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+    <head>        
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Podcast Search</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+            <!-- jQuery, Popper.js, and Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
         <style>
             th {
-                cursor: pointer; /* clickable column */
+                cursor: pointer; 
             }
             .custom-button {
                 background-color: dodgerblue;
@@ -21,14 +28,193 @@
                 cursor: pointer;
                 border-radius: 16px;
             }
+            
             .custom-button:hover {
                 background-color: cadetblue;
             }
+            .ui-autocomplete {
+                border: 1px solid #c5c5c5;
+                background-color: #f6f6f6;
+                padding: 5px 10px;
+                max-height: 200px;
+                overflow-y: auto;
+                font-size: 0.9rem;
+            }
+
+            .ui-menu-item-wrapper {
+                padding: 5px 10px;
+                color: #333;
+                cursor: pointer;
+            }
+
+            .ui-menu-item-wrapper:hover {
+                background-color: #007bff;
+                color: #ffffff;
+}
+            .tag {
+                display: inline-block;
+                background-color: #e0f7fa;
+                border-radius: 20px; 
+                padding: 5px 10px;
+                margin-right: 5px;
+                font-size: 0.85rem;
+                color: #0277bd; 
+                margin-top: 5px;
+            }
+
+            .remove-tag {
+                margin-left: 10px;
+                color: #f44336;
+                cursor: pointer;
+            }
+
+            .remove-tag:hover {
+                color: #d32f2f;
+            }
+            .tags-input .tag {
+                display: inline-block;
+                margin: 0 5px 5px 0;
+                padding: 5px;
+                background-color: #007bff;
+                color: #ffffff;
+                border-radius: 16px;
+                font-weight: bold;
+                text-align: center;
+                line-height: 20px; /* Adjust the line height to vertically center the text */
+            }
+
+            .tags-input {
+                padding: 10px 0; 
+                border: none; 
+            }
+
+            .tags-input .tag-input {
+                margin-top: 5px; 
+            }
+            #matchTypeOptions .btn {
+                border-radius: 0; /* Makes buttons look like segments of one control */
+                margin-left: -1px; /* Overlap borders between buttons */
+            }
+
+            #matchTypeOptions .btn:first-child {
+                border-top-left-radius: 0.25rem;
+                border-bottom-left-radius: 0.25rem;
+            }
+
+            #matchTypeOptions .btn:last-child {
+                border-top-right-radius: 0.25rem;
+                border-bottom-right-radius: 0.25rem;
+            }
+
+            #matchTypeOptions .btn.active, #matchTypeOptions .btn:active {
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            #back-to-top {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                padding: 10px;
+                cursor: pointer;
+                display: none;
+            }
+            @media (max-width: 768px) {
+            .card-body {
+                padding: 0.5rem;
+            }
+
+            .card-title {
+                font-size: 1.25rem;
+            }
+        }
+            body.dark-mode {
+            background-color: #121212; 
+            color: #ffffff; 
+            }
+            .dark-mode .custom-button {
+            background-color: #222; 
+            color: #ffffff; 
+            }
+
+
+            .dark-mode a {
+            color: rgb(18, 45, 61); 
+            font-weight: bold;
+            }
+
+            .dark-mode table {
+            background-color: #333; 
+            }
+            table tbody {
+            color: #333; 
+            }
+
+            body.dark-mode table tbody {
+            color: #ccc; 
+            }
+            .dark-mode .card {
+                background-color: #333; 
+                color: #ffffff; 
+            }
+
+            .dark-mode .card a.btn {
+                background-color: #444; 
+                color: #ffffff; 
+            }
+
+            .dark-mode .card a.btn:hover {
+                background-color: #555; 
+            }
+
+            
+            .dark-mode .card a {
+                color: #bbdefb; 
+            }
+            /* Dark mode styles for the help modal */
+            .dark-mode .modal-content {
+                background-color: #424242; 
+                color: #ffffff; 
+            }
+
+            .dark-mode .modal-header, .dark-mode .modal-body, .dark-mode .modal-footer {
+                border-color: #616161; /* Darker borders for modal sections */
+            }
+
+            .dark-mode .modal-title {
+                color: #ffffff; 
+            }
+
+            .dark-mode .modal-footer .btn {
+                background-color: #555; 
+                color: #ffffff; 
+            }
+
+            .dark-mode .modal-footer .btn:hover {
+                background-color: #666; 
+            }
+
+            .dark-mode .close {
+                color: #ffffff; 
+            }
+
+            .dark-mode .close:hover {
+                color: #bbbbbb; 
+            }
+
         </style>
     </head>
-    <body class="bg-light">
+    <body>
         <div class="container my-3">
-            <h1 class="text-center mb-4">TMA Search</h1>
+            <div class="header-container d-flex justify-content-between align-items-center">
+                <h2 class="header-text">TMA Searcher</h2>
+            <div id="buymeacoffee"><a href="https://www.buymeacoffee.com/tmasearcher" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee" style="height: 45px !important;width: 150px !important;" ></a></div>
+            </div>
             <div class="row mb-3">
                 <div class="col-md-9">
                     <div class="d-flex flex-wrap justify-content-between mb-2">
@@ -36,223 +222,347 @@
                         <a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
                         <a href="#" class="btn btn-link" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>
                     </div>
-                    <p>Clicking above will load the last 30 days but search looks through the whole database.</p>
+                    <p>Clicking above will load the last 90 days but search looks through the whole database.
+                        <br>Also, due to the change on the TMASTL site, everything shows in the TMA feed.
+                    </p>
                     <form id="searchForm" class="mb-4">
                         <div class="form-group">
-                            <input type="text" class="form-control mb-2" name="title" placeholder="Title Keyword">
+                            <div class="form-group">
+                                <label for="matchType">Match Type:
+                                    <!-- Modal trigger icon -->
+                                    <i class="fas fa-question-circle" data-toggle="modal" data-target="#helpModal" style="cursor: pointer;"></i>
+                                </label>
+                                <div id="matchTypeOptions" class="btn-group d-flex" role="group" aria-label="Match Type Options">
+                                    <button type="button" class="btn btn-outline-primary flex-fill match-type-option active" data-value="all">Match All Keywords<br>(AND Logic)</button>
+                                    <button type="button" class="btn btn-outline-primary flex-fill match-type-option" data-value="any">Match Against Any Keywords<br>(OR Logic)</button>
+                                    <button type="button" class="btn btn-outline-primary flex-fill match-type-option" data-value="exact">Exact Match</button>
+                                </div>
+                            </div>
+                            
+                            
+                                <input type="hidden" id="matchType" name="matchType" value="all"> <!-- Default value -->
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Title Keywords:</label>
+                                <div class="tags-input" id="titleTagsContainer">
+                                    <input type="text" id="titleTagInput" class="form-control tag-input" placeholder="Type and hit space or enter...">
+                                </div>
+                                <label>Show Notes Keywords:</label>
+                                <div class="tags-input" id="notesTagsContainer">
+                                    <input type="text" id="notesTagInput" class="form-control tag-input" placeholder="Type and hit space or enter...">
+                                </div>
+                            </div>
+                            
                             <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
-                            <input type="text" class="form-control mb-2" name="notes" placeholder="Show Notes Search">
                             <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
                             <button type="submit" class="btn custom-button">Search</button>
+                            <button type="button" id="dark-mode-toggle" class="btn custom-button">Toggle Dark Mode</button>
                         </div>
                     </form>
                 </div>
-                <div class="col-md-3">
-                    <h2>Feature Ideas</h2>
-                    <p>Here are some ideas for features I might implement:</p>
-                    <ul>
-                        <li>Advanced search options</li>
-                        <li>Random Episode</li>
-                        <li>Popular Searches</li>
-                        <li>TMA Eras - This seems really hard but I think would be cool</li>
-                        <li>Episode Ratings/Likes?</li>
-                        <!-- Add more feature ideas here -->
-                    </ul>
-                    <p>Contact us at <a href="mailto:alextmasearcher@gmail.com">alextmasearcher@gmail.com</a> for ideas, requests, bugs, etc.</p>
-                    <p>11/13 - Implemented a spotify button that uses the spotify api to search for the episode and launch it.</p>
-                </div>
-            </div>
             <div id="results" class="mt-4">
-                <div class="table-responsive">
-                    <table class="table" id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th onclick="sortTable(0)">Title</th>
-                                <th onclick="sortTable(1)">Date</th>
-                                <th onclick="sortTable(2)">Show Notes</th>
-                                <th>Listen</th>
-                                <th>Spotify</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsBody">
-                            <!-- Results will be inserted here by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
+                <div class="row" id="resultsBody">
             </div>
         </div>
+        <!-- Back to Top Button -->
+    <button id="back-to-top" title="Go to top" style="display: none;">↑ Top</button>
     <script>
-    function createTableRow(podcast) {
-        return '<tr>' +
-                    '<td>' + podcast.title + '</td>' +
-                    '<td>' + podcast.date + '</td>' +
-                    '<td>' + podcast.show_notes + '</td>' +
-                    '<td><a href="' + podcast.url + '" class="btn btn-primary">Listen</a></td>' +
-                    '<td><button onclick="searchSpotify(\'' + podcast.title.replace(/'/g, "\\'") + '\')" class="btn btn-secondary">Spotify</button></td>' +
-               '</tr>';
-    }
-function searchSpotify(episodeTitle) {
-    var currentPodcast = $('#currentPodcast').val();
-
-    // Spotify show mappings
-    var spotifyShowIdMap = {
-        'TMA': '5J1llB45yFxThCOZhhY6R9',
-        'Balloon Party': '1ksryirpx66HWJnZFtMEo0',
-        'The Tim McKernan Show': '4cy7U6F2fIlh18fwlMAczC'
-    };
-
-    var spotifyShowId = spotifyShowIdMap[currentPodcast];
-
-    if (!spotifyShowId) {
-        alert('Spotify Show ID not found for the selected podcast.');
-        return;
-    }
-
-    $.ajax({
-        url: '/search_spotify',
-        type: 'get',
-        data: { title: episodeTitle, showId: spotifyShowId },
-        success: function(data) {
-            if (data.spotifyUrl) {
-                window.open(data.spotifyUrl, '_blank');
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            // Save the user's preference in local storage
+            if(document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
             } else {
-                alert('Episode not found on Spotify.');
+                localStorage.setItem('darkMode', 'disabled');
             }
-        },
-        error: function() {
-            alert('Error occurred while searching Spotify.');
+        });
+    
+        // Check for saved user preference, if any, on page load
+        if(localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
         }
-    });
-}
+        $('.match-type-option').click(function() {
+            $('.match-type-option').removeClass('active'); // Remove active class from all buttons
+            $(this).addClass('active'); // Add active class to the clicked button
+            $('#matchType').val($(this).data('value')); // Update the hidden input value
+        });
 
+        function createPodcastCard(podcast) {
+            // Escaping single quotes in podcast titles to ensure JavaScript functions correctly
+            var safeTitle = podcast.title.replace(/'/g, "\\'");
+            return `
+                <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">${podcast.title}</h5>
+                        <p class="card-text"><small class="text-muted">${podcast.date}</small></p>
+                        <p class="card-text">${podcast.show_notes}</p>
+                        <a href="${podcast.url}" class="btn btn-primary">Listen</a>
+                        <button onclick="searchSpotify('${safeTitle}')" class="btn btn-secondary">Spotify</button>
+                </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+        function searchSpotify(episodeTitle) {
+            var currentPodcast = $('#currentPodcast').val();
 
-        function sortTable(n) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-    table = document.getElementById("resultsTable");
-    switching = true;
-    // Set the sorting direction:
-    dir = "asc";
-    // loop that will continue until no switching has been done:
-    while (switching) {
-        // Start with no switching:
-        switching = false;
-        rows = table.getElementsByTagName("TR");
-        // Loop through all table rows (except the first, which contains table headers):
-        for (i = 1; i < (rows.length - 1); i++) {
-            // Start with no switching:
-            shouldSwitch = false;
-            // Get the two elements to compare, one from current row and one from the next:
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
-            // Check if the two rows should switch place, based on the direction, asc or desc:
-            if (dir == "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                    // If so, mark as a switch and break the loop:
-                    shouldSwitch= true;
-                    break;
-                }
-            } else if (dir == "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    // If so, mark as a switch and break the loop:
-                    shouldSwitch= true;
-                    break;
-                }
+            if (!currentPodcast) {
+                alert('Current podcast not selected.');
+                return;
             }
-        }
-        if (shouldSwitch) {
-            // If a switch has been marked, make the switch and mark that a switch has been done:
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            // Each time a switch is done, increase this count by 1:
-            switchcount ++;
-        } else {
-            // If no switching has been done AND the direction is "asc", set the direction to "desc" and run the while loop again.
-            if (switchcount == 0 && dir == "asc") {
-                dir = "desc";
-                switching = true;
-            }
-        }
-    }
-}
 
-    function fetchPodcast(podcastName) {
-    // Clear the results count
-    $('.results-count').text('');
-
-    // Update the hidden field with the current podcast selected
-    $('#currentPodcast').val(podcastName);
-
-    // Fetch recent episodes for the specified podcast
-    $.ajax({
-        url: '/recent_episodes',
-        type: 'get',
-        data: { podcast: podcastName },
-        success: function(data) {
-            // Update results table with data
-            var resultsBody = $('#resultsBody');
-            resultsBody.empty();
-            $.each(data, function(index, podcast) {
-                var rowHtml = createTableRow(podcast);
-                resultsBody.append(rowHtml);
-            });
-        },
-        error: function() {
-            $('#resultsBody').html('<tr><td colspan="5">An error has occurred</td></tr>');
-        }
-    });
-}
-
-
-
-        $(document).ready(function() {
-            // Fetch recent episodes when the page loads
             $.ajax({
-    url: '/recent_episodes',
-    type: 'get',
-    success: function(data) {
-        var resultsBody = $('#resultsBody');
-        resultsBody.empty(); // Clear the previous results
-        // Populate the table with the recent episodes
-        $.each(data, function(index, podcast) {
-            var rowHtml = createTableRow(podcast);
-            resultsBody.append(rowHtml);
+                url: '/search_spotify',
+                type: 'get',
+                data: { title: episodeTitle, currentPodcast: currentPodcast },
+                success: function(data) {
+                    if (data.spotifyUrl) {
+                        window.open(data.spotifyUrl, '_blank');
+                    } else {
+                        alert('Episode not found on Spotify.');
+                    }
+                },
+                error: function() {
+                    alert('Error occurred while searching Spotify.');
+                }
+            });
+        }   
+        function fetchPodcast(podcastName) {
+            $('#currentPodcast').val(podcastName);
+            $.ajax({
+                url: '/recent_episodes',
+                type: 'get',
+                data: { podcast: podcastName },
+            success: function(data) {
+            // Update results with cards
+            var resultsBody = $('#resultsBody');
+                resultsBody.empty();
+                $.each(data, function(index, podcast) {
+            var cardHtml = createPodcastCard(podcast); // Use the adjusted function for cards
+                resultsBody.append(cardHtml);
+                // Clear existing search tags
+                $('#titleTagsContainer .tag').remove();
+                $('#notesTagsContainer .tag').remove();
+                //future titletags and notes tags?
+
         });
     },
     error: function() {
-        var resultsBody = $('#resultsBody');
-        resultsBody.empty();
-        resultsBody.append('<tr><td colspan="5">An error has occurred</td></tr>');
+        $('#resultsBody').html('<div class="alert alert-danger" role="alert">An error has occurred</div>');
     }
-});
-
-            // Attach the submit event to the search form
-            $('#searchForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent the form from submitting via the browser
-                var form = $(this);
-                $.ajax({
-                    url: '/search',
-                    type: 'get',
-                    data: form.serialize(), // Serialize the form data
-                    success: function(data) {
-                        var resultsCount = $('.results-count');
-                        var resultsBody = $('#resultsBody');
-                        resultsBody.empty(); // Clear the previous results
-                        resultsCount.text(data.count + ' episodes found'); // Update the results count
-
-                        // Populate the table with the search results
-                        $.each(data.podcasts, function(index, podcast) {
-    var rowHtml = createTableRow(podcast);
-    resultsBody.append(rowHtml);
-                        });
-                    },
-                    error: function() {
-                        var resultsBody = $('#resultsBody');
-                        resultsBody.empty();
-                        resultsBody.append('<tr><td colspan="4">An error has occurred during the search</td></tr>');
-                    }
+            });
+        }
+    
+         $(document).ready(function() {
+            // Fetch recent episodes for TMA on initial page load
+            fetchPodcast('TMA');
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+                
+            $.getJSON("/tags/titles", function(data) {
+                titleTags = $.map(data, function(item) {
+                    return { label: item.tag + " (" + item.count + ")", value: item.tag };
                 });
             });
+
+            $.getJSON("/tags/notes", function(data) {
+                noteTags = $.map(data, function(item) {
+                    return { label: item.tag + " (" + item.count + ")", value: item.tag };
+                });
+            });
+
+            // Autocomplete for Title Tags with dynamic filtering
+            $("input[name='title']").autocomplete({
+                source: function(request, response) {
+                    const filteredTags = titleTags.filter(function(tag) {
+                        return tag.label.toLowerCase().indexOf(request.term.toLowerCase()) >= 0;
+                    }).slice(0, 20); // Limit to the first 20 filtered tags
+                    response(filteredTags);
+                },
+                minLength: 0,
+            }).focus(function() {
+                $(this).autocomplete("search", "");
+            });
+
+            // Autocomplete for Show Notes Tags with dynamic filtering
+            $("input[name='notes']").autocomplete({
+                source: function(request, response) {
+                    const filteredTags = noteTags.filter(function(tag) {
+                        return tag.label.toLowerCase().indexOf(request.term.toLowerCase()) >= 0;
+                    }).slice(0, 20); // Limit to the first 20 filtered tags
+                    response(filteredTags);
+                },
+                minLength: 0,
+            }).focus(function() {
+                $(this).autocomplete("search", "");
+            });
+
+            // Function to add a tag visually
+            function addTag(containerId, text) {
+                let tagElement = $('<span class="tag">' + text + '<a href="#" class="remove-tag">×</a></span>');
+                $(`#${containerId}`).prepend(tagElement);
+                $(".tag-input").val(""); // Clear input after adding a tag
+            }
+
+            // Removing a tag on click
+            $(".tags-input").on("click", ".remove-tag", function() {
+                $(this).parent().remove();
+            });
+
+            // Extend existing autocomplete setup
+            $("input.tag-input").each(function() {
+                let input = $(this); // Current tag input
+                let containerId = $(this).closest('.tags-input').attr('id');
+                
+                $(this).autocomplete({
+                    source: function(request, response) {
+                        // Depending on whether it's title or notes, use titleTags or noteTags
+                        let tagsSource = containerId.includes('title') ? titleTags : noteTags;
+                        const filteredTags = tagsSource.filter(tag => tag.label.toLowerCase().indexOf(request.term.toLowerCase()) >= 0).slice(0, 10);
+                        response(filteredTags);
+                    },
+                    select: function(event, ui) {
+                        addTag(containerId, ui.item.value); // Add selected tag
+                        return false; // Prevent the widget from updating the input's value
+                    },
+                    minLength: 0,
+                }).focus(function() {
+                    $(this).autocomplete("search", "");
+                });
+            });
+
+            // Adding a tag on Enter or Space in the input field
+            $(".tags-input .tag-input").keydown(function(e) {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault(); // Avoid form submission or adding spaces
+                    let tagText = $(this).val().trim();
+                    if (tagText) {
+                        let containerId = $(this).closest('.tags-input').attr('id');
+                        addTag(containerId, tagText);
+                    }
+                }
+            });
+            $('#searchForm').submit(function(e) {
+                e.preventDefault(); // Prevent the default form submission.
+
+                // Gather all tags for title and notes.
+                let titleTags = $('#titleTagsContainer .tag').map(function() {
+                    return $(this).clone() //clone the element
+                    .children() //select all the children
+                    .remove() //remove all the children
+                    .end() //again go back to selected element
+                    .text().trim(); //get the text of element
+                }).get().join(" ");
+
+                let notesTags = $('#notesTagsContainer .tag').map(function() {
+                    return $(this).clone() //clone the element
+                    .children() //select all the children
+                    .remove() //remove all the children
+                    .end() //again go back to selected element
+                    .text().trim(); //get the text of element
+                }).get().join(" ");
+
+                let date = $('input[name="date"]').val();
+                let matchType = $('#matchType').val();
+                let currentPodcast = $('#currentPodcast').val();
+
+                // Make the AJAX call to your backend search endpoint.
+            $.ajax({
+                url: '/search',
+                type: 'GET',
+                data: {
+                    title: titleTags,
+                    notes: notesTags,
+                    date: date,
+                    matchType: matchType,
+                    currentPodcast: currentPodcast
+                },
+                success: function(data) {
+                    $('#resultsBody').empty(); // Clear existing results
+
+                    if (data.podcasts && data.podcasts.length > 0) {
+                        // Populate results with new data
+                        data.podcasts.forEach(function(podcast) {
+                            var cardHtml = createPodcastCard(podcast);
+                            $('#resultsBody').append(cardHtml);
+                        });
+                    } else {
+                        // Handle no results found
+                        $('#resultsBody').html('<div class="alert alert-info">No results found.</div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Handle errors
+                    console.error("Error occurred during search: ", status, error);
+                    $('#resultsBody').html('<div class="alert alert-danger">An error occurred during the search.</div>');
+                }
+            });
+        });
+
+                    // Attach the submit event to the search form
+                    $('#searchForm').submit(function(e) {
+            e.preventDefault();
+            
+            let formData = $(this).serialize(); // Serializes the form's elements.
+            
+            // Optional: Log formData to debug
+            console.log(formData);
+            
+            $.ajax({
+                url: '/search',
+                type: 'GET',
+                data: formData, // Now includes currentPodcast and other fields
+                success: function(data) {
+                    // Handle successful data retrieval
+                },
+                error: function(xhr, status, error) {
+                    // Handle errors
+                }
+            });
+});
+    
+            var backToTopButton = document.getElementById("back-to-top");
+    
+            window.onscroll = function() {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                    backToTopButton.style.display = "block";
+                } else {
+                    backToTopButton.style.display = "none";
+                }
+            };
+    
+            backToTopButton.onclick = function() {
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
+            };
         });
     </script>
+    
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="helpModalLabel">Match Type Help</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p><ul>
+                    <li><b>Match all keywords</b> looks for all of your keywords in the title or show notes. Eg. "Iggy Fontbonne Bowling" returns results where Iggy <b>and</b> Fontbonne <b>and</b> bowling are in the results.</li>
+                    <li><b>Match any</b> will look for the presence of any of your keywords. Honestly, don't have a great example on when to use this.</li>
+                    <li><b>Exact Match</b> searches for a specific keyword or string of words. e.g. Audio Postcard or TMA Live</li>
+                </ul>
+            </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
