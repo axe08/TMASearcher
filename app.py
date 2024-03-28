@@ -81,7 +81,7 @@ def recent_episodes():
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    thirty_days_ago = datetime.now() - timedelta(days=30)
+    thirty_days_ago = datetime.now() - timedelta(days=90)
     query = f"SELECT * FROM {table_name} WHERE DATE >= ? ORDER BY DATE DESC"
     cursor.execute(query, (thirty_days_ago.strftime('%Y-%m-%d'),))
     episodes = cursor.fetchall()
