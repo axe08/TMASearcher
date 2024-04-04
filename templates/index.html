@@ -246,12 +246,16 @@
                             <div class="form-group">
                                 <label>Title Keywords:</label>
                                 <div class="tags-input" id="titleTagsContainer">
-                                    <input type="text" id="titleTagInput" class="form-control tag-input" placeholder="Type and hit space or enter...">
+                                    <input type="text" id="titleTagInput" class="form-control tag-input" placeholder="Type to search keywords...">
                                 </div>
                                 <label>Show Notes Keywords:</label>
                                 <div class="tags-input" id="notesTagsContainer">
-                                    <input type="text" id="notesTagInput" class="form-control tag-input" placeholder="Type and hit space or enter...">
+                                    <input type="text" id="notesTagInput" class="form-control tag-input" placeholder="Type to search keywords...">
                                 </div>
+                                <div>
+                                    <p>Keywords help -->
+                                <i class="fas fa-question-circle" data-toggle="modal" data-target="#tagModal" style="cursor: pointer;"></i></p>
+                            </div>
                             </div>
                             
                             <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
@@ -435,12 +439,15 @@
 
             // Adding a tag on Enter or Space in the input field
             $(".tags-input .tag-input").keydown(function(e) {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault(); // Avoid form submission or adding spaces
-                    let tagText = $(this).val().trim();
+                // Check if the Enter key is pressed
+                if (e.key === "Enter") {
+                    e.preventDefault(); // Prevent the default action (form submission in this case)
+
+                    let tagText = $(this).val().trim(); // Get the trimmed text from the input
                     if (tagText) {
-                        let containerId = $(this).closest('.tags-input').attr('id');
-                        addTag(containerId, tagText);
+                        // If there's some non-space text, add the tag
+                        let containerId = $(this).closest('.tags-input').attr('id'); // Get the ID of the parent container to know where to add the tag
+                        addTag(containerId, tagText); // Call the function to add the tag visually
                     }
                 }
             });
@@ -555,6 +562,33 @@
                     <li><b>Match all keywords</b> looks for all of your keywords in the title or show notes. Eg. "Iggy Fontbonne Bowling" returns results where Iggy <b>and</b> Fontbonne <b>and</b> bowling are in the results.</li>
                     <li><b>Match any</b> will look for the presence of any of your keywords. Honestly, don't have a great example on when to use this.</li>
                     <li><b>Exact Match</b> searches for a specific keyword or string of words. e.g. Audio Postcard or TMA Live</li>
+                </ul>
+            </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Keyword Modal -->
+<div class="modal fade" id="tagModal" tabindex="-1" aria-labelledby="tagLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tagModalLabel">Keyword Help</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p>
+                I've upgraded keyword search so that it shows matching keywords as you are typing. For example, if you type crest into the show notes search, crestfallen and crestfalling will show up, each with how many episodes it is in. If you select those two keywords and then choose the OR logic, it will show episodes where either of those words occur.
+                <ul>
+                    <li>When you start searching for a word, matching words should start to show in a dropdown. Clicking on a word will add it to your search. Alternatively, you can hit enter or return to add the word you typed.</li>
+                    <li>You can type a keyword that has multiple words, while it won't match anything in the dropdown once you enter another word, it still can be used to search for a phrase.</li>
+                    <li>I've ommitted some common non relevant words like "the" but that doesn't mean you can't use them, they just won't show in the dropdown.</li>
+                    <li>There is still an issue where if you search for something like risk, it will find brisket in the search results</li>
                 </ul>
             </p>
         </div>
