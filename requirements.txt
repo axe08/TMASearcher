@@ -9,3 +9,5 @@ pandas
 fastapi
 spacy
 numba
+bs4
+lxml
