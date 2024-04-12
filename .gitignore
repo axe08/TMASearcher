@@ -1,1 +1,4 @@
 spot.env
+*.log
+/indexarch
+taggerthreebackup.py
