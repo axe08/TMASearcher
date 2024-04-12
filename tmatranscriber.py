@@ -58,15 +58,31 @@ async def process_audio_file(url, title):
     if mp3_url:
         audio_file_path = download_mp3(mp3_url, title)
         if audio_file_path:
-            # Now the processing happens with the dynamically passed URL
             audio_file_size_mb = os.path.getsize(audio_file_path) / (1024 * 1024)
-            combined_transcript_text, combined_transcript_text_list_of_metadata_dicts, list_of_transcript_sentences = await compute_transcript_with_whisper_from_audio_func(audio_file_path, title, audio_file_size_mb)
-            # Continue with your processing...
-            update_transcribed_date(url)  # Ensure this line is in the function to update the DB
+            await compute_transcript_with_whisper_from_audio_func(audio_file_path, title, audio_file_size_mb, url)
+            update_transcribed_date(url)
     else:
         print(f"Failed to extract MP3 URL for {title}.")
         return True
     return False
+
+
+def update_episode_transcript(url, transcript):
+    conn = sqlite3.connect('TMASTL.db')
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE TMA
+    SET transcript = ?
+    WHERE URL = ?
+    """
+    try:
+        cursor.execute(update_query, (transcript, url))
+        conn.commit()
+        print(f"Transcript updated for {url}")
+    except Exception as e:
+        print(f"Failed to update transcript for {url}: {e}")
+    finally:
+        conn.close()
 
 async def process_episodes(start_date, end_date):
     episodes = query_episodes(start_date, end_date)
@@ -84,9 +100,10 @@ def load_spacy_model():
         model_name = "en_core_web_sm"
         try:
             nlp = spacy.load(model_name)  # Try to load the model
+            print("Model loaded successfully.")
         except Exception as e:
             print(f"Error loading spaCy model {model_name}: {e}")
-            # Optionally, handle downloading the model here if it's not found
+            nlp = None  # Explicitly set nlp to None if loading fails
 
 
 def extract_mp3_url_from_page(url):
@@ -171,7 +188,7 @@ async def download_audio(video):
         print("Failed to extract MP3 URL from the webpage.")
     return None, None
 
-async def compute_transcript_with_whisper_from_audio_func(audio_file_path, audio_file_name, audio_file_size_mb):
+async def compute_transcript_with_whisper_from_audio_func(audio_file_path, audio_file_name, audio_file_size_mb, url):
     cuda_toolkit_path = get_cuda_toolkit_path()
     if cuda_toolkit_path:
         add_to_system_path(cuda_toolkit_path)
@@ -186,7 +203,7 @@ async def compute_transcript_with_whisper_from_audio_func(audio_file_path, audio
         print("CUDA not available. Using CPU for transcription.")
         device = "cpu"
         compute_type = "auto"  # Use default compute type for CPU
-    model = WhisperModel("medium.en", device=device, compute_type=compute_type)
+    model = WhisperModel("large-v3", device=device, compute_type=compute_type)
     request_time = datetime.utcnow()
     print(f"Computing transcript for {audio_file_name} which has a {audio_file_size_mb:.2f}MB file size...")
     segments, info = await asyncio.to_thread(model.transcribe, audio_file_path, beam_size=7, vad_filter=True)
@@ -207,10 +224,15 @@ async def compute_transcript_with_whisper_from_audio_func(audio_file_path, audio
         combined_transcript_text_list_of_metadata_dicts.append(metadata)
     with open(f'generated_transcript_combined_texts/{audio_file_name}.txt', 'w') as file:
         file.write(combined_transcript_text)
+        # Reading the transcript to update the database
+    with open(f'generated_transcript_combined_texts/{audio_file_name}.txt', 'r') as file:
+        transcript_text = file.read()
     df = pd.DataFrame(combined_transcript_text_list_of_metadata_dicts)
     df.to_csv(f'generated_transcript_metadata_tables/{audio_file_name}.csv', index=False)
     df.to_json(f'generated_transcript_metadata_tables/{audio_file_name}.json', orient='records', indent=4)
+    update_episode_transcript(url, transcript_text)
     return combined_transcript_text, combined_transcript_text_list_of_metadata_dicts, list_of_transcript_sentences
+
 
 def merge_transcript_segments_into_combined_text(segments):
     if not segments:
@@ -262,8 +284,8 @@ async def main():
     os.makedirs('downloaded_audio', exist_ok=True)
     os.makedirs('generated_transcript_combined_texts', exist_ok=True)
     os.makedirs('generated_transcript_metadata_tables', exist_ok=True)
-    start_date = '2024-04-02'
-    end_date = '2024-04-03'
+    start_date = '2024-04-12'
+    end_date = '2024-04-12'
     
     # Process all episodes fetched from the database for the given date range
     await process_episodes(start_date, end_date)
