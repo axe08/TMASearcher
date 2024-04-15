@@ -61,6 +61,8 @@ async def process_audio_file(url, title):
             audio_file_size_mb = os.path.getsize(audio_file_path) / (1024 * 1024)
             await compute_transcript_with_whisper_from_audio_func(audio_file_path, title, audio_file_size_mb, url)
             update_transcribed_date(url)
+            #remove file after processing
+            os.remove(audio_file_path)
     else:
         print(f"Failed to extract MP3 URL for {title}.")
         return True
@@ -68,21 +70,25 @@ async def process_audio_file(url, title):
 
 
 def update_episode_transcript(url, transcript):
-    conn = sqlite3.connect('TMASTL.db')
-    cursor = conn.cursor()
     update_query = """
     UPDATE TMA
     SET transcript = ?
     WHERE URL = ?
     """
     try:
-        cursor.execute(update_query, (transcript, url))
-        conn.commit()
-        print(f"Transcript updated for {url}")
+        # Using 'with' ensures that the connection and cursor are closed automatically
+        with sqlite3.connect('TMASTL.db') as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(update_query, (transcript, url))
+                conn.commit()
+                print(f"Transcript updated for {url}")
+    except sqlite3.OperationalError as e:
+        print(f"Operational error occurred while updating transcript for {url}: {e}")
+    except sqlite3.IntegrityError as e:
+        print(f"Integrity error occurred while updating transcript for {url}: {e}")
     except Exception as e:
-        print(f"Failed to update transcript for {url}: {e}")
-    finally:
-        conn.close()
+        print(f"An error occurred while updating transcript for {url}: {e}")
+
 
 async def process_episodes(start_date, end_date):
     episodes = query_episodes(start_date, end_date)
