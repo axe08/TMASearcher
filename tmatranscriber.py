@@ -289,8 +289,8 @@ async def main():
     os.makedirs('downloaded_audio', exist_ok=True)
     os.makedirs('generated_transcript_combined_texts', exist_ok=True)
     os.makedirs('generated_transcript_metadata_tables', exist_ok=True)
-    start_date = '2024-04-12'
-    end_date = '2024-04-12'
+    start_date = '2025-04-12'
+    end_date = '2010-04-12'
     
     # Process all episodes fetched from the database for the given date range
     await process_episodes(start_date, end_date)
