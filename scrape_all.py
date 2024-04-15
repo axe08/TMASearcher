@@ -13,10 +13,13 @@ def run_script(script_path):
 def main():
     # List of scripts to be run in sequence
     scripts = [
-        'daily_scarp.py',
+        'daily_scrape.py',
         'BalloonScrape.py',
         'TMShowScrape.py',
-        ''
+        'TMASpotScrape.py',
+        'BalloonSpotScrape.py',
+        'TMShowSpotScrape.py',
+        'tagger.py',
     ]
 
     # Run each script in the list
