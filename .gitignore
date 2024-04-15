@@ -2,3 +2,6 @@ spot.env
 *.log
 /indexarch
 taggerthreebackup.py
+TMASTL4.15backup.db
+/venv
+/venvarch
