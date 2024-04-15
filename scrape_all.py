@@ -1,9 +1,10 @@
 import subprocess
+import sys
 
 def run_script(script_path):
     # Runs a script and captures its output
     try:
-        result = subprocess.run(['python', script_path], text=True, capture_output=True, check=True)
+        result = subprocess.run([sys.executable, script_path], text=True, capture_output=True, check=True)
         print(f"Script {script_path} executed successfully.")
         print("Output:", result.stdout)
     except subprocess.CalledProcessError as e:
