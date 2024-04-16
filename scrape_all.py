@@ -1,10 +1,12 @@
 import subprocess
 import sys
+import os
 
 def run_script(script_path):
     # Runs a script and captures its output
     try:
-        result = subprocess.run([sys.executable, script_path], text=True, capture_output=True, check=True)
+        script_abs_path = os.path.join('/home/alex/TMASearcher', script_path)  # Construct absolute path
+        result = subprocess.run([sys.executable, script_abs_path], text=True, capture_output=True, check=True)
         print(f"Script {script_path} executed successfully.")
         print("Output:", result.stdout)
     except subprocess.CalledProcessError as e:

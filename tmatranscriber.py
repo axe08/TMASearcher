@@ -4,7 +4,6 @@ import asyncio
 import re
 import psutil
 import glob
-from datetime import datetime
 import pandas as pd
 from faster_whisper import WhisperModel
 from numba import cuda
@@ -14,6 +13,8 @@ import json
 import spacy
 import sqlite3
 import asyncio
+from datetime import datetime, timezone
+
 
 
 # Settings
@@ -48,7 +49,7 @@ def update_transcribed_date(url):
     WHERE URL = ?
     """
     # Using datetime.now() to get the current date and time.
-    cursor.execute(update_query, (datetime.now(), url))
+    cursor.execute(update_query, (datetime.datetime.now(), url))
     conn.commit()
     conn.close()
 
@@ -75,18 +76,30 @@ def update_episode_transcript(url, transcript):
     WHERE URL = ?
     """
     try:
-        # Using 'with' ensures that the connection and cursor are closed automatically
-        with sqlite3.connect('TMASTL.db') as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(update_query, (transcript, url))
-                conn.commit()
-                print(f"Transcript updated for {url}")
-    except sqlite3.OperationalError as e:
-        print(f"Operational error occurred while updating transcript for {url}: {e}")
-    except sqlite3.IntegrityError as e:
-        print(f"Integrity error occurred while updating transcript for {url}: {e}")
+        # Establish a connection to the database
+        conn = sqlite3.connect('TMASTL.db')
+        cursor = conn.cursor()
+
+        # Execute the update query
+        cursor.execute(update_query, (transcript, url))
+
+        # Commit the transaction
+        conn.commit()
+
+        # Print a success message
+        print(f"Transcript updated for {url}")
+
     except Exception as e:
+        # Handle any exceptions
         print(f"An error occurred while updating transcript for {url}: {e}")
+
+    finally:
+        # Close the cursor and the database connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 
 async def process_episodes(start_date, end_date):
@@ -209,12 +222,12 @@ async def compute_transcript_with_whisper_from_audio_func(audio_file_path, audio
         device = "cpu"
         compute_type = "auto"  # Use default compute type for CPU
     model = WhisperModel("large-v3", device=device, compute_type=compute_type)
-    request_time = datetime.utcnow()
+    request_time = datetime.now(timezone.utc)
     print(f"Computing transcript for {audio_file_name} which has a {audio_file_size_mb:.2f}MB file size...")
     segments, info = await asyncio.to_thread(model.transcribe, audio_file_path, beam_size=7, vad_filter=True)
     if not segments:
         print(f"No segments were returned for file {audio_file_name}.")
-        return [], {}, "", [], request_time, datetime.utcnow(), 0, ""
+        return [], {}, "", [], request_time, datetime.now(timezone.utc), 0, ""
     for segment in segments:
         print(f"Processing segment: [Start: {segment.start:.2f}s, End: {segment.end:.2f}s] for file {audio_file_name} with text: {segment.text} ")
         combined_transcript_text += segment.text + " "
@@ -289,8 +302,8 @@ async def main():
     os.makedirs('downloaded_audio', exist_ok=True)
     os.makedirs('generated_transcript_combined_texts', exist_ok=True)
     os.makedirs('generated_transcript_metadata_tables', exist_ok=True)
-    start_date = '2025-04-12'
-    end_date = '2010-04-12'
+    start_date = '2010-04-12'
+    end_date = '2025-04-12'
     
     # Process all episodes fetched from the database for the given date range
     await process_episodes(start_date, end_date)
