@@ -201,22 +201,37 @@
         }
     
         function createPodcastCard(podcast) {
-            // Escaping single quotes in podcast titles to ensure JavaScript functions correctly
-            var safeTitle = podcast.title.replace(/'/g, "\\'");
-            return `
-                <div class="col-lg-4 col-md-6 col-sm-12">
-                    <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">${podcast.title}</h5>
-                        <p class="card-text"><small class="text-muted">${podcast.date}</small></p>
-                        <p class="card-text">${podcast.show_notes}</p>
-                        <a href="${podcast.url}" class="btn btn-primary">Listen</a>
-                        <button onclick="searchSpotify('${safeTitle}')" class="btn btn-secondary">Spotify</button>
+    // Escaping single quotes in podcast titles to ensure JavaScript functions correctly
+    var safeTitle = podcast.title.replace(/'/g, "\\'");
+
+    // Check if the mp3url is available (ensuring  check for both undefined and null)
+    var playButton = podcast.mp3url && podcast.mp3url.trim() !== "" 
+        ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${podcast.mp3url}', '${podcast.date}')">Stream</button>` 
+        : `<button class="btn btn-secondary" disabled>No Stream</button>`;
+
+    // "Listen" button
+    var listenButton = `<a href="${podcast.url}" class="btn btn-primary">Listen</a>`;
+
+    // "Download" button
+    var downloadButton = podcast.mp3url && podcast.mp3url.trim() !== "" 
+        ? `<a href="${podcast.mp3url}" download class="btn btn-info">Download</a>` 
+        : '';  // No download button if no mp3url is available
+
+    return `
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">${podcast.title}</h5>
+                    <p class="card-text"><small class="text-muted">${podcast.date}</small></p>
+                    <p class="card-text">${podcast.show_notes}</p>
+                    ${playButton} <!-- Play button if mp3url is available -->
+                    ${downloadButton} <!-- Add Download button if mp3url is available -->
+                    ${listenButton} <!-- Add Listen button to link to the podcast episode on the website -->
+                    <button onclick="searchSpotify('${safeTitle}')" class="btn btn-secondary">Spotify</button>
                 </div>
-                    </div>
-                </div>
-            </div>`;
-        }
+            </div>
+        </div>`;
+}
         function searchSpotify(episodeTitle) {
             var currentPodcast = $('#currentPodcast').val();
 
@@ -312,6 +327,25 @@
                 document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
             };
         });
+        function openPlayer(title, mp3url, date) {
+    // Set  modal title and audio source
+    $('#audioPlayerModalLabel').text(`${title} (${date})`);
+    $('#audioSource').attr('src', mp3url);
+
+    // Load the new audio source
+    var audioPlayer = document.getElementById('audioPlayer');
+    audioPlayer.load(); // Reload the audio with the new source
+    audioPlayer.play(); // Automatically play when loaded
+
+    // Open the modal
+    $('#audioPlayerModal').modal('show');
+}
+
+function seekAudio(seconds) {
+    var audioPlayer = document.getElementById('audioPlayer');
+    audioPlayer.currentTime += seconds;
+}
+
     </script>
     
 <!-- Help Modal -->
@@ -338,5 +372,28 @@
       </div>
     </div>
   </div>
+  <!-- Audio Player Modal -->
+<div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="audioPlayerModalLabel"></h5> <!-- Title will be dynamically set -->
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <audio id="audioPlayer" controls style="width: 100%;">
+                    <source id="audioSource" src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <div class="mt-3">
+                    <button class="btn btn-info" onclick="seekAudio(-30)">-30s</button>
+                    <button class="btn btn-info" onclick="seekAudio(30)">+30s</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
