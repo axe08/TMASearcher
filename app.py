@@ -86,8 +86,9 @@ def recent_episodes():
     cursor.execute(query, (thirty_days_ago.strftime('%Y-%m-%d'),))
     episodes = cursor.fetchall()
     conn.close()
-    # Convert the episodes into a JSON-friendly format
-    episodes_json = [{'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4]} for e in episodes]
+    
+    # include the mp3url
+    episodes_json = [{'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5]} for e in episodes]
     return jsonify(episodes_json)
 
 
@@ -97,8 +98,7 @@ def get_podcast_data():
     # Validate the podcast_name against a predefined list of valid names
     valid_podcasts = {'TMA': 'TMA', 'The Tim McKernan Show': 'TMShow', 'Balloon Party': 'Balloon'}
 
-    table_name = valid_podcasts.get(podcast_name)  # Return None if the podcast_name is not valid
-
+    table_name = valid_podcasts.get(podcast_name)
     if table_name is not None:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -107,10 +107,11 @@ def get_podcast_data():
         episodes = cursor.fetchall()
         conn.close()
 
-        episodes_json = [{'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4]} for e in episodes]
+        episodes_json = [{'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5]} for e in episodes]
         return jsonify(episodes_json)
     else:
         return jsonify({'error': 'Invalid podcast name'}), 400
+
 
 
 def search_database(table_name, title, date, notes, match_type):
