@@ -34,7 +34,7 @@
 
             #back-to-top {
                 position: fixed;
-                bottom: 20px;
+                bottom: 55px; /* Adjust this value to be above the audio control bar */
                 right: 20px;
                 background-color: #007bff; /* Bootstrap primary color */
                 color: white;
@@ -43,6 +43,7 @@
                 padding: 10px;
                 cursor: pointer;
                 display: none; /* Hidden by default */
+                z-index: 10000; /* Ensure it's above other elements */
             }
             @media (max-width: 768px) {
             .card-body {
@@ -138,6 +139,43 @@
             .dark-mode .close:hover {
                 color: #bbbbbb; /* Lighter color for hover state of close button */
             }
+            /* Audio Control Bar */
+            .audio-control-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 9999; /* Ensure it stays on top */
+            font-size: 16px;
+            box-shadow: 0px -1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+
+
+            .control-bar-content {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .track-title {
+                flex: 1;
+                margin-right: 20px;
+                font-weight: bold;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .btn {
+                margin-left: 10px;
+            }
 
         </style>
     </head>
@@ -210,7 +248,7 @@
         : `<button class="btn btn-secondary" disabled>No Stream</button>`;
 
     // "Listen" button
-    var listenButton = `<a href="${podcast.url}" class="btn btn-primary">Listen</a>`;
+    var listenButton = `<a href="${podcast.url}" class="btn btn-primary">TMASTL</a>`;
 
     // "Download" button
     var downloadButton = podcast.mp3url && podcast.mp3url.trim() !== "" 
@@ -327,20 +365,69 @@
                 document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
             };
         });
-        function openPlayer(title, mp3url, date) {
-    // Set  modal title and audio source
+// Handle opening the full audio player
+function openPlayer(title, mp3url, date) {
+    // Set the modal title and audio source
     $('#audioPlayerModalLabel').text(`${title} (${date})`);
     $('#audioSource').attr('src', mp3url);
 
-    // Load the new audio source
+    // Load the new audio source and start playing
     var audioPlayer = document.getElementById('audioPlayer');
-    audioPlayer.load(); // Reload the audio with the new source
-    audioPlayer.play(); // Automatically play when loaded
+    audioPlayer.load();
+    audioPlayer.play();
+
+    // Update the control bar with the current track title
+    document.getElementById('currentTrackTitle').innerText = `${title} (${date})`;
+
+    // Show the control bar when the player opens
+    document.getElementById('audioControlBar').style.display = 'flex';
+
+    // Set the play/pause button to "Pause" since the audio starts playing automatically
+    document.getElementById('controlPlayPauseBtn').textContent = "Pause";
 
     // Open the modal
     $('#audioPlayerModal').modal('show');
 }
 
+
+// Reopen the audio player modal
+function reopenPlayer() {
+    $('#audioPlayerModal').modal('show');
+}
+
+// Play/Pause toggle for the modal and bottom control bar
+function toggleAudioPlayPause() {
+    var audioPlayer = document.getElementById('audioPlayer');
+    var playPauseBtn = document.getElementById('controlPlayPauseBtn');
+    var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
+
+    if (audioPlayer.paused) {
+        audioPlayer.play();
+        playPauseBtn.textContent = "Pause";        // Update control bar button
+        modalPlayPauseBtn.textContent = "Pause";   // Update modal button
+    } else {
+        audioPlayer.pause();
+        playPauseBtn.textContent = "Play";         // Update control bar button
+        modalPlayPauseBtn.textContent = "Play";    // Update modal button
+    }
+}
+
+// Ensure the control bar is shown when the modal is closed
+$('#audioPlayerModal').on('hide.bs.modal', function () {
+    var audioPlayer = document.getElementById('audioPlayer');
+
+    // If audio is still playing, show the bottom bar
+    if (!audioPlayer.paused && !audioPlayer.ended) {
+        document.getElementById('audioControlBar').style.display = 'flex';
+    }
+});
+
+// Hide the control bar when the audio ends
+document.getElementById('audioPlayer').addEventListener('ended', function() {
+    document.getElementById('audioControlBar').style.display = 'none';
+});
+
+// Seek audio forward/backward by a specific number of seconds
 function seekAudio(seconds) {
     var audioPlayer = document.getElementById('audioPlayer');
     audioPlayer.currentTime += seconds;
@@ -372,7 +459,7 @@ function seekAudio(seconds) {
       </div>
     </div>
   </div>
-  <!-- Audio Player Modal -->
+<!-- Audio Player Modal -->
 <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -387,12 +474,23 @@ function seekAudio(seconds) {
                     <source id="audioSource" src="" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
-                <div class="mt-3">
-                    <button class="btn btn-info" onclick="seekAudio(-30)">-30s</button>
-                    <button class="btn btn-info" onclick="seekAudio(30)">+30s</button>
+                <!-- Group of buttons centered -->
+                <div class="mt-3 d-flex justify-content-center">
+                    <button id="modalPlayPauseBtn" class="btn btn-primary mx-2" onclick="toggleAudioPlayPause()">Pause</button>
+                    <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
+                    <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Audio Control Bar (hidden by default) -->
+<div id="audioControlBar" class="audio-control-bar" style="display: none;">
+    <div class="control-bar-content">
+        <span id="currentTrackTitle" class="track-title"></span>
+        <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
+        <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
     </div>
 </div>
 </body>
