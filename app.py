@@ -118,7 +118,7 @@ def search_database(table_name, title, date, notes, match_type):
     try:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            query = f"SELECT TITLE, DATE, URL, SHOW_NOTES FROM {table_name} WHERE "
+            query = f"SELECT TITLE, DATE, URL, SHOW_NOTES, mp3url FROM {table_name} WHERE "
             conditions = []
             params = []
 
@@ -186,7 +186,7 @@ def search():
         # Pass the correct table name and match type
         search_results = search_database(table_name, title, date, notes, match_type)  
         podcasts = [
-            {'title': row[0], 'date': row[1], 'url': row[2], 'show_notes': row[3]}
+            {'title': row[0], 'date': row[1], 'url': row[2], 'show_notes': row[3], 'mp3url': row[4]}
             for row in search_results
         ]
 
