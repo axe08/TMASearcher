@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TMA Archive</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+        /* Your general styles and dark mode support */
+        .custom-button {
+            background-color: dodgerblue;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 16px;
+        }
+        .custom-button:hover {
+            background-color: cadetblue;
+        }
+
+        #back-to-top {
+            position: fixed;
+            bottom: 55px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            display: none;
+            z-index: 10000;
+        }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .dark-mode .custom-button {
+            background-color: #222;
+            color: #ffffff;
+        }
+
+        .audio-control-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #343a40;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 9999;
+        }
+
+        .control-bar-content {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .track-title {
+            flex: 1;
+            margin-right: 20px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .dark-mode .card {
+            background-color: #333;
+            color: #ffffff;
+        }
+        .dark-mode .card h5 {
+            color: #ffffff;
+        }
+        .dark-mode .card a.btn {
+            background-color: #444;
+            color: #ffffff;
+        }
+        .dark-mode .card a.btn:hover {
+            background-color: #555;
+        }
+        .dark-mode .modal-content {
+        background-color: #424242;
+        color: #ffffff;
+    }
+
+    .dark-mode .modal-header, .dark-mode .modal-body, .dark-mode .modal-footer {
+        border-color: #616161;
+    }
+
+    .dark-mode .modal-title {
+        color: #ffffff;
+    }
+
+    .dark-mode .modal-footer .btn {
+        background-color: #555;
+        color: #ffffff;
+    }
+
+    .dark-mode .modal-footer .btn:hover {
+        background-color: #666;
+    }
+
+    .dark-mode .close {
+        color: #ffffff;
+    }
+
+    .dark-mode .close:hover {
+        color: #bbbbbb;
+    }
+
+    .dark-mode .audio-control-bar {
+        background-color: #222;
+        color: #ffffff;
+    }
+
+    .dark-mode #controlPlayPauseBtn, .dark-mode #modalPlayPauseBtn {
+        background-color: #555;
+        color: #ffffff;
+    }
+
+    .dark-mode #controlPlayPauseBtn:hover, .dark-mode #modalPlayPauseBtn:hover {
+        background-color: #666;
+    }
+    </style>
+</head>
+<body>
+    <div class="container my-3">
+        <div class="container my-3">
+            <div class="header-container d-flex justify-content-between align-items-center">
+                <h2 class="header-text">TMA Archive</h2>
+                <a href="/" class="btn btn-primary">Home</a> <!-- Link back to home -->
+            </div>
+        
+        <p>This page contains older TMA episodes. Only the filename, date, and audio stream/download options are available.
+        </p>
+
+        <form id="searchForm" class="mb-4">
+            <div class="form-group">
+                <label for="matchType">Match Type:
+                    <i class="fas fa-question-circle" data-toggle="modal" data-target="#helpModal"></i>
+                </label>
+                <select class="form-control" id="matchType" name="matchType">
+                    <option value="all">Match All Keywords</option>
+                    <option value="any">Match Against Any Keywords</option>
+                    <option value="exact">Exact Match</option>
+                </select>
+            </div>
+            <input type="text" class="form-control mb-2" name="filename" placeholder="Filename Keywords (Separate with space)">
+            <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
+            <button type="submit" class="btn custom-button">Search</button>
+            <button type="button" id="dark-mode-toggle" class="btn custom-button">Toggle Dark Mode</button>
+        </form>
+
+        <div id="results" class="mt-4">
+            <div class="row" id="resultsBody"></div>
+        </div>
+
+        <!-- Audio Control Bar -->
+        <div id="audioControlBar" class="audio-control-bar" style="display: none;">
+            <div class="control-bar-content">
+                <span id="currentTrackTitle" class="track-title"></span>
+                <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
+                <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
+            </div>
+        </div>
+
+        <!-- Back to Top Button -->
+        <button id="back-to-top" title="Go to top">↑ Top</button>
+
+        <!-- Audio Player Modal -->
+        <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="audioPlayerModalLabel"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <audio id="popupAudioPlayer" controls style="width: 100%;">
+                            <source id="audioSource" src="" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        <div class="mt-3 d-flex justify-content-center">
+                            <button id="modalPlayPauseBtn" class="btn btn-primary mx-2" onclick="toggleAudioPlayPause()">Pause</button>
+                            <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
+                            <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark Mode Toggle
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
+        });
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Back to Top Button
+        const backToTopButton = document.getElementById("back-to-top");
+        window.onscroll = function() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                backToTopButton.style.display = "block";
+            } else {
+                backToTopButton.style.display = "none";
+            }
+        };
+        backToTopButton.onclick = function() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        };
+
+        function createArchiveCard(podcast) {
+            var playButton = podcast.mp3url 
+                ? `<button class="btn btn-success" onclick="openPlayer('${podcast.filename}', '${podcast.mp3url}', '${podcast.date}')">Stream</button>` 
+                : `<button class="btn btn-secondary" disabled>No Stream</button>`;
+            
+            var downloadButton = podcast.mp3url 
+                ? `<a href="${podcast.mp3url}" download class="btn btn-info">Download</a>` 
+                : '';
+
+            return `
+                <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">${podcast.filename}</h5>
+                            <p class="card-text"><small class="text-muted">${podcast.date}</small></p>
+                            ${playButton}
+                            ${downloadButton}
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function fetchArchive() {
+            $.ajax({
+                url: '/fetch_archive_episodes',
+                type: 'get',
+                success: function(data) {
+                    var resultsBody = $('#resultsBody');
+                    resultsBody.empty();
+                    $.each(data, function(index, podcast) {
+                        var cardHtml = createArchiveCard(podcast);
+                        resultsBody.append(cardHtml);
+                    });
+                },
+                error: function() {
+                    $('#resultsBody').html('<div class="alert alert-danger" role="alert">An error has occurred.</div>');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            fetchArchive(); // Fetch archive episodes on page load
+
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: '/search_archive',
+                    type: 'get',
+                    data: formData,
+                    success: function(data) {
+                        var resultsBody = $('#resultsBody');
+                        resultsBody.empty();
+                        $.each(data, function(index, podcast) {
+                            var cardHtml = createArchiveCard(podcast);
+                            resultsBody.append(cardHtml);
+                        });
+                    },
+                    error: function() {
+                        $('#resultsBody').html('<div class="alert alert-danger" role="alert">Search failed.');
+                    }
+                });
+            });
+        });
+
+        function openPlayer(filename, mp3url, date) {
+            $('#audioPlayerModalLabel').text(`${filename} (${date})`);
+            $('#audioSource').attr('src', mp3url);
+            var popupAudioPlayer = document.getElementById('popupAudioPlayer');
+            
+            // Load and play the audio
+            popupAudioPlayer.load();
+            popupAudioPlayer.play();
+
+            // Show the audio control bar
+            $('#audioControlBar').show();
+            $('#controlPlayPauseBtn').text('Pause');
+
+            // Open the modal
+            $('#audioPlayerModal').modal('show');
+        }
+
+        function toggleAudioPlayPause() {
+            var popupAudioPlayer = document.getElementById('popupAudioPlayer');
+            var playPauseBtn = document.getElementById('controlPlayPauseBtn');
+            var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
+
+            if (popupAudioPlayer.paused) {
+                popupAudioPlayer.play();
+                playPauseBtn.textContent = 'Pause';
+                modalPlayPauseBtn.textContent = 'Pause';
+            } else {
+                popupAudioPlayer.pause();
+                playPauseBtn.textContent = 'Play';
+                modalPlayPauseBtn.textContent = 'Play';
+            }
+        }
+        function seekAudio(seconds) {
+        var audioPlayer = document.getElementById('popupAudioPlayer'); // Ensure we are targeting the correct audio element
+        if (audioPlayer) {
+            audioPlayer.currentTime += seconds; // Add or subtract seconds from the current time
+        }
+    }
+
+    </script>
+</body>
+</html>

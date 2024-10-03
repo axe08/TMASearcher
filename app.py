@@ -198,6 +198,60 @@ def search():
     else:
         return jsonify({'error': 'Invalid podcast name'}), 400
 
+@app.route('/tma_archive')
+def tma_archive():
+    return render_template('tma_archive.html')
+
+
+@app.route('/fetch_archive_episodes', methods=['GET'])
+def fetch_archive_episodes():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    query = "SELECT filename, date, mp3url FROM TMA_Archive ORDER BY date DESC"
+    cursor.execute(query)
+    episodes = cursor.fetchall()
+    conn.close()
+    episodes_json = [{'filename': e[0], 'date': e[1], 'mp3url': e[2]} for e in episodes]
+
+    return jsonify(episodes_json)
+@app.route('/search_archive', methods=['GET'])
+
+@app.route('/search_archive', methods=['GET'])
+def search_archive():
+    match_type = request.args.get('matchType')
+    filename = request.args.get('filename', '').strip()
+    date = request.args.get('date', '').strip()
+
+    query = "SELECT filename, date, mp3url FROM TMA_Archive WHERE 1=1"
+    params = []
+
+    # Search by filename
+    if filename:
+        if match_type == 'all':
+            query += " AND " + " AND ".join([f"filename LIKE ?" for keyword in filename.split()])
+            params.extend([f'%{keyword}%' for keyword in filename.split()])
+        elif match_type == 'any':
+            query += " AND (" + " OR ".join([f"filename LIKE ?" for keyword in filename.split()]) + ")"
+            params.extend([f'%{keyword}%' for keyword in filename.split()])
+        elif match_type == 'exact':
+            query += " AND filename LIKE ?"
+            params.append(f'%{filename}%')
+
+    # Search by date
+    if date:
+        query += " AND date LIKE ?"
+        params.append(f'%{date}%')
+
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    episodes = cursor.fetchall()
+    conn.close()
+
+    episodes_json = [{'filename': e[0], 'date': e[1], 'mp3url': e[2]} for e in episodes]
+    return jsonify(episodes_json)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
