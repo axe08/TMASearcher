@@ -1,6 +1,7 @@
 import feedparser
 import sqlite3
 from datetime import datetime, timedelta
+import unicodedata
 
 # Connect to your database
 conn = sqlite3.connect('TMASTL.db')
@@ -18,8 +19,9 @@ def parse_pub_date(rss_date):
 
 # Helper function to normalize title (replaces apostrophes, ellipses, and dashes)
 def normalize_title(title):
+    title = unicodedata.normalize('NFKC', title)  # Normalize Unicode
     title = title.replace("’", "'").replace("‘", "'")  # Normalize apostrophes
-    title = title.replace("–", "-").replace("—", "-")  # Normalize dashes
+    title = title.replace("–", "-").replace("—", "-").replace("−", "-").replace("‒", "-")  # Normalize dashes
     title = title.replace("…", "...")  # Normalize ellipses
     return title.strip().lower()
 
@@ -33,7 +35,7 @@ rss_feed_url = "https://feeds.megaphone.fm/tmastl"
 rss_feed = fetch_rss_feed(rss_feed_url)
 
 # Define the number of days to look back (e.g., only process episodes from the last 3 days)
-days_to_look_back = 3
+days_to_look_back = 100
 cutoff_date = get_n_days_ago(days_to_look_back)
 
 # Loop through RSS feed items
@@ -71,9 +73,23 @@ for entry in rss_feed.entries:
             cursor.execute("UPDATE TMA SET mp3url = ? WHERE ID = ?", (mp3_url, db_id))
             print(f"Updated mp3url for Title: '{rss_title}'")
     else:
-        # Debugging: Log failed match
+    # Debugging: Log failed match
         print(f"No match found for RSS Title: '{rss_title}' on Date: '{pub_date}'")
 
+    # Case-insensitive check in Python
+    cursor.execute("SELECT ID, TITLE, mp3url FROM TMA WHERE DATE = ?", (pub_date,))
+    db_entries = cursor.fetchall()
+    found_match = False
+    for db_id, db_title, db_mp3url in db_entries:
+        if normalize_title(db_title) == rss_title:
+            print(f"Case-insensitive match found: RSS Title='{rss_title}', DB Title='{db_title}'")
+            if not db_mp3url and mp3_url:
+                cursor.execute("UPDATE TMA SET mp3url = ? WHERE ID = ?", (mp3_url, db_id))
+                print(f"Updated mp3url for Title: '{rss_title}'")
+            found_match = True
+            break
+    if not found_match:
+        print (f"DB titles on date {pub_date}: {[(title, ) for title, in cursor.execute('SELECT TITLE FROM TMA WHERE DATE = ?',(pub_date,)).fetchall()]}")
 # Commit and close connection
 conn.commit()
 conn.close()
