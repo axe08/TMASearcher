@@ -188,13 +188,15 @@
             <div class="row mb-3">
                 <div class="col-md-9">
                     <div class="d-flex flex-wrap justify-content-between mb-2">
-                        <a href="#" class="btn btn-link" onclick="fetchPodcast('TMA')">TMA</a>
-                        <a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
-                        <a href="#" class="btn btn-link" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>
-                        <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a>
+                        <a href="#" class="btn btn-link" onclick="fetchPodcast('TMA')">Home</a>
+                        <!--<a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
+                        <a href="#" class="btn btn-link" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>-->
+                        <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a> 
                     </div>
-                    <p>Clicking above will load the last 90 days but search looks through the whole database.
-                        <br>Also, due to the change on the TMASTL site, everything shows in the TMA feed.
+                    <p>
+                    <button type="button" class="btn custom-button" data-toggle="modal" data-target="#releaseModal">
+                        Notes & Recent Updates
+                      </button><br>
                     </p>
                     <form id="searchForm" class="mb-4">
                         <div class="form-group">
@@ -435,7 +437,38 @@ function seekAudio(seconds) {
 }
 
     </script>
-    
+
+<!-- Release Notes Modal -->
+<div class="modal fade" id="releaseModal" tabindex="-1" aria-labelledby="releaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="releaseModalLabel">Notes & Recent Updates</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <p> 
+                <b>Notes</b>
+                <br>- Streams are missing for ~August 2017 to March 2018, I recommend copying the download link from TMASTL to stream it through VLC player if you don't want to download it. 
+                I will see if I can fix that.<br><br>
+                - If you are looking for anything before August 2017 you can check the TMA Archive by clicking the link at the top of the page.
+                Unfortunately, there are no segment names or show notes, just the dates. Right now I am not limiting results so it will lag and take a few moments to load. There's a lot of stuff there, not just full segments. e.g. simply search "audio". I found a Larry Audio postcard from him inteviewing folks at a wrestling show that was gold.
+                <br><br>
+                <b>2/22/2025 Update</b> 
+                <br>- Since the move to 101 ESPN most of the segments weren't populating with a direct stream. That should be fixed now.
+                <br>- Removed the unneeded references to Balloon Party and Tim Mckernan Podcast. I realize Tim still does his podcast but it isn't quite working and I'm not focused on it right now.
+                <br>- Added the recent updates button so I'm not taking up space on the home page with this stuff.
+            </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- Help Modal -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
     <div class="modal-dialog">
