@@ -1,7 +1,12 @@
 import feedparser
 import sqlite3
 from datetime import datetime, timedelta
+import os
 import unicodedata
+
+# Construct db paths dynamically
+current_directory = os.path.dirname(os.path.abspath(__file__))
+database_path = os.path.join(current_directory, 'TMASTL.db')
 
 # Connect to your database
 conn = sqlite3.connect('TMASTL.db')
@@ -35,7 +40,7 @@ rss_feed_url = "https://feeds.megaphone.fm/tmastl"
 rss_feed = fetch_rss_feed(rss_feed_url)
 
 # Define the number of days to look back (e.g., only process episodes from the last 3 days)
-days_to_look_back = 100
+days_to_look_back = 4
 cutoff_date = get_n_days_ago(days_to_look_back)
 
 # Loop through RSS feed items
