@@ -241,22 +241,21 @@
             document.body.classList.add('dark-mode');
         }
     
-        function createPodcastCard(podcast) {
-    // Escaping single quotes in podcast titles to ensure JavaScript functions correctly
+function createPodcastCard(podcast) {
     var safeTitle = podcast.title.replace(/'/g, "\\'");
-
-    // Check if the mp3url is available (ensuring  check for both undefined and null)
-    var playButton = podcast.mp3url && podcast.mp3url.trim() !== "" 
+    var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
+    var playButton = podcast.mp3url 
         ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${podcast.mp3url}', '${podcast.date}')">Stream</button>` 
         : `<button class="btn btn-secondary" disabled>No Stream</button>`;
 
-    // "Listen" button
     var listenButton = `<a href="${podcast.url}" class="btn btn-primary">TMASTL</a>`;
-
-    // "Download" button
-    var downloadButton = podcast.mp3url && podcast.mp3url.trim() !== "" 
+    var downloadButton = podcast.mp3url 
         ? `<a href="${podcast.mp3url}" download class="btn btn-info">Download</a>` 
-        : '';  // No download button if no mp3url is available
+        : '';
+
+        var shareButton = podcast.id 
+    ? `<a href="${episodeLink}" class="btn btn-dark">Shareable Page</a>` 
+    : ''; // Hide if ID is missing
 
     return `
         <div class="col-lg-4 col-md-6 col-sm-12">
@@ -265,10 +264,11 @@
                     <h5 class="card-title">${podcast.title}</h5>
                     <p class="card-text"><small class="text-muted">${podcast.date}</small></p>
                     <p class="card-text">${podcast.show_notes}</p>
-                    ${playButton} <!-- Play button if mp3url is available -->
-                    ${downloadButton} <!-- Add Download button if mp3url is available -->
-                    ${listenButton} <!-- Add Listen button to link to the podcast episode on the website -->
-                    <button onclick="searchSpotify('${safeTitle}')" class="btn btn-secondary">Spotify</button>
+                    ${playButton}
+                    ${downloadButton}
+                    ${listenButton}
+                    <button class="btn btn-secondary" onclick="searchSpotify('${safeTitle}')">Spotify</button>
+                    ${shareButton} <!-- Share button linking to episode.html -->
                 </div>
             </div>
         </div>`;
@@ -388,10 +388,17 @@ function openPlayer(title, mp3url, date) {
     // Set the play/pause button to "Pause" since the audio starts playing automatically
     document.getElementById('controlPlayPauseBtn').textContent = "Pause";
 
+    // **Set the tab title to the episode title**
+    document.title = title;
+
     // Open the modal
     $('#audioPlayerModal').modal('show');
 }
 
+// Reset tab title when playback ends
+document.getElementById('audioPlayer').addEventListener('ended', function() {
+    document.title = "Podcast Search"; // Change back to default
+});
 
 // Reopen the audio player modal
 function reopenPlayer() {
