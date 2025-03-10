@@ -88,9 +88,30 @@ def recent_episodes():
     conn.close()
     
     # include the mp3url
-    episodes_json = [{'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5]} for e in episodes]
+    episodes_json = [{'id': e[0], 'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5]} for e in episodes]
     return jsonify(episodes_json)
 
+@app.route('/episode/<int:episode_id>')
+def episode_page(episode_id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT title, date, url, show_notes, mp3url FROM TMA WHERE id = ?", (episode_id,))
+    episode = cursor.fetchone()
+    conn.close()
+
+    if episode:
+        episode_data = {
+            'id': episode_id,
+            'title': episode[0],
+            'date': episode[1],
+            'url': episode[2],
+            'show_notes': episode[3],
+            'mp3url': episode[4]
+        }
+        return render_template('episode.html', episode=episode_data)
+    else:
+        return "Episode not found", 404
 
 @app.route('/get_podcast_data', methods=['GET'])
 def get_podcast_data():
@@ -118,7 +139,7 @@ def search_database(table_name, title, date, notes, match_type):
     try:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            query = f"SELECT TITLE, DATE, URL, SHOW_NOTES, mp3url FROM {table_name} WHERE "
+            query = f"SELECT ID, TITLE, DATE, URL, SHOW_NOTES, mp3url FROM {table_name} WHERE "
             conditions = []
             params = []
 
@@ -186,9 +207,10 @@ def search():
         # Pass the correct table name and match type
         search_results = search_database(table_name, title, date, notes, match_type)  
         podcasts = [
-            {'title': row[0], 'date': row[1], 'url': row[2], 'show_notes': row[3], 'mp3url': row[4]}
+            {'id': row[0], 'title': row[1], 'date': row[2], 'url': row[3], 'show_notes': row[4], 'mp3url': row[5]}
             for row in search_results
         ]
+
 
         results = {
             'count': len(search_results),  # Get the total count of results
