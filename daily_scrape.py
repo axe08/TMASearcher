@@ -102,7 +102,7 @@ def scrape_latest_podcasts(pages_to_scrape):
                         episode_notes = episode_notes_element.get_text(separator="\n").strip()
 
                         # Clean episode notes
-                        episode_notes_cleaned = episode_notes.replace("Learn more about your ad choices. Visit megaphone.fm/adchoices", "").strip()
+                        episode_notes_cleaned = episode_notes.replace("Learn more about your ad choices. Visit podcastchoices.com/adchoices", "").strip()
 
                         # Insert into the database
                         insert_episode(episode_title, episode_date_formatted, episode_url, episode_notes_cleaned, 'TMA')
