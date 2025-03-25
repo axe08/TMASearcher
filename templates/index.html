@@ -248,15 +248,13 @@ function createPodcastCard(podcast) {
     var playButton = podcast.mp3url 
         ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}')">Stream</button>` 
         : `<button class="btn btn-secondary" disabled>No Stream</button>`;
-
         var listenButton = `<a href="${podcast.url}" class="btn btn-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">TMASTL</a>`;
-    var downloadButton = podcast.mp3url 
+        var downloadButton = podcast.mp3url 
         ? `<a href="${podcast.mp3url}" download class="btn btn-info" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Download</a>` 
         : '';
-
         var shareButton = podcast.id 
-    ? `<a href="${episodeLink}" class="btn btn-dark">Shareable Page</a>` 
-    : ''; // Hide if ID is missing
+        ? `<a href="${episodeLink}" class="btn btn-dark" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Shareable Page</a>` 
+        : '';
 
     return `
         <div class="col-lg-4 col-md-6 col-sm-12">
@@ -326,27 +324,37 @@ function createPodcastCard(podcast) {
             $('[data-toggle="tooltip"]').tooltip();
     
             // Attach the submit event to the search form
-            $('#searchForm').on('submit', function(e) {
-                e.preventDefault(); // Prevent the form from submitting via the browser
-    
-                var title = $('input[name="title"]').val(); // Correctly getting the title from the input field
-    
+            $('#seahttps://umami.is/docsrchForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var title = $('input[name="title"]').val();
+                var date = $('input[name="date"]').val();
+                var notes = $('input[name="notes"]').val();
+                var matchType = $('#matchType').val();
+
+                if (typeof umami !== 'undefined') {
+                    umami.track('Search Performed', {
+                        title: title,
+                        date: date,
+                        notes: notes,
+                        matchType: matchType
+                    });
+                }
+
                 $.ajax({
                     url: '/search',
                     type: 'get',
-                    data: $(this).serialize() + '&title=' + title, // Ensure 'title' is included in the data sent to the server
+                    data: $(this).serialize() + '&title=' + title,
                     success: function(data) {
                         var resultsBody = $('#resultsBody');
-                        resultsBody.empty(); // Clear the previous results
-    
-                        // Populate the container with podcast cards
+                        resultsBody.empty();
+
                         $.each(data.podcasts, function(index, podcast) {
                             var cardHtml = createPodcastCard(podcast);
                             resultsBody.append(cardHtml);
                         });
-    
-                        // Scroll to the results section
-                        $('#results').get(0).scrollIntoView({behavior: 'smooth'});
+
+                        $('#results').get(0).scrollIntoView({ behavior: 'smooth' });
                     },
                     error: function() {
                         alert('An error has occurred during the search');
