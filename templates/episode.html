@@ -71,12 +71,10 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            // Apply dark mode if previously enabled
             if(localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark-mode');
             }
 
-            // Toggle dark mode
             document.getElementById('dark-mode-toggle').addEventListener('click', function() {
                 document.body.classList.toggle('dark-mode');
                 if(document.body.classList.contains('dark-mode')) {
@@ -85,8 +83,17 @@
                     localStorage.setItem('darkMode', 'disabled');
                 }
             });
+
+            // Umami Page View
+            if (typeof umami !== 'undefined') {
+                umami.track('Shareable Page View', {
+                    episode: "{{ episode.title }}",
+                    date: "{{ episode.date }}"
+                });
+            }
         });
     </script>
+    <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
 </head>
 
 <body>
@@ -112,11 +119,29 @@
             <!-- Action Buttons -->
             <div class="mt-4 button-group">
                 <a href="/" class="btn btn-dark"><i class="fas fa-arrow-left"></i> Back to Search</a>
-                <a href="{{ episode.mp3url }}" class="btn btn-info" download><i class="fas fa-download"></i> Download</a>
-                <a href="{{ episode.url }}" class="btn btn-primary"><i class="fas fa-external-link-alt"></i> TMASTL</a>
-                <button class="btn btn-secondary" onclick="copyLink()"><i class="fas fa-copy"></i> Copy Link</button>
+                <a href="{{ episode.url }}" class="btn btn-primary"
+                onclick="umami.track('TMASTL Click', { episode: '{{ episode.title }}', date: '{{ episode.date }}' })">
+                <i class="fas fa-external-link-alt"></i> TMASTL
+                </a>
+                <button class="btn btn-secondary" onclick="trackCopyLink()">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+
+                
             </div>
         </div>
     </div>
+    <script>
+        function trackCopyLink() {
+            if (typeof umami !== 'undefined') {
+                umami.track('Copy Link', {
+                    episode: "{{ episode.title }}",
+                    date: "{{ episode.date }}"
+                });
+            }
+            copyLink(); // then copy as usual
+        }
+        </script>
+        
 </body>
 </html>
