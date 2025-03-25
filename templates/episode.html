@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ episode.title }}</title>
-    
+
     <!-- Bootstrap & Font Awesome -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
@@ -71,10 +71,12 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // Apply dark mode if previously enabled
             if(localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark-mode');
             }
 
+            // Toggle dark mode
             document.getElementById('dark-mode-toggle').addEventListener('click', function() {
                 document.body.classList.toggle('dark-mode');
                 if(document.body.classList.contains('dark-mode')) {
@@ -83,14 +85,6 @@
                     localStorage.setItem('darkMode', 'disabled');
                 }
             });
-
-            // Umami Page View
-            if (typeof umami !== 'undefined') {
-                umami.track('Shareable Page View', {
-                    episode: "{{ episode.title }}",
-                    date: "{{ episode.date }}"
-                });
-            }
         });
     </script>
     <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
@@ -118,7 +112,14 @@
 
             <!-- Action Buttons -->
             <div class="mt-4 button-group">
-                <a href="/" class="btn btn-dark"><i class="fas fa-arrow-left"></i> Back to Search</a>
+                <a href="/" class="btn btn-dark">
+                    <i class="fas fa-arrow-left"></i> Back to Search
+                </a>
+                <a href="{{ episode.mp3url }}" class="btn btn-info" download
+                onclick="umami.track('Download Click', { episode: '{{ episode.title }}', date: '{{ episode.date }}' })">
+                <i class="fas fa-download"></i> Download
+                </a>
+
                 <a href="{{ episode.url }}" class="btn btn-primary"
                 onclick="umami.track('TMASTL Click', { episode: '{{ episode.title }}', date: '{{ episode.date }}' })">
                 <i class="fas fa-external-link-alt"></i> TMASTL
@@ -126,12 +127,27 @@
                 <button class="btn btn-secondary" onclick="trackCopyLink()">
                     <i class="fas fa-copy"></i> Copy Link
                 </button>
-
-                
             </div>
         </div>
     </div>
     <script>
+        // Track the page view for this shareable episode
+        document.addEventListener("DOMContentLoaded", function () {
+            if (typeof umami !== 'undefined') {
+                umami.track('Shareable Page View', {
+                    episode: "{{ episode.title }}",
+                    date: "{{ episode.date }}"
+                });
+            }
+        });
+    
+        function copyLink() {
+            let url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert("Link copied to clipboard!");
+            });
+        }
+    
         function trackCopyLink() {
             if (typeof umami !== 'undefined') {
                 umami.track('Copy Link', {
@@ -139,9 +155,8 @@
                     date: "{{ episode.date }}"
                 });
             }
-            copyLink(); // then copy as usual
+            copyLink();
         }
-        </script>
-        
+    </script>     
 </body>
 </html>
