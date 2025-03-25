@@ -178,6 +178,7 @@
             }
 
         </style>
+        <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
     </head>
     <body>
         <div class="container my-3">
@@ -245,12 +246,12 @@ function createPodcastCard(podcast) {
     var safeTitle = podcast.title.replace(/'/g, "\\'");
     var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
     var playButton = podcast.mp3url 
-        ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${podcast.mp3url}', '${podcast.date}')">Stream</button>` 
+        ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}')">Stream</button>` 
         : `<button class="btn btn-secondary" disabled>No Stream</button>`;
 
-    var listenButton = `<a href="${podcast.url}" class="btn btn-primary">TMASTL</a>`;
+        var listenButton = `<a href="${podcast.url}" class="btn btn-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">TMASTL</a>`;
     var downloadButton = podcast.mp3url 
-        ? `<a href="${podcast.mp3url}" download class="btn btn-info">Download</a>` 
+        ? `<a href="${podcast.mp3url}" download class="btn btn-info" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Download</a>` 
         : '';
 
         var shareButton = podcast.id 
@@ -443,6 +444,15 @@ function seekAudio(seconds) {
     audioPlayer.currentTime += seconds;
 }
 
+function trackStream(title, date, mp3url) {
+    if (typeof umami !== 'undefined') {
+        umami.track('Stream Click', {
+            episode: title,
+            date: date
+        });
+    }
+    openPlayer(title, mp3url, date); // continue to play audio
+}
     </script>
 
 <!-- Release Notes Modal -->
