@@ -611,7 +611,33 @@
                     <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
                 </div>
             </div>
-
+            <script>
+                // Check for new updates and show the "New" badge if updates are unseen
+                document.addEventListener("DOMContentLoaded", () => {
+                    fetch('/notes.json')
+                        .then(res => res.json())
+                        .then(data => {
+                            const latestUpdate = data.updates[0]?.date;  // Gets the latest update date
+                            const lastSeen = localStorage.getItem('lastSeenUpdate');  // Retrieve stored last seen date
+            
+                            if (latestUpdate !== lastSeen) {
+                                const badge = document.getElementById('new-update-badge');
+                                if (badge) {
+                                    badge.style.display = 'inline-block';  // Show the "New" badge if the update is unseen
+                                }
+                            }
+            
+                            // Set lastSeenUpdate after viewing modal
+                            $('#releaseModal').on('hide.bs.modal', function () {
+                                localStorage.setItem('lastSeenUpdate', latestUpdate);  // Mark as seen after viewing
+                                document.getElementById('new-update-badge').style.display = 'none';  // Hide badge after seen
+                            });
+                        })
+                        .catch(err => {
+                            console.error('Error fetching notes:', err);
+                        });
+                });
+            </script>    
             <script>
                 // Load and display release notes and known issues when modal opens
                 $('#releaseModal').on('show.bs.modal', function () {
