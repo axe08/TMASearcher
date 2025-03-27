@@ -1,51 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Podcast Search</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
 
-            <!-- jQuery, Popper.js, and Bootstrap JS -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <style>
-            th {
-                cursor: pointer; /* clickable column */
-            }
-            .custom-button {
-                background-color: dodgerblue;
-                border: none;
-                color: white;
-                padding: 10px 20px;
-                text-align: center;
-                text-decoration: none;
-                display: inline-block;
-                cursor: pointer;
-                border-radius: 16px;
-            }
-            
-            .custom-button:hover {
-                background-color: cadetblue;
-            }
+<head>
 
-            #back-to-top {
-                position: fixed;
-                bottom: 55px; /* Adjust this value to be above the audio control bar */
-                right: 20px;
-                background-color: #007bff; /* Bootstrap primary color */
-                color: white;
-                border: none;
-                border-radius: 50%;
-                padding: 10px;
-                cursor: pointer;
-                display: none; /* Hidden by default */
-                z-index: 10000; /* Ensure it's above other elements */
-            }
-            @media (max-width: 768px) {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Podcast Search</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+
+    <!-- jQuery, Popper.js, and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+        th {
+            cursor: pointer;
+            /* clickable column */
+        }
+
+        .custom-button {
+            background-color: dodgerblue;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 16px;
+        }
+
+        .custom-button:hover {
+            background-color: cadetblue;
+        }
+
+        #back-to-top {
+            position: fixed;
+            bottom: 55px;
+            /* Adjust this value to be above the audio control bar */
+            right: 20px;
+            background-color: #007bff;
+            /* Bootstrap primary color */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            display: none;
+            /* Hidden by default */
+            z-index: 10000;
+            /* Ensure it's above other elements */
+        }
+
+        @media (max-width: 768px) {
             .card-body {
                 padding: 0.5rem;
             }
@@ -54,93 +62,130 @@
                 font-size: 1.25rem;
             }
         }
-            body.dark-mode {
-            background-color: #121212; /* Dark background */
-            color: #ffffff; /* Light text */
-            }
-            .dark-mode .custom-button {
-            background-color: #222; /* Darker background color for buttons */
-            color: #ffffff; /* Light text color for buttons */
-            }
+
+        body.dark-mode {
+            background-color: #121212;
+            /* Dark background */
+            color: #ffffff;
+            /* Light text */
+        }
+
+        .dark-mode .custom-button {
+            background-color: #222;
+            /* Darker background color for buttons */
+            color: #ffffff;
+            /* Light text color for buttons */
+        }
 
 
-            .dark-mode a {
-            color: rgb(18, 45, 61); /* Lighter text color for links */
+        .dark-mode a {
+            color: rgb(18, 45, 61);
+            /* Lighter text color for links */
             font-weight: bold;
-            }
+        }
 
-            .dark-mode table {
-            background-color: #333; /* Darker background color for tables */
-            }
-            table tbody {
-            color: #333; /* Normal mode text color */
-            }
+        .dark-mode table {
+            background-color: #333;
+            /* Darker background color for tables */
+        }
 
-            body.dark-mode table tbody {
-            color: #ccc; /* Dark mode text color */
-            }
-            /* Style for table header cells (column titles) in light mode */
-            table th {
-            background-color: #007bff; /* Background color for column titles in light mode */
-            color: white; /* Text color for column titles in light mode */
-            cursor: pointer; /* Make the column titles clickable */
-            }
+        table tbody {
+            color: #333;
+            /* Normal mode text color */
+        }
 
-            /* Style for table header cells (column titles) in dark mode */
-            body.dark-mode table th {
-            background-color: #222; /* Background color for column titles in dark mode */
-            color: #ffffff; /* Text color for column titles in dark mode */
-            }
-            .dark-mode .card {
-                background-color: #333; /* Darker background for cards */
-                color: #ffffff; /* Light text color for content inside cards */
-            }
+        body.dark-mode table tbody {
+            color: #ccc;
+            /* Dark mode text color */
+        }
 
-            .dark-mode .card a.btn {
-                background-color: #444; /* Darker button background */
-                color: #ffffff; /* Light text color for buttons */
-            }
+        /* Style for table header cells (column titles) in light mode */
+        table th {
+            background-color: #007bff;
+            /* Background color for column titles in light mode */
+            color: white;
+            /* Text color for column titles in light mode */
+            cursor: pointer;
+            /* Make the column titles clickable */
+        }
 
-            .dark-mode .card a.btn:hover {
-                background-color: #555; /* Even darker button background on hover */
-            }
+        /* Style for table header cells (column titles) in dark mode */
+        body.dark-mode table th {
+            background-color: #222;
+            /* Background color for column titles in dark mode */
+            color: #ffffff;
+            /* Text color for column titles in dark mode */
+        }
 
-            /* Ensure links within the card also adapt to dark mode */
-            .dark-mode .card a {
-                color: #bbdefb; /* Light blue link color for better visibility */
-            }
-            /* Dark mode styles for the help modal */
-            .dark-mode .modal-content {
-                background-color: #424242; /* Dark background for the modal */
-                color: #ffffff; /* Light text color for the modal content */
-            }
+        .dark-mode .card {
+            background-color: #333;
+            /* Darker background for cards */
+            color: #ffffff;
+            /* Light text color for content inside cards */
+        }
 
-            .dark-mode .modal-header, .dark-mode .modal-body, .dark-mode .modal-footer {
-                border-color: #616161; /* Darker borders for modal sections */
-            }
+        .dark-mode .card a.btn {
+            background-color: #444;
+            /* Darker button background */
+            color: #ffffff;
+            /* Light text color for buttons */
+        }
 
-            .dark-mode .modal-title {
-                color: #ffffff; /* Ensure modal title is also light colored */
-            }
+        .dark-mode .card a.btn:hover {
+            background-color: #555;
+            /* Even darker button background on hover */
+        }
 
-            .dark-mode .modal-footer .btn {
-                background-color: #555; /* Dark background for buttons in modal footer */
-                color: #ffffff; /* Light text color for buttons */
-            }
+        /* Ensure links within the card also adapt to dark mode */
+        .dark-mode .card a {
+            color: #bbdefb;
+            /* Light blue link color for better visibility */
+        }
 
-            .dark-mode .modal-footer .btn:hover {
-                background-color: #666; /* Slightly lighter background for hover state */
-            }
+        /* Dark mode styles for the help modal */
+        .dark-mode .modal-content {
+            background-color: #424242;
+            /* Dark background for the modal */
+            color: #ffffff;
+            /* Light text color for the modal content */
+        }
 
-            .dark-mode .close {
-                color: #ffffff; /* Light color for the close button */
-            }
+        .dark-mode .modal-header,
+        .dark-mode .modal-body,
+        .dark-mode .modal-footer {
+            border-color: #616161;
+            /* Darker borders for modal sections */
+        }
 
-            .dark-mode .close:hover {
-                color: #bbbbbb; /* Lighter color for hover state of close button */
-            }
-            /* Audio Control Bar */
-            .audio-control-bar {
+        .dark-mode .modal-title {
+            color: #ffffff;
+            /* Ensure modal title is also light colored */
+        }
+
+        .dark-mode .modal-footer .btn {
+            background-color: #555;
+            /* Dark background for buttons in modal footer */
+            color: #ffffff;
+            /* Light text color for buttons */
+        }
+
+        .dark-mode .modal-footer .btn:hover {
+            background-color: #666;
+            /* Slightly lighter background for hover state */
+        }
+
+        .dark-mode .close {
+            color: #ffffff;
+            /* Light color for the close button */
+        }
+
+        .dark-mode .close:hover {
+            color: #bbbbbb;
+            /* Lighter color for hover state of close button */
+        }
+
+        /* Audio Control Bar */
+        .audio-control-bar {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -151,114 +196,124 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 9999; /* Ensure it stays on top */
+            z-index: 9999;
+            /* Ensure it stays on top */
             font-size: 16px;
             box-shadow: 0px -1px 5px rgba(0, 0, 0, 0.2);
         }
 
 
 
-            .control-bar-content {
-                display: flex;
-                justify-content: space-between;
-                width: 100%;
-            }
+        .control-bar-content {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
 
-            .track-title {
-                flex: 1;
-                margin-right: 20px;
-                font-weight: bold;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
+        .track-title {
+            flex: 1;
+            margin-right: 20px;
+            font-weight: bold;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
-            .btn {
-                margin-left: 10px;
-            }
+        .btn {
+            margin-left: 10px;
+        }
+    </style>
+    <script defer src="https://analytics.tmasearcher.com/script.js"
+        data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
+</head>
 
-        </style>
-        <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
-    </head>
-    <body>
-        <div class="container my-3">
-            <div class="header-container d-flex justify-content-between align-items-center">
-                <h2 class="header-text">TMA Searcher</h2>
-            <div id="buymeacoffee"><a href="https://www.buymeacoffee.com/tmasearcher" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee" style="height: 45px !important;width: 150px !important;" ></a></div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-9">
-                    <div class="d-flex flex-wrap justify-content-between mb-2">
-                        <a href="#" class="btn btn-link" onclick="fetchPodcast('TMA')">Home</a>
-                        <!--<a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
+<body>
+    <div class="container my-3">
+        <div class="header-container d-flex justify-content-between align-items-center">
+            <h2 class="header-text">TMA Searcher</h2>
+            <div id="buymeacoffee"><a href="https://www.buymeacoffee.com/tmasearcher" target="_blank"><img
+                        src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee"
+                        style="height: 45px !important;width: 150px !important;"></a></div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-9">
+                <div class="d-flex flex-wrap justify-content-between mb-2">
+                    <a href="#" class="btn btn-link" onclick="fetchPodcast('TMA')">Home</a>
+                    <!--<a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
                         <a href="#" class="btn btn-link" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>-->
-                        <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a> 
-                    </div>
-                    <p>
+                    <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a>
+                </div>
+                <p>
                     <button type="button" class="btn custom-button" data-toggle="modal" data-target="#releaseModal">
                         Notes & Recent Updates
-                      </button><br>
-                    </p>
-                    <form id="searchForm" class="mb-4">
+                    </button><br>
+                </p>
+                <form id="searchForm" class="mb-4">
+                    <div class="form-group">
                         <div class="form-group">
-                            <div class="form-group">
-                                <label for="matchType">Match Type:
-                                    <i class="fas fa-question-circle" data-toggle="modal" data-target="#helpModal"></i>
-                                </label>
-                                <select class="form-control" id="matchType" name="matchType">
-                                    <option value="all">Match All Keywords</option>
-                                    <option value="any">Match Against Any Keywords</option>
-                                    <option value="exact">Exact Match</option>
-                                </select>
-                            </div>
-                            <input type="text" class="form-control mb-2" name="title" placeholder="Title Keywords (Seperate with a space)">
-                            <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
-                            <input type="text" class="form-control mb-2" name="notes" placeholder="Show Notes Keywords (Seperate with a space)">
-                            <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
-                            <button type="submit" class="btn custom-button">Search</button>
-                            <button type="button" id="dark-mode-toggle" class="btn custom-button">Toggle Dark Mode</button>
+                            <label for="matchType">Match Type:
+                                <i class="fas fa-question-circle" data-toggle="modal" data-target="#helpModal"></i>
+                            </label>
+                            <select class="form-control" id="matchType" name="matchType">
+                                <option value="all">Match All Keywords</option>
+                                <option value="any">Match Against Any Keywords</option>
+                                <option value="exact">Exact Match</option>
+                            </select>
                         </div>
-                    </form>
-                </div>
+                        <input type="text" class="form-control mb-2" name="title"
+                            placeholder="Title Keywords (Seperate with a space)">
+                        <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
+                        <input type="text" class="form-control mb-2" name="notes"
+                            placeholder="Show Notes Keywords (Seperate with a space)">
+                        <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
+                        <button type="submit" class="btn custom-button">Search</button>
+                        <button type="button" id="dark-mode-toggle" class="btn custom-button">Toggle Dark Mode</button>
+                    </div>
+                </form>
+            </div>
             <div id="results" class="mt-4">
                 <div class="row" id="resultsBody">
+                </div>
             </div>
-        </div>
-        <!-- Back to Top Button -->
-    <button id="back-to-top" title="Go to top" style="display: none;">↑ Top</button>
-    <script>
-        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            // Save the user's preference in local storage
-            if(document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                localStorage.setItem('darkMode', 'disabled');
-            }
-        });
-    
-        // Check for saved user preference, if any, on page load
-        if(localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-        }
-        //playback history
-        let currentEpisodeId = null;
-        let audioPlayer = null;
-function createPodcastCard(podcast) {
-    var safeTitle = podcast.title.replace(/'/g, "\\'");
-    var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
-    var playButton = podcast.mp3url 
-        ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}')">Stream</button>` 
-        : `<button class="btn btn-secondary" disabled>No Stream</button>`;
-        var listenButton = `<a href="${podcast.url}" class="btn btn-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">TMASTL</a>`;
-        var downloadButton = podcast.mp3url 
-        ? `<a href="${podcast.mp3url}" download class="btn btn-info" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Download</a>` 
-        : '';
-        var shareButton = podcast.id 
-        ? `<a href="${episodeLink}" class="btn btn-dark" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Shareable Page</a>` 
-        : '';
+            <!-- Back to Top Button -->
+            <button id="back-to-top" title="Go to top" style="display: none;">↑ Top</button>
+            <script>
+                document.getElementById('dark-mode-toggle').addEventListener('click', function () {
+                    document.body.classList.toggle('dark-mode');
+                    // Save the user's preference in local storage
+                    if (document.body.classList.contains('dark-mode')) {
+                        localStorage.setItem('darkMode', 'enabled');
+                    } else {
+                        localStorage.setItem('darkMode', 'disabled');
+                    }
+                });
 
-    return `
+                // Check for saved user preference, if any, on page load
+                if (localStorage.getItem('darkMode') === 'enabled') {
+                    document.body.classList.add('dark-mode');
+                }
+                //playback history
+                let currentEpisodeId = null;
+                let audioPlayer = null;
+                function createPodcastCard(podcast) {
+                    var safeTitle = podcast.title.replace(/'/g, "\\'");
+                    var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
+
+                    var playButton = podcast.mp3url
+                        ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}', ${podcast.id})">Stream</button>`
+                        : `<button class="btn btn-secondary" disabled>No Stream</button>`;
+
+                    var listenButton = `<a href="${podcast.url}" class="btn btn-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">TMASTL</a>`;
+
+                    var downloadButton = podcast.mp3url
+                        ? `<a href="${podcast.mp3url}" download class="btn btn-info" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Download</a>`
+                        : '';
+
+                    var shareButton = podcast.id
+                        ? `<a href="${episodeLink}" class="btn btn-dark" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Shareable Page</a>`
+                        : '';
+
+                    return `
         <div class="col-lg-4 col-md-6 col-sm-12">
             <div class="card mb-3">
                 <div class="card-body">
@@ -269,293 +324,307 @@ function createPodcastCard(podcast) {
                     ${downloadButton}
                     ${listenButton}
                     <button class="btn btn-secondary" onclick="searchSpotify('${safeTitle}')">Spotify</button>
-                    ${shareButton} <!-- Share button linking to episode.html -->
+                    ${shareButton}
                 </div>
             </div>
         </div>`;
-}
-        function searchSpotify(episodeTitle) {
-            var currentPodcast = $('#currentPodcast').val();
+                }
+                function searchSpotify(episodeTitle) {
+                    var currentPodcast = $('#currentPodcast').val();
 
-            if (!currentPodcast) {
-                alert('Current podcast not selected.');
-                return;
-            }
-
-            $.ajax({
-                url: '/search_spotify',
-                type: 'get',
-                data: { title: episodeTitle, currentPodcast: currentPodcast },
-                success: function(data) {
-                    if (data.spotifyUrl) {
-                        window.open(data.spotifyUrl, '_blank');
-                    } else {
-                        alert('Episode not found on Spotify.');
+                    if (!currentPodcast) {
+                        alert('Current podcast not selected.');
+                        return;
                     }
-                },
-                error: function() {
-                    alert('Error occurred while searching Spotify.');
-                }
-            });
-        }   
-        function fetchPodcast(podcastName) {
-            $('#currentPodcast').val(podcastName);
-            $.ajax({
-                url: '/recent_episodes',
-                type: 'get',
-                data: { podcast: podcastName },
-            success: function(data) {
-            // Update results with cards
-            var resultsBody = $('#resultsBody');
-                resultsBody.empty();
-                $.each(data, function(index, podcast) {
-            var cardHtml = createPodcastCard(podcast); // Use the adjusted function for cards
-                resultsBody.append(cardHtml);
-        });
-    },
-    error: function() {
-        $('#resultsBody').html('<div class="alert alert-danger" role="alert">An error has occurred</div>');
-    }
-            });
-        }
-    
-        $(document).ready(function() {
-            // Fetch recent episodes for TMA on initial page load
-            fetchPodcast('TMA');
-            // Initialize tooltips
-            $('[data-toggle="tooltip"]').tooltip();
-            //used for playback tracking
-            audioPlayer = document.getElementById('audioPlayer');
-            audioPlayer.addEventListener('timeupdate', function () {
-                if (currentEpisodeId && !audioPlayer.paused && !audioPlayer.ended) {
-                    localStorage.setItem(`progress-${currentEpisodeId}`, audioPlayer.currentTime);
-                }
-            });
-            // Attach the submit event to the search form
-            $('#searchForm').on('submit', function(e) {
-                e.preventDefault();
 
-                var title = $('input[name="title"]').val();
-                var date = $('input[name="date"]').val();
-                var notes = $('input[name="notes"]').val();
-                var matchType = $('#matchType').val();
-
-                if (typeof umami !== 'undefined') {
-                    umami.track('Search Performed', {
-                        title: title,
-                        date: date,
-                        notes: notes,
-                        matchType: matchType
+                    $.ajax({
+                        url: '/search_spotify',
+                        type: 'get',
+                        data: { title: episodeTitle, currentPodcast: currentPodcast },
+                        success: function (data) {
+                            if (data.spotifyUrl) {
+                                window.open(data.spotifyUrl, '_blank');
+                            } else {
+                                alert('Episode not found on Spotify.');
+                            }
+                        },
+                        error: function () {
+                            alert('Error occurred while searching Spotify.');
+                        }
+                    });
+                }
+                function fetchPodcast(podcastName) {
+                    $('#currentPodcast').val(podcastName);
+                    $.ajax({
+                        url: '/recent_episodes',
+                        type: 'get',
+                        data: { podcast: podcastName },
+                        success: function (data) {
+                            // Update results with cards
+                            var resultsBody = $('#resultsBody');
+                            resultsBody.empty();
+                            $.each(data, function (index, podcast) {
+                                var cardHtml = createPodcastCard(podcast); // Use the adjusted function for cards
+                                resultsBody.append(cardHtml);
+                            });
+                        },
+                        error: function () {
+                            $('#resultsBody').html('<div class="alert alert-danger" role="alert">An error has occurred</div>');
+                        }
                     });
                 }
 
-                $.ajax({
-                    url: '/search',
-                    type: 'get',
-                    data: $(this).serialize() + '&title=' + title,
-                    success: function(data) {
-                        var resultsBody = $('#resultsBody');
-                        resultsBody.empty();
+                $(document).ready(function () {
+                    // Fetch recent episodes for TMA on initial page load
+                    fetchPodcast('TMA');
+                    // Initialize tooltips
+                    $('[data-toggle="tooltip"]').tooltip();
+                    //used for playback tracking
+                    audioPlayer = document.getElementById('audioPlayer');
+                    audioPlayer.addEventListener('timeupdate', function () {
+                        if (currentEpisodeId && !audioPlayer.paused && !audioPlayer.ended) {
+                            localStorage.setItem(`progress-${currentEpisodeId}`, audioPlayer.currentTime);
+                        }
+                    });
+                    // Attach the submit event to the search form
+                    $('#searchForm').on('submit', function (e) {
+                        e.preventDefault();
 
-                        $.each(data.podcasts, function(index, podcast) {
-                            var cardHtml = createPodcastCard(podcast);
-                            resultsBody.append(cardHtml);
+                        var title = $('input[name="title"]').val();
+                        var date = $('input[name="date"]').val();
+                        var notes = $('input[name="notes"]').val();
+                        var matchType = $('#matchType').val();
+
+                        if (typeof umami !== 'undefined') {
+                            umami.track('Search Performed', {
+                                title: title,
+                                date: date,
+                                notes: notes,
+                                matchType: matchType
+                            });
+                        }
+
+                        $.ajax({
+                            url: '/search',
+                            type: 'get',
+                            data: $(this).serialize() + '&title=' + title,
+                            success: function (data) {
+                                var resultsBody = $('#resultsBody');
+                                resultsBody.empty();
+
+                                $.each(data.podcasts, function (index, podcast) {
+                                    var cardHtml = createPodcastCard(podcast);
+                                    resultsBody.append(cardHtml);
+                                });
+
+                                $('#results').get(0).scrollIntoView({ behavior: 'smooth' });
+                            },
+                            error: function () {
+                                alert('An error has occurred during the search');
+                            }
                         });
+                    });
 
-                        $('#results').get(0).scrollIntoView({ behavior: 'smooth' });
-                    },
-                    error: function() {
-                        alert('An error has occurred during the search');
+                    var backToTopButton = document.getElementById("back-to-top");
+
+                    window.onscroll = function () {
+                        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                            backToTopButton.style.display = "block";
+                        } else {
+                            backToTopButton.style.display = "none";
+                        }
+                    };
+
+                    backToTopButton.onclick = function () {
+                        document.body.scrollTop = 0; // For Safari
+                        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
+                    };
+                    $('#releaseModal').on('show.bs.modal', function () {
+                        fetch('/notes.json')
+                            .then(res => {
+                                console.log('Got response:', res);
+                                return res.json();
+                            })
+                            .then(data => {
+                                console.log('Parsed notes.json:', data);
+                                let html = `<p><b>Notes</b><br>${data.notes.replace(/\n/g, '<br>')}</p><br><br>`;
+                                data.updates.forEach(update => {
+                                    html += `<p><b>${update.date} Update</b><br>${update.content.replace(/\n/g, '<br>')}</p><br>`;
+                                });
+                                $('#releaseModalBody').html(html);
+                            })
+                            .catch(err => {
+                                console.error('Error fetching notes:', err);
+                                $('#releaseModalBody').html('<p>Error loading updates.</p>');
+                            });
+                    });
+                });
+                // Handle opening the full audio player
+                function openPlayer(title, mp3url, date, id) {
+                    currentEpisodeId = id;
+
+                    $('#audioPlayerModalLabel').text(`${title} (${date})`);
+                    $('#audioSource').attr('src', mp3url);
+                    audioPlayer.load();
+
+                    // Resume from saved progress
+                    const saved = localStorage.getItem(`progress-${id}`);
+                    if (saved) {
+                        audioPlayer.currentTime = parseFloat(saved);
+                    }
+
+                    audioPlayer.play();
+                    document.getElementById('currentTrackTitle').innerText = `${title} (${date})`;
+                    document.getElementById('audioControlBar').style.display = 'flex';
+                    document.getElementById('controlPlayPauseBtn').textContent = "Pause";
+                    document.title = title;
+                    $('#audioPlayerModal').modal('show');
+                }
+
+                // Reset tab title when playback ends
+                document.getElementById('audioPlayer').addEventListener('ended', function () {
+                    document.title = "Podcast Search"; // Change back to default
+                });
+
+                // Reopen the audio player modal
+                function reopenPlayer() {
+                    $('#audioPlayerModal').modal('show');
+                }
+
+                // Play/Pause toggle for the modal and bottom control bar
+                function toggleAudioPlayPause() {
+                    var audioPlayer = document.getElementById('audioPlayer');
+                    var playPauseBtn = document.getElementById('controlPlayPauseBtn');
+                    var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
+
+                    if (audioPlayer.paused) {
+                        audioPlayer.play();
+                        playPauseBtn.textContent = "Pause";        // Update control bar button
+                        modalPlayPauseBtn.textContent = "Pause";   // Update modal button
+                    } else {
+                        audioPlayer.pause();
+                        playPauseBtn.textContent = "Play";         // Update control bar button
+                        modalPlayPauseBtn.textContent = "Play";    // Update modal button
+                    }
+                }
+
+                // Ensure the control bar is shown when the modal is closed
+                $('#audioPlayerModal').on('hide.bs.modal', function () {
+                    var audioPlayer = document.getElementById('audioPlayer');
+
+                    // If audio is still playing, show the bottom bar
+                    if (!audioPlayer.paused && !audioPlayer.ended) {
+                        document.getElementById('audioControlBar').style.display = 'flex';
                     }
                 });
-            });
-    
-            var backToTopButton = document.getElementById("back-to-top");
-    
-            window.onscroll = function() {
-                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-                    backToTopButton.style.display = "block";
-                } else {
-                    backToTopButton.style.display = "none";
+
+                // Hide the control bar when the audio ends
+                document.getElementById('audioPlayer').addEventListener('ended', function () {
+                    document.getElementById('audioControlBar').style.display = 'none';
+                });
+
+                // Seek audio forward/backward by a specific number of seconds
+                function seekAudio(seconds) {
+                    var audioPlayer = document.getElementById('audioPlayer');
+                    audioPlayer.currentTime += seconds;
                 }
-            };
-    
-            backToTopButton.onclick = function() {
-                document.body.scrollTop = 0; // For Safari
-                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
-            };
-        });
-// Handle opening the full audio player
-function openPlayer(title, mp3url, date) {
-    currentEpisodeId = `${title}_${date}`;
 
-    $('#audioPlayerModalLabel').text(`${title} (${date})`);
-    $('#audioSource').attr('src', mp3url);
+                function trackStream(title, date, mp3url, id) {
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Stream Click', { episode: title, date: date });
+                    }
+                    openPlayer(title, mp3url, date, id);
+                }
+            </script>
 
-    audioPlayer.load();
-
-    // Restore saved time
-    const savedTime = localStorage.getItem(`progress-${currentEpisodeId}`);
-    if (savedTime) {
-        audioPlayer.currentTime = parseFloat(savedTime);
-    }
-
-    audioPlayer.play();
-    document.getElementById('currentTrackTitle').innerText = `${title} (${date})`;
-    document.getElementById('audioControlBar').style.display = 'flex';
-    document.getElementById('controlPlayPauseBtn').textContent = "Pause";
-    document.title = title;
-    $('#audioPlayerModal').modal('show');
-}
-
-// Reset tab title when playback ends
-document.getElementById('audioPlayer').addEventListener('ended', function() {
-    document.title = "Podcast Search"; // Change back to default
-});
-
-// Reopen the audio player modal
-function reopenPlayer() {
-    $('#audioPlayerModal').modal('show');
-}
-
-// Play/Pause toggle for the modal and bottom control bar
-function toggleAudioPlayPause() {
-    var audioPlayer = document.getElementById('audioPlayer');
-    var playPauseBtn = document.getElementById('controlPlayPauseBtn');
-    var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
-
-    if (audioPlayer.paused) {
-        audioPlayer.play();
-        playPauseBtn.textContent = "Pause";        // Update control bar button
-        modalPlayPauseBtn.textContent = "Pause";   // Update modal button
-    } else {
-        audioPlayer.pause();
-        playPauseBtn.textContent = "Play";         // Update control bar button
-        modalPlayPauseBtn.textContent = "Play";    // Update modal button
-    }
-}
-
-// Ensure the control bar is shown when the modal is closed
-$('#audioPlayerModal').on('hide.bs.modal', function () {
-    var audioPlayer = document.getElementById('audioPlayer');
-
-    // If audio is still playing, show the bottom bar
-    if (!audioPlayer.paused && !audioPlayer.ended) {
-        document.getElementById('audioControlBar').style.display = 'flex';
-    }
-});
-
-// Hide the control bar when the audio ends
-document.getElementById('audioPlayer').addEventListener('ended', function() {
-    document.getElementById('audioControlBar').style.display = 'none';
-});
-
-// Seek audio forward/backward by a specific number of seconds
-function seekAudio(seconds) {
-    var audioPlayer = document.getElementById('audioPlayer');
-    audioPlayer.currentTime += seconds;
-}
-
-function trackStream(title, date, mp3url) {
-    if (typeof umami !== 'undefined') {
-        umami.track('Stream Click', {
-            episode: title,
-            date: date
-        });
-    }
-    openPlayer(title, mp3url, date); // continue to play audio
-}
-    </script>
-
-<!-- Release Notes Modal -->
-<div class="modal fade" id="releaseModal" tabindex="-1" aria-labelledby="releaseModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="releaseModalLabel">Notes & Recent Updates</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-            <p> 
-                <b>Notes</b>
-                <br>- If you are looking for anything before August 2017 you can check the TMA Archive by clicking the link at the top of the page.
-                Unfortunately, there are no segment names or show notes, just the dates. Right now I am not limiting results so it will lag and take a few moments to load. There's a lot of stuff there, not just full segments. e.g. simply search "audio". I found a Larry Audio postcard from him inteviewing folks at a wrestling show that was gold.
-                <br><br>
-                <b>3/7/2025 Update</b>
-                <br>Added 900+ streams so all but ~200 streams can be streamed here going back to 2017.
-                <br><br>
-                <b>2/22/2025 Update</b> 
-                <br>- Since the move to 101 ESPN most of the segments weren't populating with a direct stream. That should be fixed now.
-                <br>- Removed the unneeded references to Balloon Party and Tim Mckernan Podcast. I realize Tim still does his podcast but it isn't quite working and I'm not focused on it right now.
-                <br>- Added the recent updates button so I'm not taking up space on the home page with this stuff.
-            </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<!-- Help Modal -->
-<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="helpModalLabel">Match Type Help</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-            <p><ul>
-                    <li><b>Match all keywords</b> looks for all of your keywords in the title or show notes. Eg. "Iggy Fontbonne Bowling" returns results where Iggy <b>and</b> Fontbonne <b>and</b> bowling are in the results.</li>
-                    <li><b>Match any</b> will look for the presence of any of your keywords. Honestly, don't have a great example on when to use this.</li>
-                    <li><b>Exact Match</b> searches for a specific keyword or string of words. e.g. Audio Postcard or TMA Live</li>
-                </ul>
-            </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-<!-- Audio Player Modal -->
-<div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="audioPlayerModalLabel"></h5> <!-- Title will be dynamically set -->
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body text-center">
-                <audio id="audioPlayer" controls style="width: 100%;">
-                    <source id="audioSource" src="" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-                <!-- Group of buttons centered -->
-                <div class="mt-3 d-flex justify-content-center">
-                    <button id="modalPlayPauseBtn" class="btn btn-primary mx-2" onclick="toggleAudioPlayPause()">Pause</button>
-                    <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
-                    <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+            <!-- Release Notes Modal -->
+            <div class="modal fade" id="releaseModal" tabindex="-1" aria-labelledby="releaseModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="releaseModalLabel">Notes & Recent Updates</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="releaseModalBody">
+                            <p>Loading updates...</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- Audio Control Bar (hidden by default) -->
-<div id="audioControlBar" class="audio-control-bar" style="display: none;">
-    <div class="control-bar-content">
-        <span id="currentTrackTitle" class="track-title"></span>
-        <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
-        <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
-    </div>
-</div>
+            <!-- Help Modal -->
+            <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="helpModalLabel">Match Type Help</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                            <ul>
+                                <li><b>Match all keywords</b> looks for all of your keywords in the title or show notes.
+                                    Eg. "Iggy Fontbonne Bowling" returns results where Iggy <b>and</b> Fontbonne
+                                    <b>and</b> bowling are in the results.</li>
+                                <li><b>Match any</b> will look for the presence of any of your keywords. Honestly, don't
+                                    have a great example on when to use this.</li>
+                                <li><b>Exact Match</b> searches for a specific keyword or string of words. e.g. Audio
+                                    Postcard or TMA Live</li>
+                            </ul>
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Audio Player Modal -->
+            <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="audioPlayerModalLabel"></h5>
+                            <!-- Title will be dynamically set -->
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <audio id="audioPlayer" controls style="width: 100%;">
+                                <source id="audioSource" src="" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <!-- Group of buttons centered -->
+                            <div class="mt-3 d-flex justify-content-center">
+                                <button id="modalPlayPauseBtn" class="btn btn-primary mx-2"
+                                    onclick="toggleAudioPlayPause()">Pause</button>
+                                <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
+                                <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Control Bar (hidden by default) -->
+            <div id="audioControlBar" class="audio-control-bar" style="display: none;">
+                <div class="control-bar-content">
+                    <span id="currentTrackTitle" class="track-title"></span>
+                    <button id="controlPlayPauseBtn" class="btn btn-light"
+                        onclick="toggleAudioPlayPause()">Pause</button>
+                    <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
+                </div>
+            </div>
 </body>
+
 </html>

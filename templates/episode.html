@@ -104,12 +104,17 @@
             <p class="text-muted">{{ episode.date }}</p>
             <p>{{ episode.show_notes }}</p>
 
-            <!-- Audio Player -->
-            <audio controls class="w-100 mt-3">
-                <source src="{{ episode.mp3url }}" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
+        <!-- Audio Player -->
+        <audio id="episodePlayer" controls class="w-100 mt-3">
+            <source src="{{ episode.mp3url }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
 
+        <!-- Seek Controls -->
+        <div class="mt-3 d-flex justify-content-center">
+            <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
+            <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+        </div>
             <!-- Action Buttons -->
             <div class="mt-4 button-group">
                 <a href="/" class="btn btn-dark">
@@ -131,13 +136,36 @@
         </div>
     </div>
     <script>
-        // Track the page view for this shareable episode
+        const audio = document.getElementById('episodePlayer');
+        const episodeId = {{ episode.id | tojson }};
+        const progressKey = `progress-${episodeId}`;
+    
+        // Apply dark mode + track page view
         document.addEventListener("DOMContentLoaded", function () {
+            // Restore dark mode
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+            }
+    
+            // Umami page tracking
             if (typeof umami !== 'undefined') {
                 umami.track('Shareable Page View', {
                     episode: "{{ episode.title }}",
                     date: "{{ episode.date }}"
                 });
+            }
+    
+            // Restore playback position
+            const saved = localStorage.getItem(progressKey);
+            if (saved) {
+                audio.currentTime = parseFloat(saved);
+            }
+        });
+    
+        // Save playback progress
+        audio.addEventListener('timeupdate', function () {
+            if (!audio.paused && !audio.ended) {
+                localStorage.setItem(progressKey, audio.currentTime);
             }
         });
     
@@ -157,6 +185,12 @@
             }
             copyLink();
         }
-    </script>     
+    
+        function seekAudio(seconds) {
+            if (audio) {
+                audio.currentTime += seconds;
+            }
+        }
+    </script>    
 </body>
 </html>
