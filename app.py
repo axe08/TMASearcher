@@ -92,7 +92,7 @@ def recent_episodes():
     return jsonify(episodes_json)
 
 @app.route('/episode/<int:episode_id>')
-def episode_page(episode_id):
+def episode(episode_id):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -274,6 +274,10 @@ def search_archive():
     episodes_json = [{'filename': e[0], 'date': e[1], 'mp3url': e[2]} for e in episodes]
     return jsonify(episodes_json)
 
+@app.route('/notes.json')
+def notes():
+    from flask import send_file
+    return send_file('notes.json', mimetype='application/json')
 
 if __name__ == '__main__':
     app.run(debug=True)
