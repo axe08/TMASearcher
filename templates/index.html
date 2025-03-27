@@ -241,7 +241,9 @@
         if(localStorage.getItem('darkMode') === 'enabled') {
             document.body.classList.add('dark-mode');
         }
-    
+        //playback history
+        let currentEpisodeId = null;
+        let audioPlayer = null;
 function createPodcastCard(podcast) {
     var safeTitle = podcast.title.replace(/'/g, "\\'");
     var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
@@ -322,7 +324,13 @@ function createPodcastCard(podcast) {
             fetchPodcast('TMA');
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
-    
+            //used for playback tracking
+            audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.addEventListener('timeupdate', function () {
+                if (currentEpisodeId && !audioPlayer.paused && !audioPlayer.ended) {
+                    localStorage.setItem(`progress-${currentEpisodeId}`, audioPlayer.currentTime);
+                }
+            });
             // Attach the submit event to the search form
             $('#searchForm').on('submit', function(e) {
                 e.preventDefault();
@@ -379,28 +387,24 @@ function createPodcastCard(podcast) {
         });
 // Handle opening the full audio player
 function openPlayer(title, mp3url, date) {
-    // Set the modal title and audio source
+    currentEpisodeId = `${title}_${date}`;
+
     $('#audioPlayerModalLabel').text(`${title} (${date})`);
     $('#audioSource').attr('src', mp3url);
 
-    // Load the new audio source and start playing
-    var audioPlayer = document.getElementById('audioPlayer');
     audioPlayer.load();
+
+    // Restore saved time
+    const savedTime = localStorage.getItem(`progress-${currentEpisodeId}`);
+    if (savedTime) {
+        audioPlayer.currentTime = parseFloat(savedTime);
+    }
+
     audioPlayer.play();
-
-    // Update the control bar with the current track title
     document.getElementById('currentTrackTitle').innerText = `${title} (${date})`;
-
-    // Show the control bar when the player opens
     document.getElementById('audioControlBar').style.display = 'flex';
-
-    // Set the play/pause button to "Pause" since the audio starts playing automatically
     document.getElementById('controlPlayPauseBtn').textContent = "Pause";
-
-    // **Set the tab title to the episode title**
     document.title = title;
-
-    // Open the modal
     $('#audioPlayerModal').modal('show');
 }
 
