@@ -244,9 +244,13 @@
                     <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a>
                 </div>
                 <p>
-                    <button type="button" class="btn custom-button" data-toggle="modal" data-target="#releaseModal">
+                    <button id="releaseModalButton" type="button" class="btn custom-button position-relative"
+                        data-toggle="modal" data-target="#releaseModal">
                         Notes & Recent Updates
-                    </button><br>
+                        <span id="new-update-badge" class="badge badge-danger position-absolute"
+                            style="top: 0; right: 0; display: none;">New</span>
+                    </button>
+                    <br>
                 </p>
                 <form id="searchForm" class="mb-4">
                     <div class="form-group">
@@ -439,25 +443,6 @@
                         document.body.scrollTop = 0; // For Safari
                         document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
                     };
-                    $('#releaseModal').on('show.bs.modal', function () {
-                        fetch('/notes.json')
-                            .then(res => {
-                                console.log('Got response:', res);
-                                return res.json();
-                            })
-                            .then(data => {
-                                console.log('Parsed notes.json:', data);
-                                let html = `<p><b>Notes</b><br>${data.notes.replace(/\n/g, '<br>')}</p><br><br>`;
-                                data.updates.forEach(update => {
-                                    html += `<p><b>${update.date} Update</b><br>${update.content.replace(/\n/g, '<br>')}</p><br>`;
-                                });
-                                $('#releaseModalBody').html(html);
-                            })
-                            .catch(err => {
-                                console.error('Error fetching notes:', err);
-                                $('#releaseModalBody').html('<p>Error loading updates.</p>');
-                            });
-                    });
                 });
                 // Handle opening the full audio player
                 function openPlayer(title, mp3url, date, id) {
@@ -573,7 +558,8 @@
                             <ul>
                                 <li><b>Match all keywords</b> looks for all of your keywords in the title or show notes.
                                     Eg. "Iggy Fontbonne Bowling" returns results where Iggy <b>and</b> Fontbonne
-                                    <b>and</b> bowling are in the results.</li>
+                                    <b>and</b> bowling are in the results.
+                                </li>
                                 <li><b>Match any</b> will look for the presence of any of your keywords. Honestly, don't
                                     have a great example on when to use this.</li>
                                 <li><b>Exact Match</b> searches for a specific keyword or string of words. e.g. Audio
@@ -625,6 +611,38 @@
                     <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
                 </div>
             </div>
+
+            <script>
+                // Load and display release notes and known issues when modal opens
+                $('#releaseModal').on('show.bs.modal', function () {
+                    fetch('/notes.json')
+                        .then(res => res.json())
+                        .then(data => {
+                            let html = `<p><b>Notes</b><br>${data.notes.replace(/\n/g, '<br>')}</p><br><br>`;
+            
+                            if (data.updates && Array.isArray(data.updates)) {
+                                data.updates.forEach(update => {
+                                    html += `<p><b>${update.date} Update</b><br>${update.content.replace(/\n/g, '<br>')}</p><br>`;
+                                });
+                            }
+            
+                            if (data.known_issues && Array.isArray(data.known_issues)) {
+                                html += `<h5 class="mt-4">Known Issues</h5><ul>`;
+                                data.known_issues.forEach(issue => {
+                                    html += `<li>${issue}</li>`;
+                                });
+                                html += `</ul>`;
+                            }
+            
+                            $('#releaseModalBody').html(html);
+                        })
+                        .catch(err => {
+                            console.error('Error fetching notes:', err);
+                            $('#releaseModalBody').html('<p>Error loading updates.</p>');
+                        });
+                });
+            </script>
+            
 </body>
 
 </html>
