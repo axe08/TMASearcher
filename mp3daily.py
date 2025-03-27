@@ -9,7 +9,7 @@ current_directory = os.path.dirname(os.path.abspath(__file__))
 database_path = os.path.join(current_directory, 'TMASTL.db')
 
 # Connect to your database
-conn = sqlite3.connect('TMASTL.db')
+conn = sqlite3.connect(database_path)
 cursor = conn.cursor()
 
 # Function to fetch RSS feed
@@ -40,7 +40,7 @@ rss_feed_url = "https://feeds.megaphone.fm/tmastl"
 rss_feed = fetch_rss_feed(rss_feed_url)
 
 # Define the number of days to look back (e.g., only process episodes from the last 3 days)
-days_to_look_back = 4
+days_to_look_back = 5
 cutoff_date = get_n_days_ago(days_to_look_back)
 
 # Loop through RSS feed items
@@ -59,8 +59,8 @@ for entry in rss_feed.entries:
 
     # SQL query with no REPLACE functions, since normalization is done in Python
     query = """
-        SELECT ID, TITLE, DATE, mp3url 
-        FROM TMA 
+        SELECT ID, TITLE, DATE, mp3url
+        FROM TMA
         WHERE LOWER(TRIM(TITLE)) = ? AND DATE = ?
     """
     print(f"Executing SQL Query: {query} with parameters ({rss_title}, {pub_date})")
