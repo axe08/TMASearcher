@@ -92,21 +92,28 @@ def scrape_latest_podcasts(pages_to_scrape):
                 for episode in episodes:
                     episode_title_element = episode.find('h6', class_='post-title')
                     episode_date_element = episode.find('time')
-                    episode_notes_element = episode.find('div', class_='the_content')
 
-                    if episode_title_element and episode_date_element and episode_notes_element:
+                    if episode_title_element and episode_date_element:
                         episode_title = episode_title_element.text.strip()
                         episode_url = episode['href']
                         episode_date = episode_date_element.text.strip()
                         episode_date_formatted = convert_date_format(episode_date)
-                        episode_notes = episode_notes_element.get_text(separator="\n").strip()
 
-                        # Clean episode notes
-                        episode_notes_cleaned = episode_notes.replace("Learn more about your ad choices. Visit podcastchoices.com/adchoices", "").strip()
-
-                        # Insert into the database
-                        insert_episode(episode_title, episode_date_formatted, episode_url, episode_notes_cleaned, 'TMA')
-                        logging.info(f"Scraped: {episode_title}")
+                        # Go to the full episode page to get the full notes
+                        episode_response = requests.get(episode_url, headers=headers)
+                        if episode_response.status_code == 200:
+                            episode_soup = BeautifulSoup(episode_response.text, 'lxml')
+                            notes_container = episode_soup.find('div', class_='the_content')
+                            if notes_container:
+                                episode_notes = notes_container.get_text(separator="\n").strip()
+                                episode_notes_cleaned = re.sub(
+                                    r'Learn more about your ad choices\.?\s*Visit\s*podcastchoices\.com/adchoices\.?',
+                                    '',
+                                    episode_notes,
+                                    flags=re.IGNORECASE
+                                ).strip()
+                                insert_episode(episode_title, episode_date_formatted, episode_url, episode_notes_cleaned, 'TMA')
+                                logging.info(f"Scraped: {episode_title}")
             else:
                 logging.error(f"Failed to retrieve web page, status code: {response.status_code}")
                 break  # Stop if we encounter a failed request
@@ -119,4 +126,4 @@ def scrape_latest_podcasts(pages_to_scrape):
     logging.info("Finished scraping the requested pages.")
 
 # Run the scrape function for a specific number of pages
-scrape_latest_podcasts(20)
+scrape_latest_podcasts(2)
