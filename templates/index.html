@@ -244,11 +244,9 @@
                     <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a>
                 </div>
                 <p>
-                    <button id="releaseModalButton" type="button" class="btn custom-button position-relative"
-                        data-toggle="modal" data-target="#releaseModal">
+                    <button id="releaseModalButton" type="button" class="btn custom-button position-relative" data-toggle="modal" data-target="#releaseModal">
                         Notes & Recent Updates
-                        <span id="new-update-badge" class="badge badge-danger position-absolute"
-                            style="top: 0; right: 0; display: none;">New</span>
+                        <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: 0; right: 0; display: none;">New</span>
                     </button>
                     <br>
                 </p>
@@ -617,25 +615,28 @@
                     fetch('/notes.json')
                         .then(res => res.json())
                         .then(data => {
-                            const latestUpdate = data.updates[0]?.date;  // Gets the latest update date
-                            const lastSeen = localStorage.getItem('lastSeenUpdate');  // Retrieve stored last seen date
-            
+                            const latestUpdate = data.updates[0]?.date;
+                            const lastSeen = localStorage.getItem('lastSeenUpdate');
+
                             if (latestUpdate !== lastSeen) {
                                 const badge = document.getElementById('new-update-badge');
-                                if (badge) {
-                                    badge.style.display = 'inline-block';  // Show the "New" badge if the update is unseen
-                                }
+                                if (badge) badge.style.display = 'inline-block';
                             }
-            
-                            // Set lastSeenUpdate after viewing modal
+
                             $('#releaseModal').on('hide.bs.modal', function () {
-                                localStorage.setItem('lastSeenUpdate', latestUpdate);  // Mark as seen after viewing
-                                document.getElementById('new-update-badge').style.display = 'none';  // Hide badge after seen
+                                localStorage.setItem('lastSeenUpdate', latestUpdate);
+                                document.getElementById('new-update-badge').style.display = 'none';
                             });
                         })
-                        .catch(err => {
-                            console.error('Error fetching notes:', err);
+                        .catch(err => console.error('Error fetching notes:', err));
+
+                    // Add Umami tracking for News click
+                    const newsBtn = document.getElementById('releaseModalButton');
+                    if (newsBtn && typeof umami !== 'undefined') {
+                        newsBtn.addEventListener('click', () => {
+                            umami.track('News');
                         });
+                    }
                 });
             </script>    
             <script>
