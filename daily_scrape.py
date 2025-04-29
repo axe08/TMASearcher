@@ -5,6 +5,7 @@ import sqlite3
 from datetime import datetime
 import os
 import time
+import re
 
 
 # Construct paths dynamically based on the current file's directory
@@ -77,7 +78,12 @@ def scrape_latest_podcasts(pages_to_scrape):
     setup_database()
     base_url = 'https://www.tmastl.com/podcasts/the-morning-after/'
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Referer': 'https://www.tmastl.com/',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
     }
     delay = 3  # Delay between page requests
 
@@ -126,4 +132,4 @@ def scrape_latest_podcasts(pages_to_scrape):
     logging.info("Finished scraping the requested pages.")
 
 # Run the scrape function for a specific number of pages
-scrape_latest_podcasts(2)
+scrape_latest_podcasts(15)
