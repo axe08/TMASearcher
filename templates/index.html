@@ -801,6 +801,51 @@
         .btn {
             margin-left: 10px;
         }
+        
+        /* Pagination controls */
+        .pagination-controls {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .dark-mode .pagination-controls {
+            background: #1f2937;
+            color: #f9fafb;
+        }
+        
+        .pagination-controls .btn {
+            margin: 0 5px;
+            min-width: 100px;
+        }
+        
+        .pagination-controls span {
+            font-weight: 500;
+            color: #495057;
+            white-space: nowrap;
+        }
+        
+        .dark-mode .pagination-controls span {
+            color: #f9fafb;
+        }
+        
+        @media (max-width: 768px) {
+            .pagination-controls {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .pagination-controls .btn {
+                margin: 5px 0;
+                width: 100%;
+            }
+            
+            .pagination-controls span {
+                margin: 10px 0;
+            }
+        }
     </style>
     <script defer src="https://analytics.tmasearcher.com/script.js"
         data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
@@ -980,20 +1025,109 @@
                         }
                     });
                 }
-                function fetchPodcast(podcastName) {
+                let currentPage = 1;
+                let currentPagination = null;
+                let lastSearchParams = null;
+
+                function performSearch(page = 1) {
+                    var title = $('input[name="title"]').val();
+                    var date = $('input[name="date"]').val();
+                    var notes = $('input[name="notes"]').val();
+                    var matchType = $('#matchType').val();
+                    var currentPodcast = $('#currentPodcast').val();
+                    
+                    lastSearchParams = { title, date, notes, matchType, currentPodcast };
+
+                    $.ajax({
+                        url: '/search',
+                        type: 'get',
+                        data: { 
+                            title: title, 
+                            date: date, 
+                            notes: notes, 
+                            matchType: matchType, 
+                            currentPodcast: currentPodcast, 
+                            page: page 
+                        },
+                        success: function (data) {
+                            var resultsBody = $('#resultsBody');
+                            resultsBody.empty();
+
+                            $.each(data.podcasts, function (index, podcast) {
+                                var cardHtml = createPodcastCard(podcast);
+                                resultsBody.append(cardHtml);
+                            });
+
+                            // Update pagination
+                            currentPage = data.pagination.page;
+                            currentPagination = data.pagination;
+                            updatePaginationControls(data.pagination, 'performSearch');
+                            
+                            if (page === 1) {
+                                $('#results').get(0).scrollIntoView({ behavior: 'smooth' });
+                            }
+                        },
+                        error: function () {
+                            alert('An error has occurred during the search');
+                        }
+                    });
+                }
+
+                function updatePaginationControls(pagination, actionFunction, actionParam = null) {
+                    var paginationHtml = '';
+                    if (pagination.total_pages > 1) {
+                        paginationHtml = '<div class="d-flex justify-content-center mt-4"><div class="pagination-controls d-flex align-items-center gap-2">';
+                        
+                        // Previous button
+                        if (pagination.has_prev) {
+                            if (actionParam) {
+                                paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}('${actionParam}', ${pagination.prev_num})">← Previous</button>`;
+                            } else {
+                                paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}(${pagination.prev_num})">← Previous</button>`;
+                            }
+                        }
+                        
+                        // Page info
+                        paginationHtml += `<span class="mx-3">Page ${pagination.page} of ${pagination.total_pages} (${pagination.total} results)</span>`;
+                        
+                        // Next button
+                        if (pagination.has_next) {
+                            if (actionParam) {
+                                paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}('${actionParam}', ${pagination.next_num})">Next →</button>`;
+                            } else {
+                                paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}(${pagination.next_num})">Next →</button>`;
+                            }
+                        }
+                        
+                        paginationHtml += '</div></div>';
+                    }
+                    
+                    // Remove existing pagination if any
+                    $('.pagination-controls').parent().remove();
+                    
+                    // Add new pagination
+                    $('#results').append(paginationHtml);
+                }
+
+                function fetchPodcast(podcastName, page = 1) {
                     $('#currentPodcast').val(podcastName);
                     $.ajax({
                         url: '/recent_episodes',
                         type: 'get',
-                        data: { podcast: podcastName },
+                        data: { podcast: podcastName, page: page },
                         success: function (data) {
                             // Update results with cards
                             var resultsBody = $('#resultsBody');
                             resultsBody.empty();
-                            $.each(data, function (index, podcast) {
+                            $.each(data.episodes, function (index, podcast) {
                                 var cardHtml = createPodcastCard(podcast); // Use the adjusted function for cards
                                 resultsBody.append(cardHtml);
                             });
+                            
+                            // Update pagination
+                            currentPage = data.pagination.page;
+                            currentPagination = data.pagination;
+                            updatePaginationControls(data.pagination, 'fetchPodcast', podcastName);
                         },
                         error: function () {
                             $('#resultsBody').html('<div class="alert alert-danger" role="alert">An error has occurred</div>');
@@ -1031,25 +1165,7 @@
                             });
                         }
 
-                        $.ajax({
-                            url: '/search',
-                            type: 'get',
-                            data: $(this).serialize() + '&title=' + title,
-                            success: function (data) {
-                                var resultsBody = $('#resultsBody');
-                                resultsBody.empty();
-
-                                $.each(data.podcasts, function (index, podcast) {
-                                    var cardHtml = createPodcastCard(podcast);
-                                    resultsBody.append(cardHtml);
-                                });
-
-                                $('#results').get(0).scrollIntoView({ behavior: 'smooth' });
-                            },
-                            error: function () {
-                                alert('An error has occurred during the search');
-                            }
-                        });
+                        performSearch(1);
                     });
 
                     var backToTopButton = document.getElementById("back-to-top");

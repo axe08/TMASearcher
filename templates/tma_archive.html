@@ -308,6 +308,51 @@
     .dark-mode #controlPlayPauseBtn:hover, .dark-mode #modalPlayPauseBtn:hover {
         background-color: #666;
     }
+    
+    /* Pagination controls */
+    .pagination-controls {
+        margin: 20px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .dark-mode .pagination-controls {
+        background: #1f2937;
+        color: #f9fafb;
+    }
+    
+    .pagination-controls .btn {
+        margin: 0 5px;
+        min-width: 100px;
+    }
+    
+    .pagination-controls span {
+        font-weight: 500;
+        color: #495057;
+        white-space: nowrap;
+    }
+    
+    .dark-mode .pagination-controls span {
+        color: #f9fafb;
+    }
+    
+    @media (max-width: 768px) {
+        .pagination-controls {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .pagination-controls .btn {
+            margin: 5px 0;
+            width: 100%;
+        }
+        
+        .pagination-controls span {
+            margin: 10px 0;
+        }
+    }
     </style>
     <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
 </head>
@@ -474,17 +519,87 @@
             openPlayer(filename, mp3url, date);
         }
 
-        function fetchArchive() {
+        let currentPage = 1;
+        let currentPagination = null;
+        
+        function performArchiveSearch(page = 1) {
+            var formData = $('#searchForm').serialize() + `&page=${page}`;
             $.ajax({
-                url: '/fetch_archive_episodes',
+                url: '/search_archive',
                 type: 'get',
+                data: formData,
                 success: function(data) {
                     var resultsBody = $('#resultsBody');
                     resultsBody.empty();
-                    $.each(data, function(index, podcast) {
+                    $.each(data.episodes, function(index, podcast) {
                         var cardHtml = createArchiveCard(podcast);
                         resultsBody.append(cardHtml);
                     });
+                    
+                    // Update pagination
+                    currentPage = data.pagination.page;
+                    currentPagination = data.pagination;
+                    updatePaginationControls(data.pagination, 'performArchiveSearch');
+                },
+                error: function() {
+                    $('#resultsBody').html('<div class="alert alert-danger" role="alert">Search failed.');
+                }
+            });
+        }
+        
+        function updatePaginationControls(pagination, actionFunction, actionParam = null) {
+            var paginationHtml = '';
+            if (pagination.total_pages > 1) {
+                paginationHtml = '<div class="d-flex justify-content-center mt-4"><div class="pagination-controls d-flex align-items-center gap-2">';
+                
+                // Previous button
+                if (pagination.has_prev) {
+                    if (actionParam) {
+                        paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}('${actionParam}', ${pagination.prev_num})">← Previous</button>`;
+                    } else {
+                        paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}(${pagination.prev_num})">← Previous</button>`;
+                    }
+                }
+                
+                // Page info
+                paginationHtml += `<span class="mx-3">Page ${pagination.page} of ${pagination.total_pages} (${pagination.total} results)</span>`;
+                
+                // Next button
+                if (pagination.has_next) {
+                    if (actionParam) {
+                        paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}('${actionParam}', ${pagination.next_num})">Next →</button>`;
+                    } else {
+                        paginationHtml += `<button class="btn btn-outline-primary" onclick="${actionFunction}(${pagination.next_num})">Next →</button>`;
+                    }
+                }
+                
+                paginationHtml += '</div></div>';
+            }
+            
+            // Remove existing pagination if any
+            $('.pagination-controls').parent().remove();
+            
+            // Add new pagination
+            $('#results').append(paginationHtml);
+        }
+
+        function fetchArchive(page = 1) {
+            $.ajax({
+                url: '/fetch_archive_episodes',
+                type: 'get',
+                data: { page: page },
+                success: function(data) {
+                    var resultsBody = $('#resultsBody');
+                    resultsBody.empty();
+                    $.each(data.episodes, function(index, podcast) {
+                        var cardHtml = createArchiveCard(podcast);
+                        resultsBody.append(cardHtml);
+                    });
+                    
+                    // Update pagination
+                    currentPage = data.pagination.page;
+                    currentPagination = data.pagination;
+                    updatePaginationControls(data.pagination, 'fetchArchive');
                 },
                 error: function() {
                     $('#resultsBody').html('<div class="alert alert-danger" role="alert">An error has occurred.</div>');
@@ -500,23 +615,7 @@
 
             $('#searchForm').on('submit', function(e) {
                 e.preventDefault();
-                var formData = $(this).serialize();
-                $.ajax({
-                    url: '/search_archive',
-                    type: 'get',
-                    data: formData,
-                    success: function(data) {
-                        var resultsBody = $('#resultsBody');
-                        resultsBody.empty();
-                        $.each(data, function(index, podcast) {
-                            var cardHtml = createArchiveCard(podcast);
-                            resultsBody.append(cardHtml);
-                        });
-                    },
-                    error: function() {
-                        $('#resultsBody').html('<div class="alert alert-danger" role="alert">Search failed.');
-                    }
-                });
+                performArchiveSearch(1);
             });
         });
 

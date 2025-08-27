@@ -73,6 +73,9 @@ def search_spotify():
 @app.route('/recent_episodes', methods=['GET'])
 def recent_episodes():
     podcast_name = request.args.get('podcast', default='TMA')  # Default to TMA if no podcast is specified
+    page = request.args.get('page', 1, type=int)
+    per_page = 50  # Episodes per page
+    
     valid_podcasts = {'TMA': 'TMA', 'The Tim McKernan Show': 'TMShow', 'Balloon Party': 'Balloon'}
 
     table_name = valid_podcasts.get(podcast_name)
@@ -82,14 +85,40 @@ def recent_episodes():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     thirty_days_ago = datetime.now() - timedelta(days=90)
-    query = f"SELECT * FROM {table_name} WHERE DATE >= ? ORDER BY DATE DESC"
-    cursor.execute(query, (thirty_days_ago.strftime('%Y-%m-%d'),))
+    
+    # Get total count for pagination
+    count_query = f"SELECT COUNT(*) FROM {table_name} WHERE DATE >= ?"
+    cursor.execute(count_query, (thirty_days_ago.strftime('%Y-%m-%d'),))
+    total_count = cursor.fetchone()[0]
+    
+    # Get paginated results
+    offset = (page - 1) * per_page
+    query = f"SELECT * FROM {table_name} WHERE DATE >= ? ORDER BY DATE DESC LIMIT ? OFFSET ?"
+    cursor.execute(query, (thirty_days_ago.strftime('%Y-%m-%d'), per_page, offset))
     episodes = cursor.fetchall()
     conn.close()
     
+    # Calculate pagination info
+    total_pages = (total_count + per_page - 1) // per_page
+    has_next = page < total_pages
+    has_prev = page > 1
+    
     # include the mp3url
     episodes_json = [{'id': e[0], 'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5]} for e in episodes]
-    return jsonify(episodes_json)
+    
+    return jsonify({
+        'episodes': episodes_json,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'total_pages': total_pages,
+            'has_next': has_next,
+            'has_prev': has_prev,
+            'next_num': page + 1 if has_next else None,
+            'prev_num': page - 1 if has_prev else None
+        }
+    })
 
 @app.route('/episode/<int:episode_id>')
 def episode(episode_id):
@@ -198,23 +227,46 @@ def search():
     notes = request.args.get('notes', '')
     current_podcast = request.args.get('currentPodcast', 'TMA')  # Default to TMA if not provided
     match_type = request.args.get('matchType', 'all')
+    page = request.args.get('page', 1, type=int)
+    per_page = 50  # Results per page
 
     # Validate the podcast_name against a predefined list of valid names
     valid_podcasts = {'TMA': 'TMA', 'The Tim McKernan Show': 'TMShow', 'Balloon Party': 'Balloon'}
     table_name = valid_podcasts.get(current_podcast)  # return None if the podcast_name is not valid
 
     if table_name is not None:
-        # Pass the correct table name and match type
-        search_results = search_database(table_name, title, date, notes, match_type)  
+        # Get all search results for counting
+        search_results = search_database(table_name, title, date, notes, match_type)
+        total_count = len(search_results)
+        
+        # Calculate pagination
+        total_pages = (total_count + per_page - 1) // per_page
+        has_next = page < total_pages
+        has_prev = page > 1
+        
+        # Apply pagination to results
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_results = search_results[start:end]
+        
         podcasts = [
             {'id': row[0], 'title': row[1], 'date': row[2], 'url': row[3], 'show_notes': row[4], 'mp3url': row[5]}
-            for row in search_results
+            for row in paginated_results
         ]
 
-
         results = {
-            'count': len(search_results),  # Get the total count of results
-            'podcasts': podcasts
+            'count': total_count,  # Total count of all results
+            'podcasts': podcasts,  # Current page results
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': total_count,
+                'total_pages': total_pages,
+                'has_next': has_next,
+                'has_prev': has_prev,
+                'next_num': page + 1 if has_next else None,
+                'prev_num': page - 1 if has_prev else None
+            }
         }
         return jsonify(results)
     else:
@@ -227,52 +279,115 @@ def tma_archive():
 
 @app.route('/fetch_archive_episodes', methods=['GET'])
 def fetch_archive_episodes():
+    page = request.args.get('page', 1, type=int)
+    per_page = 50  # Episodes per page
+    
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    query = "SELECT filename, date, mp3url FROM TMA_Archive ORDER BY date DESC"
-    cursor.execute(query)
+    
+    # Get total count for pagination
+    count_query = "SELECT COUNT(*) FROM TMA_Archive"
+    cursor.execute(count_query)
+    total_count = cursor.fetchone()[0]
+    
+    # Get paginated results
+    offset = (page - 1) * per_page
+    query = "SELECT filename, date, mp3url FROM TMA_Archive ORDER BY date DESC LIMIT ? OFFSET ?"
+    cursor.execute(query, (per_page, offset))
     episodes = cursor.fetchall()
     conn.close()
+    
+    # Calculate pagination info
+    total_pages = (total_count + per_page - 1) // per_page
+    has_next = page < total_pages
+    has_prev = page > 1
+    
     episodes_json = [{'filename': e[0], 'date': e[1], 'mp3url': e[2]} for e in episodes]
 
-    return jsonify(episodes_json)
-@app.route('/search_archive', methods=['GET'])
-
+    return jsonify({
+        'episodes': episodes_json,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'total_pages': total_pages,
+            'has_next': has_next,
+            'has_prev': has_prev,
+            'next_num': page + 1 if has_next else None,
+            'prev_num': page - 1 if has_prev else None
+        }
+    })
 @app.route('/search_archive', methods=['GET'])
 def search_archive():
     match_type = request.args.get('matchType')
     filename = request.args.get('filename', '').strip()
     date = request.args.get('date', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 50  # Results per page
 
     query = "SELECT filename, date, mp3url FROM TMA_Archive WHERE 1=1"
+    count_query = "SELECT COUNT(*) FROM TMA_Archive WHERE 1=1"
     params = []
 
     # Search by filename
     if filename:
         if match_type == 'all':
-            query += " AND " + " AND ".join([f"filename LIKE ?" for keyword in filename.split()])
+            conditions = " AND " + " AND ".join([f"filename LIKE ?" for keyword in filename.split()])
+            query += conditions
+            count_query += conditions
             params.extend([f'%{keyword}%' for keyword in filename.split()])
         elif match_type == 'any':
-            query += " AND (" + " OR ".join([f"filename LIKE ?" for keyword in filename.split()]) + ")"
+            conditions = " AND (" + " OR ".join([f"filename LIKE ?" for keyword in filename.split()]) + ")"
+            query += conditions
+            count_query += conditions
             params.extend([f'%{keyword}%' for keyword in filename.split()])
         elif match_type == 'exact':
-            query += " AND filename LIKE ?"
+            conditions = " AND filename LIKE ?"
+            query += conditions
+            count_query += conditions
             params.append(f'%{filename}%')
 
     # Search by date
     if date:
-        query += " AND date LIKE ?"
+        conditions = " AND date LIKE ?"
+        query += conditions
+        count_query += conditions
         params.append(f'%{date}%')
-
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute(query, params)
+    
+    # Get total count for pagination
+    cursor.execute(count_query, params)
+    total_count = cursor.fetchone()[0]
+    
+    # Add pagination to main query
+    query += " ORDER BY date DESC LIMIT ? OFFSET ?"
+    offset = (page - 1) * per_page
+    cursor.execute(query, params + [per_page, offset])
     episodes = cursor.fetchall()
     conn.close()
+    
+    # Calculate pagination info
+    total_pages = (total_count + per_page - 1) // per_page
+    has_next = page < total_pages
+    has_prev = page > 1
 
     episodes_json = [{'filename': e[0], 'date': e[1], 'mp3url': e[2]} for e in episodes]
-    return jsonify(episodes_json)
+    
+    return jsonify({
+        'episodes': episodes_json,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'total_pages': total_pages,
+            'has_next': has_next,
+            'has_prev': has_prev,
+            'next_num': page + 1 if has_next else None,
+            'prev_num': page - 1 if has_prev else None
+        }
+    })
 
 @app.route('/notes.json')
 def notes():

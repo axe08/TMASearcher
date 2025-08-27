@@ -2,6 +2,10 @@
   "notes": "Welcome to TMA Searcher! This tool helps you search through TMA podcast episodes.",
   "updates": [
     {
+      "date": "2025-08-27",
+      "content": "Pagination added! All pages now show 50 results at a time with easy navigation controls. Browse through large result sets more efficiently with Previous/Next buttons and result counts."
+    },
+    {
       "date": "2024-08-27",
       "content": "Mobile optimization complete! Templates have been redesigned for better mobile experience with improved layouts, button spacing, and dark mode consistency."
     }
