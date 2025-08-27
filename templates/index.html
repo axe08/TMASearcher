@@ -4,35 +4,84 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Podcast Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>TMA Searcher - Podcast Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <!-- jQuery, Popper.js, and Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <style>
-        th {
-            cursor: pointer;
-            /* clickable column */
+        /* Base styles with mobile-first approach */
+        * {
+            box-sizing: border-box;
         }
 
-        .custom-button {
-            background-color: dodgerblue;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Primary search button */
+        .search-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
             border: none;
             color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            cursor: pointer;
-            border-radius: 16px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            height: 44px;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,123,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .custom-button:hover {
-            background-color: cadetblue;
+        .search-button:hover {
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            color: white;
+        }
+
+        .search-button:active {
+            transform: translateY(0);
+        }
+
+        /* Secondary utility button */
+        .utility-button {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            color: #495057;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            height: 44px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .utility-button:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            transform: translateY(-1px);
         }
 
         #back-to-top {
@@ -53,138 +102,664 @@
             /* Ensure it's above other elements */
         }
 
-        @media (max-width: 768px) {
+        /* Tighter card spacing for more cards per screen */
+        #resultsBody .card {
+            margin: 0 7px 1rem 7px !important;
+        }
+        
+        /* Ensure no horizontal overflow */
+        #results {
+            overflow-x: hidden;
+        }
+        
+        #resultsBody {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* Header with inline buy-me-coffee */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .header-container h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin: 0;
+            color: #343a40;
+        }
+
+        .dark-mode .header-container h1 {
+            color: #f9fafb;
+        }
+
+        /* Buy me coffee in header */
+        .header-coffee {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-coffee img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Single row navigation */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .nav-btn i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        /* Dark mode toggle as compact button */
+        .dark-toggle {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: white;
+        }
+
+        .dark-toggle:hover {
+            background: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+
+
+        /* Updates button - compact */
+        .updates-btn {
+            background: #17a2b8;
+            border: 1px solid #17a2b8;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .updates-btn:hover {
+            background: #138496;
+            border-color: #117a8b;
+            color: white;
+        }
+
+        .updates-btn i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        /* Dark mode styles for compact nav */
+        .dark-mode .nav-btn {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .dark-mode .updates-btn {
+            background: #0891b2;
+            border-color: #0891b2;
+        }
+
+        .dark-mode .updates-btn:hover {
+            background: #0e7490;
+            border-color: #0e7490;
+        }
+
+        /* Standardized form controls - mobile optimized */
+        .search-form {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .dark-mode .search-form {
+            background: #1f2937;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .form-control {
+            height: 44px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: all 0.2s ease;
+            padding: 10px 12px;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.15);
+            outline: none;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-of-type {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #495057;
+            font-size: 14px;
+            display: block;
+        }
+
+        .dark-mode .form-label {
+            color: #f9fafb;
+        }
+
+        /* Help icon styling */
+        .help-icon {
+            color: #6c757d;
+            font-size: 12px;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+
+        .dark-mode .help-icon {
+            color: #9ca3af;
+        }
+
+        .card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+
+        /* Tablet and larger screens - consolidated */
+        @media (min-width: 576px) {
+            /* Optimized card spacing for tablets+ */
+            #resultsBody .card {
+                margin: 0 10px 1.25rem 10px !important;
+            }
+
             .card-body {
-                padding: 0.5rem;
+                padding: 1.25rem;
             }
 
             .card-title {
-                font-size: 1.25rem;
+                font-size: 1.3rem;
+                margin-bottom: 0.375rem;
+            }
+
+            .card-date {
+                margin-bottom: 0.625rem;
+            }
+
+            .card-description {
+                margin-bottom: 1rem;
+            }
+
+            .card-actions {
+                padding-top: 1rem;
+                margin-top: 1rem;
+            }
+
+            .secondary-actions {
+                /* Match tablet card-body padding */
+                padding: 0 1.25rem;
+            }
+
+            .primary-action .btn {
+                height: 38px;
+                font-size: 15px;
+            }
+
+            .secondary-actions .btn-share {
+                height: 34px;
+                font-size: 14px;
+            }
+
+            .secondary-actions .btn-download {
+                height: 34px;
+                font-size: 16px;
+            }
+
+            .tertiary-action .btn {
+                height: 32px;
+                font-size: 13px;
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            line-height: 1.25;
+            color: #212529;
+        }
+
+        .dark-mode .card-title {
+            color: #f8f9fa;
+        }
+
+        .card-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .dark-mode .card-date {
+            color: #adb5bd;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            line-height: 1.35;
+            margin-bottom: 0.75rem;
+            color: #495057;
+        }
+
+        .dark-mode .card-description {
+            color: #ced4da;
+        }
+
+        .btn {
+            min-height: 44px;
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 10px 16px;
+            margin: 4px 2px;
+            font-size: 14px;
+        }
+
+        /* Fixed card button layout with proper constraints */
+        .card-actions {
+            border-top: 1px solid #e9ecef;
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+            /* Fix: Ensure actions align with card-body content */
+            margin-left: 0;
+            margin-right: 0;
+            padding-left: 0;
+            padding-right: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .dark-mode .card-actions {
+            border-top-color: #495057;
+        }
+
+        /* Button group centering and constraints */
+        .primary-action,
+        .secondary-actions,
+        .tertiary-action {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .primary-action {
+            margin-bottom: 0.4rem;
+        }
+
+        .primary-action .btn {
+            width: 100%;
+            height: 34px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .secondary-actions {
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            align-items: stretch;
+            /* Fix: Match card-body padding to align with other content */
+            padding: 0 1rem;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .secondary-actions .btn-share {
+            flex: 0 0 calc(70% - 0.25rem);
+            height: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            /* Ensure button respects content area */
+            max-width: calc(70% - 0.25rem);
+        }
+
+        .secondary-actions .btn-download {
+            flex: 0 0 calc(30% - 0.25rem);
+            height: 30px;
+            font-size: 14px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            min-width: 0;
+            /* Ensure button respects content area */
+            max-width: calc(30% - 0.25rem);
+        }
+
+        .tertiary-action {
+            justify-content: center;
+        }
+
+        .tertiary-action .btn {
+            width: 100%;
+            height: 28px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            line-height: 1;
+        }
+
+        /* Tablet and larger screens */
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .header-container h2 {
+                font-size: 2.5rem;
+            }
+
+            #buymeacoffee img {
+                max-width: 140px;
             }
         }
 
         body.dark-mode {
-            background-color: #121212;
-            /* Dark background */
-            color: #ffffff;
-            /* Light text */
+            background-color: #111827;
+            color: #f9fafb;
         }
 
-        .dark-mode .custom-button {
-            background-color: #222;
-            /* Darker background color for buttons */
+        /* Dark mode button styles */
+        .dark-mode .search-button {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+        }
+
+        .dark-mode .search-button:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+        }
+
+        .dark-mode .utility-button {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .utility-button:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+        
+        /* Responsive improvements */
+        @media (min-width: 480px) {
+            .top-nav {
+                gap: 12px;
+            }
+            
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-height: 40px;
+            }
+            
+            .nav-btn i {
+                margin-right: 6px;
+            }
+            
+            .header-coffee img {
+                height: 36px;
+            }
+        }
+        
+        /* Larger screens */
+        @media (min-width: 768px) {
+            .header-container h1 {
+                font-size: 2.25rem;
+            }
+            
+            .search-form {
+                padding: 24px;
+            }
+            
+            .container {
+                max-width: 800px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .top-nav {
+                gap: 16px;
+            }
+            
+            .header-coffee img {
+                height: 40px;
+            }
+        }
+
+        .dark-mode .form-control {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .form-control:focus {
+            border-color: #6366f1;
+            background-color: #374151;
+        }
+
+        .dark-mode .nav.nav-pills .nav-link {
+            background: linear-gradient(135deg, #374151, #1f2937);
             color: #ffffff;
-            /* Light text color for buttons */
+        }
+
+        .dark-mode .nav.nav-pills .nav-link:hover {
+            background: linear-gradient(135deg, #1f2937, #111827);
+        }
+
+        .dark-mode .nav.nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #10b981, #047857);
         }
 
 
         .dark-mode a {
-            color: rgb(18, 45, 61);
-            /* Lighter text color for links */
+            color: #3b82f6;
             font-weight: bold;
         }
 
         .dark-mode table {
-            background-color: #333;
-            /* Darker background color for tables */
+            background-color: #1f2937;
         }
 
         table tbody {
-            color: #333;
-            /* Normal mode text color */
+            color: #374151;
         }
 
         body.dark-mode table tbody {
-            color: #ccc;
-            /* Dark mode text color */
+            color: #d1d5db;
         }
 
-        /* Style for table header cells (column titles) in light mode */
         table th {
             background-color: #007bff;
-            /* Background color for column titles in light mode */
             color: white;
-            /* Text color for column titles in light mode */
             cursor: pointer;
-            /* Make the column titles clickable */
         }
 
-        /* Style for table header cells (column titles) in dark mode */
         body.dark-mode table th {
-            background-color: #222;
-            /* Background color for column titles in dark mode */
-            color: #ffffff;
-            /* Text color for column titles in dark mode */
+            background-color: #374151;
+            color: #f9fafb;
         }
 
         .dark-mode .card {
-            background-color: #333;
-            /* Darker background for cards */
-            color: #ffffff;
-            /* Light text color for content inside cards */
+            background-color: #1f2937;
+            color: #f9fafb;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
         }
 
-        .dark-mode .card a.btn {
-            background-color: #444;
-            /* Darker button background */
-            color: #ffffff;
-            /* Light text color for buttons */
+        .dark-mode .btn-success {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white !important;
+        }
+        
+        .dark-mode .btn-info {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white !important;
+        }
+        
+        .dark-mode .btn-primary {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white !important;
+        }
+        
+        .dark-mode .btn-outline-success {
+            color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .dark-mode .btn-outline-success:hover {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .dark-mode .btn-outline-dark {
+            color: #f9fafb;
+            border-color: #6b7280;
+        }
+        
+        .dark-mode .btn-outline-dark:hover {
+            background-color: #6b7280;
+            border-color: #6b7280;
+            color: white;
         }
 
-        .dark-mode .card a.btn:hover {
-            background-color: #555;
-            /* Even darker button background on hover */
-        }
-
-        /* Ensure links within the card also adapt to dark mode */
         .dark-mode .card a {
-            color: #bbdefb;
-            /* Light blue link color for better visibility */
+            color: #60a5fa;
         }
 
-        /* Dark mode styles for the help modal */
         .dark-mode .modal-content {
-            background-color: #424242;
-            /* Dark background for the modal */
-            color: #ffffff;
-            /* Light text color for the modal content */
+            background-color: #1f2937;
+            color: #f9fafb;
         }
 
         .dark-mode .modal-header,
         .dark-mode .modal-body,
         .dark-mode .modal-footer {
-            border-color: #616161;
-            /* Darker borders for modal sections */
+            border-color: #374151;
         }
 
         .dark-mode .modal-title {
-            color: #ffffff;
-            /* Ensure modal title is also light colored */
+            color: #f9fafb;
         }
 
         .dark-mode .modal-footer .btn {
-            background-color: #555;
-            /* Dark background for buttons in modal footer */
-            color: #ffffff;
-            /* Light text color for buttons */
+            background-color: #374151;
+            color: #f9fafb;
         }
 
         .dark-mode .modal-footer .btn:hover {
-            background-color: #666;
-            /* Slightly lighter background for hover state */
+            background-color: #4b5563;
         }
 
         .dark-mode .close {
-            color: #ffffff;
-            /* Light color for the close button */
+            color: #f9fafb;
         }
 
         .dark-mode .close:hover {
-            color: #bbbbbb;
-            /* Lighter color for hover state of close button */
+            color: #d1d5db;
         }
 
-        /* Audio Control Bar */
         .audio-control-bar {
             position: fixed;
             bottom: 0;
@@ -197,9 +772,13 @@
             justify-content: space-between;
             align-items: center;
             z-index: 9999;
-            /* Ensure it stays on top */
             font-size: 16px;
             box-shadow: 0px -1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark-mode .audio-control-bar {
+            background-color: #1f2937;
+            color: #f9fafb;
         }
 
 
@@ -229,54 +808,75 @@
 
 <body>
     <div class="container my-3">
-        <div class="header-container d-flex justify-content-between align-items-center">
-            <h2 class="header-text">TMA Searcher</h2>
-            <div id="buymeacoffee"><a href="https://www.buymeacoffee.com/tmasearcher" target="_blank"><img
-                        src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee"
-                        style="height: 45px !important;width: 150px !important;"></a></div>
+        <!-- Header with inline Buy Me Coffee -->
+        <div class="header-container">
+            <h1>TMA Searcher</h1>
+            <div class="header-coffee">
+                <a href="https://www.buymeacoffee.com/tmasearcher" target="_blank">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee">
+                </a>
+            </div>
         </div>
-        <div class="row mb-3">
-            <div class="col-md-9">
-                <div class="d-flex flex-wrap justify-content-between mb-2">
-                    <a href="#" class="btn btn-link" onclick="fetchPodcast('TMA')">Home</a>
-                    <!--<a href="#" class="btn btn-link" onclick="fetchPodcast('The Tim McKernan Show')">The Tim McKernan Show</a>
-                        <a href="#" class="btn btn-link" onclick="fetchPodcast('Balloon Party')">Balloon Party</a>-->
-                    <a href="{{ url_for('tma_archive') }}" class="btn btn-link">TMA Archive</a>
+        
+        <!-- Single Row Navigation -->
+        <div class="top-nav">
+            <a href="#" class="nav-btn active" onclick="fetchPodcast('TMA')">
+                <i class="fas fa-clock"></i>Recent
+            </a>
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn">
+                <i class="fas fa-archive"></i>Archive
+            </a>
+            <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal">
+                <i class="fas fa-bell"></i>Updates
+                <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none;">•</span>
+            </button>
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle">
+                <i class="fas fa-moon"></i>Dark
+            </button>
+        </div>
+        <!-- Primary Search Form -->
+        <div class="search-form">
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="matchType" class="form-label">
+                        Search Type
+                        <i class="fas fa-question-circle help-icon" data-toggle="modal" data-target="#helpModal"></i>
+                    </label>
+                    <select class="form-control" id="matchType" name="matchType">
+                        <option value="all">Match All Keywords</option>
+                        <option value="any">Match Any Keywords</option>
+                        <option value="exact">Exact Match</option>
+                    </select>
                 </div>
-                <p>
-                    <button id="releaseModalButton" type="button" class="btn custom-button position-relative" data-toggle="modal" data-target="#releaseModal">
-                        Notes & Recent Updates
-                        <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: 0; right: 0; display: none;">New</span>
-                    </button>
-                    <br>
-                </p>
-                <form id="searchForm" class="mb-4">
-                    <div class="form-group">
-                        <div class="form-group">
-                            <label for="matchType">Match Type:
-                                <i class="fas fa-question-circle" data-toggle="modal" data-target="#helpModal"></i>
-                            </label>
-                            <select class="form-control" id="matchType" name="matchType">
-                                <option value="all">Match All Keywords</option>
-                                <option value="any">Match Against Any Keywords</option>
-                                <option value="exact">Exact Match</option>
-                            </select>
-                        </div>
-                        <input type="text" class="form-control mb-2" name="title"
-                            placeholder="Title Keywords (Seperate with a space)">
-                        <input type="text" class="form-control mb-2" name="date" placeholder="Date (YYYY-MM-DD)">
-                        <input type="text" class="form-control mb-2" name="notes"
-                            placeholder="Show Notes Keywords (Seperate with a space)">
-                        <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
-                        <button type="submit" class="btn custom-button">Search</button>
-                        <button type="button" id="dark-mode-toggle" class="btn custom-button">Toggle Dark Mode</button>
-                    </div>
-                </form>
-            </div>
-            <div id="results" class="mt-4">
-                <div class="row" id="resultsBody">
+                
+                <div class="form-group">
+                    <label for="titleInput" class="form-label">Episode Title</label>
+                    <input type="text" class="form-control" name="title" id="titleInput" placeholder="Search episode titles...">
                 </div>
+                
+                <div class="form-group">
+                    <label for="dateInput" class="form-label">Date</label>
+                    <input type="date" class="form-control" name="date" id="dateInput">
+                </div>
+                
+                <div class="form-group">
+                    <label for="notesInput" class="form-label">Show Notes</label>
+                    <input type="text" class="form-control" name="notes" id="notesInput" placeholder="Search show notes...">
+                </div>
+                
+                <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
+                
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i>Search Episodes
+                </button>
+            </form>
+        </div>
+        </div>
+        
+        <div id="results" class="mt-4">
+            <div class="row" id="resultsBody">
             </div>
+        </div>
             <!-- Back to Top Button -->
             <button id="back-to-top" title="Go to top" style="display: none;">↑ Top</button>
             <script>
@@ -301,32 +901,57 @@
                     var safeTitle = podcast.title.replace(/'/g, "\\'");
                     var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
 
-                    var playButton = podcast.mp3url
-                        ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}', ${podcast.id})">Stream</button>`
-                        : `<button class="btn btn-secondary" disabled>No Stream</button>`;
+                    // Primary action - Stream button (full width)
+                    var streamButton = podcast.mp3url
+                        ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}', ${podcast.id})">
+                           <i class="fas fa-play" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Episode</span></button>`
+                        : `<button class="btn btn-secondary" disabled>
+                           <i class="fas fa-ban" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Not Available</span></button>`;
 
-                    var listenButton = `<a href="${podcast.url}" class="btn btn-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">TMASTL</a>`;
+                    // Secondary actions - Share (70%) and Download (30%)
+                    var shareButton = podcast.id
+                        ? `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">
+                           <i class="fas fa-share" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Share</span></a>`
+                        : `<button class="btn btn-secondary btn-share" disabled>
+                           <i class="fas fa-share" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Share</span></button>`;
 
                     var downloadButton = podcast.mp3url
-                        ? `<a href="${podcast.mp3url}" download class="btn btn-info" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Download</a>`
-                        : '';
+                        ? `<a href="${podcast.mp3url}" download class="btn btn-success btn-download" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })" title="Download Episode">
+                           <i class="fas fa-download" style="font-size: 14px;"></i></a>`
+                        : `<button class="btn btn-secondary btn-download" disabled title="Download Not Available">
+                           <i class="fas fa-ban" style="font-size: 14px;"></i></button>`;
 
-                    var shareButton = podcast.id
-                        ? `<a href="${episodeLink}" class="btn btn-dark" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">Shareable Page</a>`
-                        : '';
+                    // Tertiary action - TMASTL (smaller, full width)
+                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">
+                                        <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">Listen on TMASTL</span></a>`;
 
                     return `
-        <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="card mb-3">
-                <div class="card-body">
+        <div class="col-lg-4 col-md-6 col-12">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title">${podcast.title}</h5>
-                    <p class="card-text"><small class="text-muted">${podcast.date}</small></p>
-                    <p class="card-text">${podcast.show_notes}</p>
-                    ${playButton}
-                    ${downloadButton}
-                    ${listenButton}
-                    <button class="btn btn-secondary" onclick="searchSpotify('${safeTitle}')">Spotify</button>
-                    ${shareButton}
+                    <div class="card-date">
+                        <i class="fas fa-calendar mr-1"></i>${podcast.date}
+                    </div>
+                    <div class="card-description flex-grow-1">${podcast.show_notes}</div>
+                    
+                    <div class="card-actions">
+                        <!-- Primary Action -->
+                        <div class="primary-action">
+                            ${streamButton}
+                        </div>
+                        
+                        <!-- Secondary Actions -->
+                        <div class="secondary-actions">
+                            ${shareButton}
+                            ${downloadButton}
+                        </div>
+                        
+                        <!-- Tertiary Action -->
+                        <div class="tertiary-action">
+                            ${tmastlButton}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>`;

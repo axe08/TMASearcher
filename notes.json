@@ -1,0 +1,12 @@
+{
+  "notes": "Welcome to TMA Searcher! This tool helps you search through TMA podcast episodes.",
+  "updates": [
+    {
+      "date": "2024-08-27",
+      "content": "Mobile optimization complete! Templates have been redesigned for better mobile experience with improved layouts, button spacing, and dark mode consistency."
+    }
+  ],
+  "known_issues": [
+    "Spotify search temporarily disabled"
+  ]
+}
