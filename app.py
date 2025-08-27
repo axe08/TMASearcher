@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 from dotenv import load_dotenv
 from fuzzywuzzy import process
+import re
 
 # Load environment variables
 load_dotenv('spot.env')
@@ -13,6 +14,59 @@ load_dotenv('spot.env')
 
 app = Flask(__name__)
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
+
+def parse_date_input(date_input):
+    """
+    Parse flexible date input and return SQL pattern for matching.
+    Supports:
+    - Year: 2023 -> '2023%'
+    - Month/Year: 05/2022, 2022-05 -> '2022-05%' 
+    - Full date: 2023-11-06 -> '2023-11-06%'
+    """
+    if not date_input or not date_input.strip():
+        return None
+        
+    date_input = date_input.strip()
+    
+    # Pattern 1: Year only (4 digits)
+    if re.match(r'^\d{4}$', date_input):
+        return f'{date_input}%'
+    
+    # Pattern 2: MM/YYYY format
+    mm_yyyy_match = re.match(r'^(\d{1,2})/(\d{4})$', date_input)
+    if mm_yyyy_match:
+        month, year = mm_yyyy_match.groups()
+        month = month.zfill(2)  # Pad with zero if needed
+        return f'{year}-{month}%'
+    
+    # Pattern 3: YYYY-MM format 
+    yyyy_mm_match = re.match(r'^(\d{4})-(\d{1,2})$', date_input)
+    if yyyy_mm_match:
+        year, month = yyyy_mm_match.groups()
+        month = month.zfill(2)  # Pad with zero if needed
+        return f'{year}-{month}%'
+    
+    # Pattern 4: Full date formats (YYYY-MM-DD, MM/DD/YYYY, etc.)
+    # Try to parse as full date and convert to YYYY-MM-DD format
+    try:
+        # Try YYYY-MM-DD first (our storage format)
+        if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', date_input):
+            parts = date_input.split('-')
+            year, month, day = parts[0], parts[1].zfill(2), parts[2].zfill(2)
+            return f'{year}-{month}-{day}%'
+        
+        # Try MM/DD/YYYY format
+        mm_dd_yyyy_match = re.match(r'^(\d{1,2})/(\d{1,2})/(\d{4})$', date_input)
+        if mm_dd_yyyy_match:
+            month, day, year = mm_dd_yyyy_match.groups()
+            month, day = month.zfill(2), day.zfill(2)
+            return f'{year}-{month}-{day}%'
+            
+    except (ValueError, IndexError):
+        pass
+    
+    # Fallback: use original input with wildcard (existing behavior)
+    return f'%{date_input}%'
 
 def get_spotify_access_token():
     """Retrieve Spotify access token."""
@@ -198,8 +252,10 @@ def search_database(table_name, title, date, notes, match_type):
 
             # Date condition
             if date:
-                conditions.append("DATE LIKE ?")
-                params.append(f'%{date}%')
+                date_pattern = parse_date_input(date)
+                if date_pattern:
+                    conditions.append("DATE LIKE ?")
+                    params.append(date_pattern)
 
             # Constructing the query based on conditions
             if match_type == 'all':
@@ -349,10 +405,12 @@ def search_archive():
 
     # Search by date
     if date:
-        conditions = " AND date LIKE ?"
-        query += conditions
-        count_query += conditions
-        params.append(f'%{date}%')
+        date_pattern = parse_date_input(date)
+        if date_pattern:
+            conditions = " AND date LIKE ?"
+            query += conditions
+            count_query += conditions
+            params.append(date_pattern)
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
