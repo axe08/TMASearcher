@@ -191,7 +191,52 @@
             });
         });
     </script>
-    <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
+    <script>
+        // Environment-aware Umami tracking
+        const isProduction = window.location.hostname === 'tmasearcher.com';
+        const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
+                         window.location.hostname === '192.168.1.153';
+        
+        let websiteId;
+        if (isProduction) {
+            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
+        } else if (isStaging) {
+            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
+        } else {
+            console.log('Analytics disabled - unknown environment');
+        }
+        
+        // Load Umami script dynamically (only if we have a valid website ID)
+        if (websiteId) {
+            const script = document.createElement('script');
+            script.defer = true;
+            script.src = 'https://analytics.tmasearcher.com/script.js';
+            script.setAttribute('data-website-id', websiteId);
+            
+            // Add enhanced page tracking after script loads
+            script.onload = function() {
+                if (typeof umami !== 'undefined') {
+                    // Keep original event for continuity
+                    umami.track('Shareable Page View', {
+                        episode: "{{ episode.title }}",
+                        date: "{{ episode.date }}"
+                    });
+                    
+                    // New detailed tracking
+                    umami.track('Page View Detailed', {
+                        page_type: 'episode',
+                        section: 'episode_detail',
+                        episode_title: "{{ episode.title }}",
+                        episode_date: "{{ episode.date }}",
+                        referrer_type: getReferrerType(),
+                        session_id: getSessionId()
+                    });
+                }
+            };
+            
+            document.head.appendChild(script);
+        }
+    </script>
 </head>
 
 <body>
@@ -258,20 +303,33 @@
         const episodeId = {{ episode.id | tojson }};
         const progressKey = `progress-${episodeId}`;
     
-        // Apply dark mode + track page view
+        // Session management for analytics
+        function getSessionId() {
+            let sessionId = localStorage.getItem('tma_session');
+            if (!sessionId) {
+                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('tma_session', sessionId);
+            }
+            return sessionId;
+        }
+        
+        function getReferrerType() {
+            const referrer = document.referrer;
+            if (!referrer) return 'direct';
+            if (referrer.includes('tmasearcher.com')) return 'internal';
+            if (referrer.includes('google.com')) return 'search_google';
+            if (referrer.includes('bing.com')) return 'search_bing';
+            return 'external';
+        }
+    
+        // Apply dark mode + enhanced page tracking
         document.addEventListener("DOMContentLoaded", function () {
             // Restore dark mode
             if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark-mode');
             }
     
-            // Umami page tracking
-            if (typeof umami !== 'undefined') {
-                umami.track('Shareable Page View', {
-                    episode: "{{ episode.title }}",
-                    date: "{{ episode.date }}"
-                });
-            }
+            // Enhanced page tracking now handled by script.onload
     
             // Restore playback position
             const saved = localStorage.getItem(progressKey);

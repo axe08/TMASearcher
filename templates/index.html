@@ -847,8 +847,43 @@
             }
         }
     </style>
-    <script defer src="https://analytics.tmasearcher.com/script.js"
-        data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
+    <script>
+        // Environment-aware Umami tracking
+        const isProduction = window.location.hostname === 'tmasearcher.com';
+        const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
+                         window.location.hostname === '192.168.1.153';
+        
+        let websiteId;
+        if (isProduction) {
+            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
+        } else if (isStaging) {
+            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
+        } else {
+            console.log('Analytics disabled - unknown environment');
+        }
+        
+        // Load Umami script dynamically (only if we have a valid website ID)
+        if (websiteId) {
+            const script = document.createElement('script');
+            script.defer = true;
+            script.src = 'https://analytics.tmasearcher.com/script.js';
+            script.setAttribute('data-website-id', websiteId);
+            
+            // Add enhanced page tracking after script loads
+            script.onload = function() {
+                if (typeof umami !== 'undefined') {
+                    umami.track('Page View Detailed', {
+                        page_type: 'index',
+                        section: 'main',
+                        referrer_type: getReferrerType(),
+                        session_id: getSessionId()
+                    });
+                }
+            };
+            
+            document.head.appendChild(script);
+        }
+    </script>
 </head>
 
 <body>
@@ -942,6 +977,29 @@
                 //playback history
                 let currentEpisodeId = null;
                 let audioPlayer = null;
+                // Enhanced tracking function for search result interactions
+                function trackSearchResultInteraction(action, episode, date, extraData = {}) {
+                    if (typeof umami !== 'undefined') {
+                        const searchQuery = lastSearchParams ? 
+                            [lastSearchParams.title, lastSearchParams.date, lastSearchParams.notes].filter(Boolean).join(' | ') : '';
+                        
+                        // Keep original event for continuity
+                        umami.track(action, { episode, date, ...extraData });
+                        
+                        // Add new enhanced search result interaction tracking
+                        if (searchQuery) {
+                            umami.track('Search Result Interaction', {
+                                action_type: action.toLowerCase().replace(' click', ''),
+                                episode_title: episode,
+                                episode_date: date,
+                                search_query: searchQuery,
+                                session_id: getSessionId(),
+                                ...extraData
+                            });
+                        }
+                    }
+                }
+
                 function createPodcastCard(podcast) {
                     var safeTitle = podcast.title.replace(/'/g, "\\'");
                     var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
@@ -955,19 +1013,19 @@
 
                     // Secondary actions - Share (70%) and Download (30%)
                     var shareButton = podcast.id
-                        ? `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">
+                        ? `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="trackSearchResultInteraction('Shareable Page Click', '${safeTitle}', '${podcast.date}')">
                            <i class="fas fa-share" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Share</span></a>`
                         : `<button class="btn btn-secondary btn-share" disabled>
                            <i class="fas fa-share" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Share</span></button>`;
 
                     var downloadButton = podcast.mp3url
-                        ? `<a href="${podcast.mp3url}" download class="btn btn-success btn-download" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })" title="Download Episode">
+                        ? `<a href="${podcast.mp3url}" download class="btn btn-success btn-download" onclick="trackSearchResultInteraction('Download Click', '${safeTitle}', '${podcast.date}')" title="Download Episode">
                            <i class="fas fa-download" style="font-size: 14px;"></i></a>`
                         : `<button class="btn btn-secondary btn-download" disabled title="Download Not Available">
                            <i class="fas fa-ban" style="font-size: 14px;"></i></button>`;
 
                     // Tertiary action - TMASTL (smaller, full width)
-                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">
+                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary" onclick="trackSearchResultInteraction('TMASTL Click', '${safeTitle}', '${podcast.date}')">
                                         <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">Listen on TMASTL</span></a>`;
 
                     return `
@@ -1057,6 +1115,20 @@
                                 var cardHtml = createPodcastCard(podcast);
                                 resultsBody.append(cardHtml);
                             });
+
+                            // Track search results analytics (only on first page)
+                            if (page === 1 && typeof umami !== 'undefined') {
+                                const searchQuery = [lastSearchParams.title, lastSearchParams.date, lastSearchParams.notes].filter(Boolean).join(' | ');
+                                const searchResultsData = {
+                                    search_query: searchQuery,
+                                    results_count: data.podcasts.length,
+                                    total_pages: data.pagination.total_pages,
+                                    has_results: data.podcasts.length > 0,
+                                    match_type: lastSearchParams.matchType,
+                                    session_id: getSessionId()
+                                };
+                                umami.track('Search Results', searchResultsData);
+                            }
 
                             // Update pagination
                             currentPage = data.pagination.page;
@@ -1157,12 +1229,20 @@
                         var matchType = $('#matchType').val();
 
                         if (typeof umami !== 'undefined') {
-                            umami.track('Search Performed', {
-                                title: title,
-                                date: date,
-                                notes: notes,
-                                matchType: matchType
-                            });
+                            // Enhanced search tracking with search context - filter out empty values
+                            const searchQuery = [title, date, notes].filter(Boolean).join(' | ');
+                            const trackingData = {
+                                query: searchQuery,
+                                type: matchType,
+                                count: '1' // Simple string value for testing
+                            };
+                            
+                            // Only include non-empty search fields  
+                            if (title) trackingData.title_search = title;
+                            if (date) trackingData.date_search = date;
+                            if (notes) trackingData.notes_search = notes;
+                            
+                            umami.track('Search Performed', trackingData);
                         }
 
                         performSearch(1);
@@ -1206,9 +1286,12 @@
                 }
 
                 // Reset tab title when playback ends
-                document.getElementById('audioPlayer').addEventListener('ended', function () {
-                    document.title = "Podcast Search"; // Change back to default
-                });
+                const audioElement = document.getElementById('audioPlayer');
+                if (audioElement) {
+                    audioElement.addEventListener('ended', function () {
+                        document.title = "Podcast Search"; // Change back to default
+                    });
+                }
 
                 // Reopen the audio player modal
                 function reopenPlayer() {
@@ -1217,16 +1300,16 @@
 
                 // Play/Pause toggle for the modal and bottom control bar
                 function toggleAudioPlayPause() {
-                    var audioPlayer = document.getElementById('audioPlayer');
+                    const audioElement = document.getElementById('audioPlayer');
                     var playPauseBtn = document.getElementById('controlPlayPauseBtn');
                     var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
 
-                    if (audioPlayer.paused) {
-                        audioPlayer.play();
+                    if (audioElement.paused) {
+                        audioElement.play();
                         playPauseBtn.textContent = "Pause";        // Update control bar button
                         modalPlayPauseBtn.textContent = "Pause";   // Update modal button
                     } else {
-                        audioPlayer.pause();
+                        audioElement.pause();
                         playPauseBtn.textContent = "Play";         // Update control bar button
                         modalPlayPauseBtn.textContent = "Play";    // Update modal button
                     }
@@ -1234,29 +1317,38 @@
 
                 // Ensure the control bar is shown when the modal is closed
                 $('#audioPlayerModal').on('hide.bs.modal', function () {
-                    var audioPlayer = document.getElementById('audioPlayer');
+                    const audioElement = document.getElementById('audioPlayer');
 
                     // If audio is still playing, show the bottom bar
-                    if (!audioPlayer.paused && !audioPlayer.ended) {
+                    if (audioElement && !audioElement.paused && !audioElement.ended) {
                         document.getElementById('audioControlBar').style.display = 'flex';
                     }
+                    
+                    // Fix aria-hidden accessibility issue by removing focus from modal elements
+                    $(this).find('button, input, select, textarea, [tabindex]:not([tabindex="-1"])').blur();
                 });
 
                 // Hide the control bar when the audio ends
-                document.getElementById('audioPlayer').addEventListener('ended', function () {
-                    document.getElementById('audioControlBar').style.display = 'none';
-                });
+                const audioPlayerElement = document.getElementById('audioPlayer');
+                if (audioPlayerElement) {
+                    audioPlayerElement.addEventListener('ended', function () {
+                        const controlBar = document.getElementById('audioControlBar');
+                        if (controlBar) {
+                            controlBar.style.display = 'none';
+                        }
+                    });
+                }
 
                 // Seek audio forward/backward by a specific number of seconds
                 function seekAudio(seconds) {
-                    var audioPlayer = document.getElementById('audioPlayer');
-                    audioPlayer.currentTime += seconds;
+                    const audioElement = document.getElementById('audioPlayer');
+                    if (audioElement) {
+                        audioElement.currentTime += seconds;
+                    }
                 }
 
                 function trackStream(title, date, mp3url, id) {
-                    if (typeof umami !== 'undefined') {
-                        umami.track('Stream Click', { episode: title, date: date });
-                    }
+                    trackSearchResultInteraction('Stream Click', title, date);
                     openPlayer(title, mp3url, date, id);
                 }
             </script>
@@ -1351,6 +1443,27 @@
                 </div>
             </div>
             <script>
+                // Session management for analytics
+                function getSessionId() {
+                    let sessionId = localStorage.getItem('tma_session');
+                    if (!sessionId) {
+                        sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        localStorage.setItem('tma_session', sessionId);
+                    }
+                    return sessionId;
+                }
+                
+                function getReferrerType() {
+                    const referrer = document.referrer;
+                    if (!referrer) return 'direct';
+                    if (referrer.includes('tmasearcher.com')) return 'internal';
+                    if (referrer.includes('google.com')) return 'search_google';
+                    if (referrer.includes('bing.com')) return 'search_bing';
+                    return 'external';
+                }
+
+                // Enhanced page tracking will be called after script loads
+
                 // Check for new updates and show the "New" badge if updates are unseen
                 document.addEventListener("DOMContentLoaded", () => {
                     fetch('/notes.json')
