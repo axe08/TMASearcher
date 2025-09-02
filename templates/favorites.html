@@ -1157,20 +1157,27 @@
 
         // Environment-aware Umami tracking setup
         function getSessionId() {
-            let sessionId = sessionStorage.getItem('tma_session_id');
+            let sessionId = localStorage.getItem('tma_session');
             if (!sessionId) {
                 sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                sessionStorage.setItem('tma_session_id', sessionId);
+                localStorage.setItem('tma_session', sessionId);
             }
             return sessionId;
         }
 
-        // Only load analytics in production (when served from tmasearcher.com)
-        if (window.location.hostname === 'tmasearcher.com' || window.location.hostname.includes('tmasearcher')) {
+        // Environment-aware analytics setup
+        let websiteId;
+        if (window.location.hostname === 'tmasearcher.com') {
+            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
+        } else if (window.location.hostname.includes('tmasearcher') || window.location.hostname.includes('pythonanywhere')) {
+            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
+        }
+
+        if (websiteId) {
             const script = document.createElement('script');
             script.defer = true;
             script.src = 'https://analytics.tmasearcher.com/script.js';
-            script.setAttribute('data-website-id', 'db811831-d34a-4968-9ec0-67828c6ce545');
+            script.setAttribute('data-website-id', websiteId);
             document.head.appendChild(script);
 
             // Add enhanced page tracking after script loads
