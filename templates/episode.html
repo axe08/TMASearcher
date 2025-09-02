@@ -379,17 +379,13 @@
     </script>
     <script>
         // Environment-aware Umami tracking
-        const isProduction = window.location.hostname === 'tmasearcher.com';
-        const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
-                         window.location.hostname === '192.168.1.153';
-        
         let websiteId;
-        if (isProduction) {
+        if (window.location.hostname === 'tmasearcher.com') {
             websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
-        } else if (isStaging) {
+        } else if (window.location.hostname.includes('tmasearcher') || window.location.hostname.includes('pythonanywhere')) {
             websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
         } else {
-            console.log('Analytics disabled - unknown environment');
+            console.log('Analytics disabled - unknown environment:', window.location.hostname);
         }
         
         // Load Umami script dynamically (only if we have a valid website ID)
