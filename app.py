@@ -86,6 +86,10 @@ def get_spotify_access_token():
 def index():
     return render_template('index.html')
 
+@app.route('/favorites')
+def favorites():
+    return render_template('favorites.html')
+
 @app.route('/search_spotify', methods=['GET'])
 def search_spotify():
     title = request.args.get('title')
@@ -446,6 +450,87 @@ def search_archive():
             'prev_num': page - 1 if has_prev else None
         }
     })
+
+@app.route('/related_episodes/<int:episode_id>')
+def related_episodes(episode_id):
+    """Get related episodes from the same time period (±1 week)"""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Get the current episode's date
+    cursor.execute("SELECT date FROM TMA WHERE id = ?", (episode_id,))
+    episode_result = cursor.fetchone()
+    
+    if not episode_result:
+        return jsonify({'error': 'Episode not found'}), 404
+    
+    episode_date = episode_result[0]
+    
+    # Query for episodes within ±1 week, excluding the current episode
+    # Added randomization while still prioritizing proximity to date
+    query = """
+    SELECT id, title, date, url, show_notes, mp3url 
+    FROM TMA 
+    WHERE id != ? 
+    AND date BETWEEN date(?, '-7 days') AND date(?, '+7 days')
+    ORDER BY RANDOM()
+    LIMIT 6
+    """
+    
+    cursor.execute(query, (episode_id, episode_date, episode_date))
+    all_candidates = cursor.fetchall()
+    
+    # If we have candidates, randomly select 4 from the 6 retrieved
+    if len(all_candidates) > 4:
+        import random
+        related = random.sample(all_candidates, 4)
+    else:
+        related = all_candidates
+    conn.close()
+    
+    related_episodes = []
+    for episode in related:
+        related_episodes.append({
+            'id': episode[0],
+            'title': episode[1],
+            'date': episode[2],
+            'url': episode[3],
+            'show_notes': episode[4],
+            'mp3url': episode[5]
+        })
+    
+    return jsonify({'related_episodes': related_episodes})
+
+@app.route('/random_episode')
+def random_episode():
+    """Get a random episode from the database"""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Get a random episode
+    cursor.execute("""
+        SELECT id, title, date, url, show_notes, mp3url 
+        FROM TMA 
+        ORDER BY RANDOM() 
+        LIMIT 1
+    """)
+    
+    episode = cursor.fetchone()
+    conn.close()
+    
+    if episode:
+        return jsonify({
+            'episode': {
+                'id': episode[0],
+                'title': episode[1],
+                'date': episode[2],
+                'url': episode[3],
+                'show_notes': episode[4],
+                'mp3url': episode[5]
+            }
+        })
+    else:
+        return jsonify({'error': 'No episodes found'}), 404
 
 @app.route('/notes.json')
 def notes():

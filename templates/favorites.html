@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>My Favorites | TMA Searcher</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- jQuery, Popper.js, and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    
+    <style>
+        /* Base styles with mobile-first approach */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+            font-size: 16px;
+            padding-bottom: 0;
+            transition: padding-bottom 0.3s ease;
+        }
+        
+        body.audio-playing {
+            padding-bottom: 80px;
+        }
+        
+        /* Episode Progress Indicators */
+        .episode-progress-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0,123,255,0.1);
+            border-radius: 12px;
+            padding: 2px 6px;
+            border: 1px solid rgba(0,123,255,0.2);
+        }
+        
+        .dark-mode .episode-progress-indicator {
+            background: rgba(99,179,237,0.15);
+            border-color: rgba(99,179,237,0.3);
+        }
+        
+        .dark-mode .episode-progress-indicator span {
+            color: #63b3ed !important;
+        }
+        
+        .dark-mode .episode-progress-indicator i {
+            color: #63b3ed !important;
+        }
+
+        /* Favorites Heart Button */
+        .favorite-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+        }
+        
+        .favorite-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
+        }
+        
+        .favorite-btn .heart {
+            font-size: 16px;
+            transition: all 0.2s ease;
+            color: #dc3545;
+        }
+        
+        .favorite-btn.favorited .heart {
+            color: #dc3545;
+        }
+        
+        .favorite-btn:not(.favorited) .heart {
+            color: #6c757d;
+        }
+        
+        .dark-mode .favorite-btn {
+            background: rgba(31, 41, 55, 0.9);
+        }
+        
+        .dark-mode .favorite-btn:hover {
+            background: rgba(31, 41, 55, 1);
+        }
+
+        /* Primary search button */
+        .search-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            height: 44px;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,123,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .search-button:hover {
+            background: linear-gradient(135deg, #0056b3, #003d82);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+            color: white;
+        }
+
+        .search-button:active {
+            transform: translateY(0);
+        }
+
+        /* Secondary utility button */
+        .utility-button {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            color: #495057;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            height: 44px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .utility-button:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            transform: translateY(-1px);
+        }
+
+        /* Tighter card spacing for more cards per screen */
+        #resultsBody .card {
+            margin: 0 7px 1rem 7px !important;
+        }
+        
+        /* Ensure no horizontal overflow */
+        #results {
+            overflow-x: hidden;
+        }
+        
+        #resultsBody {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        /* Header with inline buy-me-coffee */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .header-container h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin: 0;
+            color: #343a40;
+        }
+
+        .dark-mode .header-container h1 {
+            color: #f9fafb;
+        }
+
+        /* Buy me coffee in header */
+        .header-coffee {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-coffee img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Single row navigation */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .nav-btn i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        /* Dark mode toggle as compact button */
+        .dark-toggle {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: white;
+        }
+
+        .dark-toggle:hover {
+            background: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+
+        /* Dark mode styles for compact nav */
+        .dark-mode .nav-btn {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+        }
+
+        /* Tablet and larger screens - consolidated */
+        @media (min-width: 576px) {
+            /* Optimized card spacing for tablets+ */
+            #resultsBody .card {
+                margin: 0 10px 1.25rem 10px !important;
+            }
+
+            .card-body {
+                padding: 1.25rem;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+                margin-bottom: 0.375rem;
+            }
+
+            .card-date {
+                margin-bottom: 0.625rem;
+            }
+
+            .card-description {
+                margin-bottom: 1rem;
+            }
+
+            .card-actions {
+                padding-top: 1rem;
+                margin-top: 1rem;
+            }
+
+            .secondary-actions {
+                padding: 0 1.25rem;
+            }
+
+            .primary-action .btn {
+                height: 38px;
+                font-size: 15px;
+            }
+
+            .secondary-actions .btn-share {
+                height: 34px;
+                font-size: 14px;
+            }
+
+            .secondary-actions .btn-download {
+                height: 34px;
+                font-size: 16px;
+            }
+
+            .tertiary-action .btn {
+                height: 32px;
+                font-size: 13px;
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            line-height: 1.25;
+            color: #212529;
+        }
+
+        .dark-mode .card-title {
+            color: #f8f9fa;
+        }
+
+        .card-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .dark-mode .card-date {
+            color: #adb5bd;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            line-height: 1.35;
+            margin-bottom: 0.75rem;
+            color: #495057;
+        }
+
+        .dark-mode .card-description {
+            color: #ced4da;
+        }
+
+        .btn {
+            min-height: 44px;
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 10px 16px;
+            margin: 4px 2px;
+            font-size: 14px;
+        }
+
+        /* Fixed card button layout with proper constraints */
+        .card-actions {
+            border-top: 1px solid #e9ecef;
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+            margin-left: 0;
+            margin-right: 0;
+            padding-left: 0;
+            padding-right: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .dark-mode .card-actions {
+            border-top-color: #495057;
+        }
+
+        /* Button group centering and constraints */
+        .primary-action,
+        .secondary-actions,
+        .tertiary-action {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .primary-action {
+            margin-bottom: 0.4rem;
+        }
+
+        .primary-action .btn {
+            width: 100%;
+            height: 34px;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .secondary-actions {
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            align-items: stretch;
+            padding: 0 1rem;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .secondary-actions .btn-share {
+            flex: 0 0 calc(70% - 0.25rem);
+            height: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            max-width: calc(70% - 0.25rem);
+        }
+
+        .secondary-actions .btn-download {
+            flex: 0 0 calc(30% - 0.25rem);
+            height: 30px;
+            font-size: 14px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            min-width: 0;
+            max-width: calc(30% - 0.25rem);
+        }
+
+        .tertiary-action {
+            justify-content: center;
+        }
+
+        .tertiary-action .btn {
+            width: 100%;
+            height: 28px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            line-height: 1;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 100%;
+            }
+
+            .header-container h2 {
+                font-size: 2.5rem;
+            }
+        }
+
+        body.dark-mode {
+            background-color: #111827;
+            color: #f9fafb;
+        }
+
+        /* Dark mode button styles */
+        .dark-mode .search-button {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+        }
+
+        .dark-mode .search-button:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+        }
+
+        .dark-mode .utility-button {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .utility-button:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+        
+        /* Responsive improvements */
+        @media (min-width: 480px) {
+            .top-nav {
+                gap: 12px;
+            }
+            
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-height: 40px;
+            }
+            
+            .nav-btn i {
+                margin-right: 6px;
+            }
+            
+            .header-coffee img {
+                height: 36px;
+            }
+        }
+        
+        /* Larger screens */
+        @media (min-width: 768px) {
+            .header-container h1 {
+                font-size: 2.25rem;
+            }
+            
+            .container {
+                max-width: 800px;
+            }
+            
+            .top-nav {
+                gap: 16px;
+            }
+            
+            .header-coffee img {
+                height: 40px;
+            }
+        }
+
+        .dark-mode a {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .dark-mode .card {
+            background-color: #1f2937;
+            color: #f9fafb;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
+        .dark-mode .btn-success {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white !important;
+        }
+        
+        .dark-mode .btn-info {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white !important;
+        }
+        
+        .dark-mode .btn-primary {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: white !important;
+        }
+        
+        .dark-mode .btn-outline-success {
+            color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .dark-mode .btn-outline-success:hover {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .dark-mode .btn-outline-dark {
+            color: #f9fafb;
+            border-color: #6b7280;
+        }
+        
+        .dark-mode .btn-outline-dark:hover {
+            background-color: #6b7280;
+            border-color: #6b7280;
+            color: white;
+        }
+
+        .dark-mode .card a {
+            color: #60a5fa;
+        }
+
+        /* Empty state styles */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        
+        .dark-mode .empty-state {
+            color: #9ca3af;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .empty-state p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Favorites counter */
+        .favorites-counter {
+            background: rgba(0,123,255,0.1);
+            color: #007bff;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(0,123,255,0.2);
+        }
+        
+        .dark-mode .favorites-counter {
+            background: rgba(59,130,246,0.15);
+            color: #63b3ed;
+            border-color: rgba(59,130,246,0.3);
+        }
+
+        /* Condensed Search Box */
+        .condensed-search {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+        }
+        
+        .dark-mode .condensed-search {
+            background: #1f2937;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .search-input-group {
+            position: relative;
+        }
+        
+        .search-input-group input {
+            padding-right: 100px;
+            height: 40px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 2px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input-group input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.15rem rgba(0,123,255,0.15);
+            outline: none;
+        }
+        
+        .search-clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .search-clear-btn:hover {
+            background: #5a6268;
+        }
+        
+        .dark-mode .search-input-group input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+        
+        .dark-mode .search-input-group input:focus {
+            border-color: #6366f1;
+            background-color: #374151;
+        }
+
+        /* Search term highlighting */
+        .search-highlight {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 1px 2px;
+            border-radius: 3px;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .dark-mode .search-highlight {
+            background-color: #d4a617;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container my-3">
+        <!-- Header with inline Buy Me Coffee -->
+        <div class="header-container">
+            <div class="d-flex align-items-center">
+                <h1>My Favorites</h1>
+                <span id="favoritesCounter" class="favorites-counter ml-3">0 episodes</span>
+            </div>
+            <div class="header-coffee">
+                <a href="https://www.buymeacoffee.com/tmasearcher" target="_blank">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee">
+                </a>
+            </div>
+        </div>
+        
+        <!-- Single Row Navigation -->
+        <div class="top-nav">
+            <a href="/" class="nav-btn">
+                <i class="fas fa-clock"></i>Recent
+            </a>
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn">
+                <i class="fas fa-archive"></i>Archive
+            </a>
+            <a href="/favorites" class="nav-btn active">
+                <i class="fas fa-heart"></i>Favorites
+            </a>
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle">
+                <i class="fas fa-moon"></i>Dark
+            </button>
+        </div>
+        
+        <!-- Condensed Search -->
+        <div class="condensed-search">
+            <div class="search-input-group">
+                <input 
+                    type="text" 
+                    id="favoritesSearch" 
+                    class="form-control" 
+                    placeholder="Search your favorites..."
+                    oninput="searchFavorites(this.value)"
+                >
+                <button type="button" class="search-clear-btn" onclick="clearFavoritesSearch()">
+                    Clear
+                </button>
+            </div>
+        </div>
+        
+        <!-- Favorites Actions -->
+        <div class="d-flex justify-content-center mb-4">
+            <button type="button" class="utility-button mr-2" onclick="clearAllFavorites()">
+                <i class="fas fa-trash-alt"></i>Clear All
+            </button>
+            <button type="button" class="utility-button" onclick="exportFavorites()">
+                <i class="fas fa-download"></i>Export List
+            </button>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="far fa-heart"></i>
+            <h3>No favorites yet</h3>
+            <p>Start adding episodes to your favorites by clicking the heart icon on any episode card.</p>
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-search mr-2"></i>Browse Episodes
+            </a>
+        </div>
+        
+        <!-- Favorites Results -->
+        <div id="results" class="mt-4">
+            <div class="row" id="resultsBody">
+                <!-- Favorite episodes will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Favorites Management System
+        function getFavorites() {
+            const favorites = localStorage.getItem('tma_favorites');
+            return favorites ? JSON.parse(favorites) : {};
+        }
+        
+        function saveFavorites(favorites) {
+            localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+        }
+        
+        function isFavorited(episodeId) {
+            const favorites = getFavorites();
+            return favorites.hasOwnProperty(episodeId);
+        }
+        
+        function removeFromFavorites(episodeId, episodeTitle = '', episodeDate = '') {
+            const favorites = getFavorites();
+            delete favorites[episodeId];
+            saveFavorites(favorites);
+            
+            // Reload favorites display
+            loadFavorites();
+        }
+        
+        function updateFavoriteButton(button, isFav) {
+            if (isFav) {
+                button.classList.add('favorited');
+                button.querySelector('.heart').classList.remove('far');
+                button.querySelector('.heart').classList.add('fas');
+                button.title = 'Remove from favorites';
+            } else {
+                button.classList.remove('favorited');
+                button.querySelector('.heart').classList.remove('fas');
+                button.querySelector('.heart').classList.add('far');
+                button.title = 'Add to favorites';
+            }
+        }
+        
+        function handleFavoriteClick(episodeId, title, date, showNotes, mp3url, url, buttonElement) {
+            // Confirmation dialog for removal
+            if (confirm('Remove this episode from your favorites?')) {
+                removeFromFavorites(episodeId, title, date);
+                
+                // Show brief feedback toast (will implement toast later if needed)
+                buttonElement.title = 'Removed from favorites!';
+                setTimeout(() => {
+                    // The card will be removed from DOM when loadFavorites() runs
+                }, 500);
+            }
+        }
+
+        // Search term highlighting function (copied from main page)
+        function highlightSearchTerms(text, searchTerm) {
+            if (!text || !searchTerm || searchTerm.trim() === '') return text;
+            
+            // Split search term into individual words and filter out short words
+            const words = searchTerm.trim().split(/\s+/).filter(word => word.length > 2);
+            if (words.length === 0) return text;
+            
+            // Create regex pattern (case insensitive)
+            const pattern = words.map(word => 
+                word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape special regex chars
+            ).join('|');
+            
+            const regex = new RegExp(`(${pattern})`, 'gi');
+            
+            // Highlight matches
+            return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+        }
+
+        // Search favorites functionality
+        let currentSearchTerm = '';
+        
+        function searchFavorites(searchTerm) {
+            currentSearchTerm = searchTerm;
+            loadFavorites();
+        }
+        
+        function clearFavoritesSearch() {
+            document.getElementById('favoritesSearch').value = '';
+            currentSearchTerm = '';
+            loadFavorites();
+        }
+        
+        function createFavoriteCard(favorite) {
+            const safeTitle = favorite.title.replace(/'/g, "\\'");
+            const episodeLink = `/episode/${favorite.id}`;
+            
+            // Apply search highlighting to title and notes
+            const displayTitle = highlightSearchTerms(favorite.title, currentSearchTerm);
+            const displayNotes = highlightSearchTerms(favorite.show_notes, currentSearchTerm);
+            
+            // Check for progress indicator
+            let progressHtml = '';
+            const savedProgress = localStorage.getItem(`progress-${favorite.id}`);
+            if (savedProgress) {
+                const progressTime = parseFloat(savedProgress);
+                const minutes = Math.floor(progressTime / 60);
+                const seconds = Math.floor(progressTime % 60);
+                const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                progressHtml = `
+                    <div class="episode-progress-indicator" title="Resume from ${timeString}">
+                        <i class="fas fa-play-circle mr-1" style="color: #007bff; font-size: 0.8rem;"></i>
+                        <span style="font-size: 0.75rem; color: #007bff; font-weight: 500;">Resume ${timeString}</span>
+                    </div>
+                `;
+            }
+            
+            // Favorite button (always shows as favorited since we're on favorites page)
+            const favoriteButton = `
+                <button class="favorite-btn favorited" 
+                        onclick="handleFavoriteClick(${favorite.id}, '${safeTitle}', '${favorite.date}', '${favorite.show_notes.replace(/'/g, "\\'")}', '${favorite.mp3url}', '${favorite.url}', this)" 
+                        title="Remove from favorites">
+                    <i class="heart fas fa-heart"></i>
+                </button>
+            `;
+
+            // Stream button
+            const streamButton = favorite.mp3url
+                ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${favorite.mp3url}', '${favorite.date}', ${favorite.id})">
+                   <i class="fas fa-play" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Episode</span></button>`
+                : `<button class="btn btn-secondary" disabled>
+                   <i class="fas fa-ban" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Not Available</span></button>`;
+
+            // Share and download buttons
+            const shareButton = `<a href="${episodeLink}" class="btn btn-info btn-share">
+                               <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Segment Page</span></a>`;
+
+            const downloadButton = favorite.mp3url
+                ? `<a href="${favorite.mp3url}" download class="btn btn-success btn-download" title="Download Episode">
+                   <i class="fas fa-download" style="font-size: 14px;"></i></a>`
+                : `<button class="btn btn-secondary btn-download" disabled title="Download Not Available">
+                   <i class="fas fa-ban" style="font-size: 14px;"></i></button>`;
+
+            const tmastlButton = `<a href="${favorite.url}" class="btn btn-outline-primary">
+                                <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">Listen on TMASTL</span></a>`;
+
+            return `
+        <div class="col-lg-4 col-md-6 col-12">
+            <div class="card h-100" style="position: relative;">
+                ${favoriteButton}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">
+                        <a href="${episodeLink}" style="text-decoration: none; color: inherit;">${displayTitle}</a>
+                    </h5>
+                    <div class="card-date">
+                        <i class="fas fa-calendar mr-1"></i>${favorite.date}
+                        ${progressHtml}
+                    </div>
+                    <div class="card-description flex-grow-1">${displayNotes}</div>
+                    
+                    <div class="card-actions">
+                        <div class="primary-action">
+                            ${streamButton}
+                        </div>
+                        
+                        <div class="secondary-actions">
+                            ${shareButton}
+                            ${downloadButton}
+                        </div>
+                        
+                        <div class="tertiary-action">
+                            ${tmastlButton}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        }
+        
+        function loadFavorites() {
+            const favorites = getFavorites();
+            let favoritesList = Object.values(favorites);
+            const resultsBody = document.getElementById('resultsBody');
+            const emptyState = document.getElementById('emptyState');
+            const counter = document.getElementById('favoritesCounter');
+            
+            // Filter favorites based on search term
+            if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+                const searchWords = currentSearchTerm.trim().toLowerCase().split(/\s+/).filter(word => word.length > 2);
+                favoritesList = favoritesList.filter(favorite => {
+                    const titleMatch = searchWords.some(word => favorite.title.toLowerCase().includes(word));
+                    const notesMatch = searchWords.some(word => favorite.show_notes.toLowerCase().includes(word));
+                    return titleMatch || notesMatch;
+                });
+            }
+            
+            // Update counter
+            const totalCount = Object.keys(favorites).length;
+            const filteredCount = favoritesList.length;
+            if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+                counter.textContent = `${filteredCount} of ${totalCount} episode${totalCount !== 1 ? 's' : ''}`;
+            } else {
+                counter.textContent = `${totalCount} episode${totalCount !== 1 ? 's' : ''}`;
+            }
+            
+            if (favoritesList.length === 0) {
+                resultsBody.innerHTML = '';
+                if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+                    // Show "no results found" instead of empty state
+                    resultsBody.innerHTML = `
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-search text-muted" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                <h4>No matches found</h4>
+                                <p class="text-muted">Try different search terms or <button class="btn btn-link p-0" onclick="clearFavoritesSearch()">clear your search</button></p>
+                            </div>
+                        </div>
+                    `;
+                    emptyState.style.display = 'none';
+                } else {
+                    emptyState.style.display = 'block';
+                }
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // Sort by date added (most recent first)
+            favoritesList.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
+            
+            // Generate cards
+            let html = '';
+            favoritesList.forEach(favorite => {
+                html += createFavoriteCard(favorite);
+            });
+            
+            resultsBody.innerHTML = html;
+        }
+        
+        function clearAllFavorites() {
+            if (confirm('Are you sure you want to remove all favorites? This action cannot be undone.')) {
+                localStorage.removeItem('tma_favorites');
+                loadFavorites();
+            }
+        }
+        
+        function exportFavorites() {
+            const favorites = getFavorites();
+            const favoritesList = Object.values(favorites);
+            
+            if (favoritesList.length === 0) {
+                alert('No favorites to export.');
+                return;
+            }
+            
+            // Create export data
+            let exportText = 'My TMA Searcher Favorites\n';
+            exportText += '========================\n\n';
+            
+            favoritesList.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            
+            favoritesList.forEach((fav, index) => {
+                exportText += `${index + 1}. ${fav.title}\n`;
+                exportText += `   Date: ${fav.date}\n`;
+                exportText += `   Link: ${window.location.origin}/episode/${fav.id}\n`;
+                if (fav.show_notes) {
+                    exportText += `   Notes: ${fav.show_notes}\n`;
+                }
+                exportText += '\n';
+            });
+            
+            // Download as text file
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'tma-favorites.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Simple audio player functions (copied from main page)
+        let currentEpisodeId = null;
+        let audioPlayer = null;
+
+        function openPlayer(title, mp3url, date, id) {
+            // For now, just redirect to the episode page
+            window.location.href = `/episode/${id}`;
+        }
+
+        // Dark mode functionality
+        document.getElementById('dark-mode-toggle').addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        // Check for saved user preference on page load
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Load favorites when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFavorites();
+        });
+    </script>
+</body>
+</html>

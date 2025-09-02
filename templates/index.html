@@ -28,6 +28,192 @@
             color: #343a40;
             line-height: 1.6;
             font-size: 16px;
+            padding-bottom: 0;
+            transition: padding-bottom 0.3s ease;
+        }
+        
+        body.audio-playing {
+            padding-bottom: 80px; /* Height of audio control bar + some margin */
+        }
+        
+        /* Episode Progress Indicators */
+        .episode-progress-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0,123,255,0.1);
+            border-radius: 12px;
+            padding: 2px 6px;
+            border: 1px solid rgba(0,123,255,0.2);
+        }
+        
+        .dark-mode .episode-progress-indicator {
+            background: rgba(99,179,237,0.15);
+            border-color: rgba(99,179,237,0.3);
+        }
+        
+        .dark-mode .episode-progress-indicator span {
+            color: #63b3ed !important;
+        }
+        
+        .dark-mode .episode-progress-indicator i {
+            color: #63b3ed !important;
+        }
+        
+        /* Search term highlighting */
+        .search-highlight {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 1px 2px;
+            border-radius: 3px;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .dark-mode .search-highlight {
+            background-color: #d4a617;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+        
+        /* Random Episode Button */
+        .random-episode-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 32px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Favorites Heart Button */
+        .favorite-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+        }
+        
+        .favorite-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
+        }
+        
+        .favorite-btn .heart {
+            font-size: 16px;
+            transition: all 0.2s ease;
+            color: #dc3545;
+        }
+        
+        .favorite-btn.favorited .heart {
+            color: #dc3545;
+        }
+        
+        .favorite-btn:not(.favorited) .heart {
+            color: #6c757d;
+        }
+        
+        .dark-mode .favorite-btn {
+            background: rgba(31, 41, 55, 0.9);
+        }
+        
+        .dark-mode .favorite-btn:hover {
+            background: rgba(31, 41, 55, 1);
+        }
+
+        /* Toast Notifications */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 250px;
+        }
+        
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+        
+        .toast-notification.remove {
+            background: #dc3545;
+        }
+        
+        .toast-notification i {
+            font-size: 16px;
+        }
+        
+        .dark-mode .toast-notification {
+            background: #059669;
+        }
+        
+        .dark-mode .toast-notification.remove {
+            background: #dc2626;
+        }
+        
+        .random-episode-btn:hover {
+            background: linear-gradient(135deg, #ff5757, #e04848);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            color: white;
+        }
+        
+        .random-episode-btn:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.3);
+            color: white;
+        }
+        
+        .random-episode-btn i {
+            animation: spin 2s linear infinite;
+            animation-play-state: paused;
+        }
+        
+        .random-episode-btn:hover i {
+            animation-play-state: running;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .dark-mode .random-episode-btn {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+        }
+        
+        .dark-mode .random-episode-btn:hover {
+            background: linear-gradient(135deg, #fc8181, #f56565);
+            box-shadow: 0 6px 20px rgba(245, 101, 101, 0.4);
         }
 
         /* Primary search button */
@@ -846,9 +1032,45 @@
                 margin: 10px 0;
             }
         }
+        
     </style>
-    <script defer src="https://analytics.tmasearcher.com/script.js"
-        data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
+    <script>
+        // Environment-aware Umami tracking
+        const isProduction = window.location.hostname === 'tmasearcher.com';
+        const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
+                         window.location.hostname === '192.168.1.153';
+        
+        let websiteId;
+        if (isProduction) {
+            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
+        } else if (isStaging) {
+            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
+        } else {
+            console.log('Analytics disabled - unknown environment');
+        }
+        
+        // Load Umami script dynamically (only if we have a valid website ID)
+        if (websiteId) {
+            const script = document.createElement('script');
+            script.defer = true;
+            script.src = 'https://analytics.tmasearcher.com/script.js';
+            script.setAttribute('data-website-id', websiteId);
+            
+            // Add enhanced page tracking after script loads
+            script.onload = function() {
+                if (typeof umami !== 'undefined') {
+                    umami.track('Page View Detailed', {
+                        page_type: 'index',
+                        section: 'main',
+                        referrer_type: getReferrerType(),
+                        session_id: getSessionId()
+                    });
+                }
+            };
+            
+            document.head.appendChild(script);
+        }
+    </script>
 </head>
 
 <body>
@@ -870,6 +1092,10 @@
             </a>
             <a href="{{ url_for('tma_archive') }}" class="nav-btn">
                 <i class="fas fa-archive"></i>Archive
+            </a>
+            <a href="/favorites" class="nav-btn" id="favoritesNavLink">
+                <i class="fas fa-heart"></i>Favorites
+                <span id="favoritesNavBadge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;"></span>
             </a>
             <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal">
                 <i class="fas fa-bell"></i>Updates
@@ -911,10 +1137,22 @@
                 
                 <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
                 
-                <button type="submit" class="search-button">
-                    <i class="fas fa-search"></i>Search Episodes
-                </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="search-button" style="flex: 1;">
+                        <i class="fas fa-search"></i>Search Episodes
+                    </button>
+                    <button type="button" class="utility-button" onclick="clearSearch()" style="min-width: 100px;">
+                        <i class="fas fa-times"></i>Clear
+                    </button>
+                </div>
             </form>
+            
+            <!-- Random Episode Button -->
+            <div class="text-center mt-3">
+                <button type="button" class="btn random-episode-btn" onclick="getRandomEpisode()">
+                    <i class="fas fa-dice mr-2"></i>Random Episode
+                </button>
+            </div>
         </div>
         </div>
         
@@ -942,9 +1180,384 @@
                 //playback history
                 let currentEpisodeId = null;
                 let audioPlayer = null;
+                
+                // Phase 1: Enhanced session management
+                function savePlayerSession(episodeId, title, mp3url, date, currentTime, isPlaying) {
+                    const sessionData = {
+                        episodeId: episodeId,
+                        title: title,
+                        mp3url: mp3url,
+                        date: date,
+                        currentTime: currentTime || 0,
+                        isPlaying: isPlaying || false,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('lastPlayerSession', JSON.stringify(sessionData));
+                }
+                
+                function loadPlayerSession() {
+                    const sessionData = localStorage.getItem('lastPlayerSession');
+                    if (sessionData) {
+                        try {
+                            return JSON.parse(sessionData);
+                        } catch (e) {
+                            console.error('Error parsing player session:', e);
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+                
+                function clearPlayerSession() {
+                    localStorage.removeItem('lastPlayerSession');
+                }
+                
+                function initializePlayerFromSession() {
+                    const session = loadPlayerSession();
+                    if (session && session.episodeId) {
+                        // Show the collapsed player with session info
+                        currentEpisodeId = session.episodeId;
+                        document.getElementById('currentTrackTitle').innerText = `${session.title} (${session.date})`;
+                        document.getElementById('audioControlBar').style.display = 'flex';
+                        document.body.classList.add('audio-playing'); // Add padding when audio bar shows
+                        
+                        // Set up the audio player
+                        $('#audioSource').attr('src', session.mp3url);
+                        audioPlayer.load();
+                        
+                        // Update play/pause button state
+                        const playPauseBtn = document.getElementById('controlPlayPauseBtn');
+                        if (session.isPlaying) {
+                            // Set up to resume playing
+                            audioPlayer.currentTime = session.currentTime;
+                            playPauseBtn.textContent = "Pause";
+                        } else {
+                            // Set up in paused state
+                            audioPlayer.currentTime = session.currentTime;
+                            playPauseBtn.textContent = "Play";
+                        }
+                        
+                        document.title = session.title;
+                    }
+                }
+                
+                // Phase 2: Search context management
+                function saveSearchContext(searchParams, resultsCount, currentPage) {
+                    const searchContext = {
+                        title: searchParams.title || '',
+                        date: searchParams.date || '',
+                        notes: searchParams.notes || '',
+                        matchType: searchParams.matchType || 'all',
+                        currentPodcast: searchParams.currentPodcast || 'TMA',
+                        resultsCount: resultsCount || 0,
+                        currentPage: currentPage || 1,
+                        timestamp: Date.now()
+                    };
+                    sessionStorage.setItem('searchContext', JSON.stringify(searchContext));
+                }
+                
+                function loadSearchContext() {
+                    const contextData = sessionStorage.getItem('searchContext');
+                    if (contextData) {
+                        try {
+                            return JSON.parse(contextData);
+                        } catch (e) {
+                            console.error('Error parsing search context:', e);
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+                
+                function clearSearchContext() {
+                    sessionStorage.removeItem('searchContext');
+                }
+                
+                function restoreSearchFromContext() {
+                    const context = loadSearchContext();
+                    if (context) {
+                        // Restore form fields
+                        $('input[name="title"]').val(context.title);
+                        $('input[name="date"]').val(context.date);
+                        $('input[name="notes"]').val(context.notes);
+                        $('#matchType').val(context.matchType);
+                        $('#currentPodcast').val(context.currentPodcast);
+                        
+                        // Re-run the search to restore results
+                        lastSearchParams = {
+                            title: context.title,
+                            date: context.date, 
+                            notes: context.notes,
+                            matchType: context.matchType,
+                            currentPodcast: context.currentPodcast
+                        };
+                        
+                        // Restore the search results
+                        if (context.title || context.date || context.notes) {
+                            // We had an actual search, restore it
+                            performSearch(context.currentPage);
+                        } else if (context.currentPodcast) {
+                            // We had recent episodes loaded, restore them
+                            fetchPodcast(context.currentPodcast, context.currentPage);
+                        }
+                        
+                        return true;
+                    }
+                    return false;
+                }
+                
+                // Search term highlighting function
+                function highlightSearchTerms(text, searchParams) {
+                    if (!text || !searchParams) return text;
+                    
+                    const { title, notes, matchType } = searchParams;
+                    let terms = [];
+                    
+                    // Collect search terms based on what was searched
+                    if (title) terms.push(title);
+                    if (notes) terms.push(notes);
+                    
+                    if (terms.length === 0) return text;
+                    
+                    // Process terms based on match type
+                    let searchTerms = [];
+                    if (matchType === 'exact') {
+                        // For exact match, highlight the full phrases
+                        searchTerms = terms;
+                    } else {
+                        // For "all" match, split into individual words
+                        terms.forEach(term => {
+                            const words = term.split(/\s+/).filter(word => word.length > 2); // Only words longer than 2 chars
+                            searchTerms = searchTerms.concat(words);
+                        });
+                    }
+                    
+                    if (searchTerms.length === 0) return text;
+                    
+                    // Create regex pattern (case insensitive)
+                    const pattern = searchTerms.map(term => 
+                        term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape special regex chars
+                    ).join('|');
+                    
+                    const regex = new RegExp(`(${pattern})`, 'gi');
+                    
+                    // Highlight matches
+                    return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+                }
+                
+                // Phase 3: Search by date function
+                function searchByDate(date) {
+                    // Clear all search context first
+                    clearSearchContext();
+                    
+                    // Clear existing search and set up date search
+                    $('input[name="title"]').val('');
+                    $('input[name="date"]').val(date);
+                    $('input[name="notes"]').val('');
+                    $('#matchType').val('exact');
+                    $('#currentPodcast').val('TMA');
+                    
+                    // Set up fresh search params
+                    lastSearchParams = {
+                        title: '',
+                        date: date,
+                        notes: '',
+                        matchType: 'exact',
+                        currentPodcast: 'TMA'
+                    };
+                    
+                    // Track this action
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Episodes on This Day Click', {
+                            search_date: date,
+                            session_id: getSessionId()
+                        });
+                    }
+                    
+                    // Perform the search
+                    performSearch(1);
+                    
+                    // Scroll to results
+                    setTimeout(function() {
+                        $('#results').get(0).scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+                
+                // Favorites Management System
+                function getFavorites() {
+                    const favorites = localStorage.getItem('tma_favorites');
+                    return favorites ? JSON.parse(favorites) : {};
+                }
+                
+                function saveFavorites(favorites) {
+                    localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+                }
+                
+                function isFavorited(episodeId) {
+                    const favorites = getFavorites();
+                    return favorites.hasOwnProperty(episodeId);
+                }
+                
+                function addToFavorites(episodeId, episodeData) {
+                    const favorites = getFavorites();
+                    favorites[episodeId] = {
+                        id: episodeId,
+                        title: episodeData.title,
+                        date: episodeData.date,
+                        show_notes: episodeData.show_notes,
+                        mp3url: episodeData.mp3url,
+                        url: episodeData.url,
+                        addedAt: Date.now()
+                    };
+                    saveFavorites(favorites);
+                    
+                    // Track favorite added
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Episode Favorited', {
+                            episode_title: episodeData.title,
+                            episode_date: episodeData.date,
+                            session_id: getSessionId()
+                        });
+                    }
+                }
+                
+                function removeFromFavorites(episodeId, episodeTitle = '', episodeDate = '') {
+                    const favorites = getFavorites();
+                    delete favorites[episodeId];
+                    saveFavorites(favorites);
+                    
+                    // Track favorite removed
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Episode Unfavorited', {
+                            episode_title: episodeTitle,
+                            episode_date: episodeDate,
+                            session_id: getSessionId()
+                        });
+                    }
+                }
+                
+                function toggleFavorite(episodeId, episodeData) {
+                    if (isFavorited(episodeId)) {
+                        removeFromFavorites(episodeId, episodeData.title, episodeData.date);
+                        return false; // Not favorited anymore
+                    } else {
+                        addToFavorites(episodeId, episodeData);
+                        return true; // Now favorited
+                    }
+                }
+                
+                function updateFavoriteButton(button, isFav) {
+                    if (isFav) {
+                        button.classList.add('favorited');
+                        button.querySelector('.heart').classList.remove('far');
+                        button.querySelector('.heart').classList.add('fas');
+                        button.title = 'Remove from favorites';
+                    } else {
+                        button.classList.remove('favorited');
+                        button.querySelector('.heart').classList.remove('fas');
+                        button.querySelector('.heart').classList.add('far');
+                        button.title = 'Add to favorites';
+                    }
+                }
+                
+                // Clear search function
+                function clearSearch() {
+                    // Clear all form fields
+                    $('input[name="title"]').val('');
+                    $('input[name="date"]').val('');
+                    $('input[name="notes"]').val('');
+                    $('#matchType').val('all');
+                    $('#currentPodcast').val('TMA');
+                    
+                    // Clear search context and params
+                    clearSearchContext();
+                    lastSearchParams = null;
+                    
+                    // Clear URL if needed
+                    if (window.location.search) {
+                        window.history.pushState({}, document.title, window.location.pathname);
+                    }
+                    
+                    // Reset to recent episodes
+                    fetchPodcast('TMA');
+                    
+                    // Track this action
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Clear Search Click', {
+                            session_id: getSessionId()
+                        });
+                    }
+                }
+                
+                // Enhanced tracking function for search result interactions
+                function trackSearchResultInteraction(action, episode, date, extraData = {}) {
+                    if (typeof umami !== 'undefined') {
+                        const searchQuery = lastSearchParams ? 
+                            [lastSearchParams.title, lastSearchParams.date, lastSearchParams.notes].filter(Boolean).join(' | ') : '';
+                        
+                        // Keep original event for continuity
+                        umami.track(action, { episode, date, ...extraData });
+                        
+                        // Add new enhanced search result interaction tracking
+                        if (searchQuery) {
+                            umami.track('Search Result Interaction', {
+                                action_type: action.toLowerCase().replace(' click', ''),
+                                episode_title: episode,
+                                episode_date: date,
+                                search_query: searchQuery,
+                                session_id: getSessionId(),
+                                ...extraData
+                            });
+                        }
+                    }
+                }
+
                 function createPodcastCard(podcast) {
                     var safeTitle = podcast.title.replace(/'/g, "\\'");
                     var episodeLink = podcast.id ? `/episode/${podcast.id}` : '#';
+                    
+                    // Apply search highlighting to title and notes
+                    var displayTitle = highlightSearchTerms(podcast.title, lastSearchParams);
+                    var displayNotes = highlightSearchTerms(podcast.show_notes, lastSearchParams);
+                    
+                    // Check for progress indicator
+                    var progressHtml = '';
+                    if (podcast.id) {
+                        const savedProgress = localStorage.getItem(`progress-${podcast.id}`);
+                        if (savedProgress) {
+                            // We don't have duration info, so we'll show a simple "Resume" indicator
+                            const progressTime = parseFloat(savedProgress);
+                            const minutes = Math.floor(progressTime / 60);
+                            const seconds = Math.floor(progressTime % 60);
+                            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                            
+                            progressHtml = `
+                                <div class="episode-progress-indicator" title="Resume from ${timeString}">
+                                    <i class="fas fa-play-circle mr-1" style="color: #007bff; font-size: 0.8rem;"></i>
+                                    <span style="font-size: 0.75rem; color: #007bff; font-weight: 500;">Resume ${timeString}</span>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // Favorite button - check if this episode is favorited
+                    var isFav = podcast.id ? isFavorited(podcast.id) : false;
+                    var heartIcon = isFav ? 'fas fa-heart' : 'far fa-heart';
+                    var favClass = isFav ? 'favorited' : '';
+                    var favTitle = isFav ? 'Remove from favorites' : 'Add to favorites';
+                    
+                    // Clean show notes for JavaScript - remove newlines and escape quotes
+                    var cleanShowNotes = podcast.show_notes.replace(/[\r\n]+/g, ' ').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    var cleanMp3Url = (podcast.mp3url || '').replace(/'/g, "\\'");
+                    var cleanUrl = (podcast.url || '').replace(/'/g, "\\'");
+                    
+                    var favoriteButton = podcast.id ? `
+                        <button class="favorite-btn ${favClass}" 
+                                onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
+                                title="${favTitle}">
+                            <i class="heart ${heartIcon}"></i>
+                        </button>
+                    ` : '';
 
                     // Primary action - Stream button (full width)
                     var streamButton = podcast.mp3url
@@ -955,30 +1568,38 @@
 
                     // Secondary actions - Share (70%) and Download (30%)
                     var shareButton = podcast.id
-                        ? `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="umami.track('Shareable Page Click', { episode: '${safeTitle}', date: '${podcast.date}' })">
-                           <i class="fas fa-share" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Share</span></a>`
+                        ? `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="trackSearchResultInteraction('Shareable Page Click', '${safeTitle}', '${podcast.date}')">
+                           <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Segment Page</span></a>`
                         : `<button class="btn btn-secondary btn-share" disabled>
-                           <i class="fas fa-share" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Share</span></button>`;
+                           <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Segment Page</span></button>`;
 
                     var downloadButton = podcast.mp3url
-                        ? `<a href="${podcast.mp3url}" download class="btn btn-success btn-download" onclick="umami.track('Download Click', { episode: '${safeTitle}', date: '${podcast.date}' })" title="Download Episode">
+                        ? `<a href="${podcast.mp3url}" download class="btn btn-success btn-download" onclick="trackSearchResultInteraction('Download Click', '${safeTitle}', '${podcast.date}')" title="Download Episode">
                            <i class="fas fa-download" style="font-size: 14px;"></i></a>`
                         : `<button class="btn btn-secondary btn-download" disabled title="Download Not Available">
                            <i class="fas fa-ban" style="font-size: 14px;"></i></button>`;
 
-                    // Tertiary action - TMASTL (smaller, full width)
-                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary" onclick="umami.track('TMASTL Click', { episode: '${safeTitle}', date: '${podcast.date}' })">
+                    // Tertiary action - TMASTL (smaller, full width) 
+                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary" onclick="trackSearchResultInteraction('TMASTL Click', '${safeTitle}', '${podcast.date}')">
                                         <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">Listen on TMASTL</span></a>`;
+                                        
+                    // Phase 3: Episodes on this day button
+                    var episodesOnThisDayButton = `<button class="btn btn-outline-secondary" onclick="searchByDate('${podcast.date}')" title="Find episodes from ${podcast.date}">
+                                                   <i class="fas fa-calendar" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">This Day</span></button>`;
 
                     return `
         <div class="col-lg-4 col-md-6 col-12">
-            <div class="card h-100">
+            <div class="card h-100" style="position: relative;">
+                ${favoriteButton}
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${podcast.title}</h5>
+                    <h5 class="card-title">
+                        <a href="${episodeLink}" style="text-decoration: none; color: inherit;" onclick="trackSearchResultInteraction('Episode Title Click', '${safeTitle}', '${podcast.date}')">${displayTitle}</a>
+                    </h5>
                     <div class="card-date">
                         <i class="fas fa-calendar mr-1"></i>${podcast.date}
+                        ${progressHtml}
                     </div>
-                    <div class="card-description flex-grow-1">${podcast.show_notes}</div>
+                    <div class="card-description flex-grow-1">${displayNotes}</div>
                     
                     <div class="card-actions">
                         <!-- Primary Action -->
@@ -995,6 +1616,11 @@
                         <!-- Tertiary Action -->
                         <div class="tertiary-action">
                             ${tmastlButton}
+                        </div>
+                        
+                        <!-- Phase 3: Episodes on this day action -->
+                        <div class="tertiary-action" style="margin-top: 0.4rem;">
+                            ${episodesOnThisDayButton}
                         </div>
                     </div>
                 </div>
@@ -1057,6 +1683,40 @@
                                 var cardHtml = createPodcastCard(podcast);
                                 resultsBody.append(cardHtml);
                             });
+
+                            // Phase 2: Save search context after successful search
+                            saveSearchContext(lastSearchParams, data.podcasts.length, data.pagination.page);
+
+                            // Browser history management - push search state to history
+                            if (page === 1) { // Only push to history on new searches, not pagination
+                                const searchQuery = new URLSearchParams({
+                                    title: lastSearchParams.title || '',
+                                    date: lastSearchParams.date || '',
+                                    notes: lastSearchParams.notes || '',
+                                    matchType: lastSearchParams.matchType || 'all',
+                                    currentPodcast: lastSearchParams.currentPodcast || 'TMA'
+                                });
+                                const newUrl = `/?search=true&${searchQuery.toString()}`;
+                                window.history.pushState({
+                                    type: 'search',
+                                    params: lastSearchParams,
+                                    page: page
+                                }, document.title, newUrl);
+                            }
+
+                            // Track search results analytics (only on first page)
+                            if (page === 1 && typeof umami !== 'undefined') {
+                                const searchQuery = [lastSearchParams.title, lastSearchParams.date, lastSearchParams.notes].filter(Boolean).join(' | ');
+                                const searchResultsData = {
+                                    search_query: searchQuery,
+                                    results_count: data.podcasts.length,
+                                    total_pages: data.pagination.total_pages,
+                                    has_results: data.podcasts.length > 0,
+                                    match_type: lastSearchParams.matchType,
+                                    session_id: getSessionId()
+                                };
+                                umami.track('Search Results', searchResultsData);
+                            }
 
                             // Update pagination
                             currentPage = data.pagination.page;
@@ -1124,6 +1784,16 @@
                                 resultsBody.append(cardHtml);
                             });
                             
+                            // Phase 2: Save context for recent episodes browsing too
+                            const contextParams = {
+                                title: '',
+                                date: '',
+                                notes: '',
+                                matchType: 'all',
+                                currentPodcast: podcastName
+                            };
+                            saveSearchContext(contextParams, data.episodes.length, data.pagination.page);
+                            
                             // Update pagination
                             currentPage = data.pagination.page;
                             currentPagination = data.pagination;
@@ -1136,15 +1806,83 @@
                 }
 
                 $(document).ready(function () {
-                    // Fetch recent episodes for TMA on initial page load
-                    fetchPodcast('TMA');
+                    // Phase 2: Check if we're returning from a shareable page
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const returnFromShare = urlParams.get('returnFromShare') === 'true';
+                    const searchDate = urlParams.get('searchDate');
+                    const hasSearchParams = urlParams.get('search') === 'true';
+                    
+                    if (searchDate) {
+                        // Phase 3: Handle direct date search from episode page
+                        const url = new URL(window.location);
+                        url.searchParams.delete('searchDate');
+                        window.history.replaceState({}, document.title, url);
+                        
+                        // Set up date search
+                        $('input[name="date"]').val(searchDate);
+                        $('#matchType').val('exact');
+                        $('#currentPodcast').val('TMA');
+                        
+                        // Perform the search
+                        setTimeout(function() {
+                            searchByDate(searchDate);
+                        }, 100);
+                        
+                    } else if (returnFromShare) {
+                        // Remove the URL parameter
+                        const url = new URL(window.location);
+                        url.searchParams.delete('returnFromShare');
+                        window.history.replaceState({}, document.title, url);
+                        
+                        // Try to restore search context
+                        if (!restoreSearchFromContext()) {
+                            // Fallback to recent episodes if no context
+                            fetchPodcast('TMA');
+                        }
+                    } else if (hasSearchParams) {
+                        // Browser history navigation - restore search from URL params
+                        const title = urlParams.get('title') || '';
+                        const date = urlParams.get('date') || '';
+                        const notes = urlParams.get('notes') || '';
+                        const matchType = urlParams.get('matchType') || 'all';
+                        const currentPodcast = urlParams.get('currentPodcast') || 'TMA';
+                        
+                        // Populate form fields
+                        $('input[name="title"]').val(title);
+                        $('input[name="date"]').val(date);
+                        $('input[name="notes"]').val(notes);
+                        $('#matchType').val(matchType);
+                        $('#currentPodcast').val(currentPodcast);
+                        
+                        // Set up search params
+                        lastSearchParams = { title, date, notes, matchType, currentPodcast };
+                        
+                        // Execute search
+                        performSearch(1);
+                    } else {
+                        // Normal page load - fetch recent episodes
+                        fetchPodcast('TMA');
+                    }
+                    
                     // Initialize tooltips
                     $('[data-toggle="tooltip"]').tooltip();
                     //used for playback tracking
                     audioPlayer = document.getElementById('audioPlayer');
+                    
+                    // Phase 1: Initialize player from saved session
+                    initializePlayerFromSession();
+                    
+                    // Initialize favorites badge
+                    updateFavoritesBadge();
+                    
                     audioPlayer.addEventListener('timeupdate', function () {
                         if (currentEpisodeId && !audioPlayer.paused && !audioPlayer.ended) {
                             localStorage.setItem(`progress-${currentEpisodeId}`, audioPlayer.currentTime);
+                            // Save session state with current time
+                            const session = loadPlayerSession();
+                            if (session) {
+                                savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioPlayer.currentTime, !audioPlayer.paused);
+                            }
                         }
                     });
                     // Attach the submit event to the search form
@@ -1157,12 +1895,20 @@
                         var matchType = $('#matchType').val();
 
                         if (typeof umami !== 'undefined') {
-                            umami.track('Search Performed', {
-                                title: title,
-                                date: date,
-                                notes: notes,
-                                matchType: matchType
-                            });
+                            // Enhanced search tracking with search context - filter out empty values
+                            const searchQuery = [title, date, notes].filter(Boolean).join(' | ');
+                            const trackingData = {
+                                query: searchQuery,
+                                type: matchType,
+                                count: '1' // Simple string value for testing
+                            };
+                            
+                            // Only include non-empty search fields  
+                            if (title) trackingData.title_search = title;
+                            if (date) trackingData.date_search = date;
+                            if (notes) trackingData.notes_search = notes;
+                            
+                            umami.track('Search Performed', trackingData);
                         }
 
                         performSearch(1);
@@ -1182,6 +1928,25 @@
                         document.body.scrollTop = 0; // For Safari
                         document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
                     };
+                    
+                    // Handle browser back/forward buttons
+                    window.addEventListener('popstate', function(event) {
+                        if (event.state && event.state.type === 'search') {
+                            // Restore search from history state
+                            const params = event.state.params;
+                            $('input[name="title"]').val(params.title || '');
+                            $('input[name="date"]').val(params.date || '');
+                            $('input[name="notes"]').val(params.notes || '');
+                            $('#matchType').val(params.matchType || 'all');
+                            $('#currentPodcast').val(params.currentPodcast || 'TMA');
+                            
+                            lastSearchParams = params;
+                            performSearch(event.state.page || 1);
+                        } else {
+                            // Default to recent episodes
+                            fetchPodcast('TMA');
+                        }
+                    });
                 });
                 // Handle opening the full audio player
                 function openPlayer(title, mp3url, date, id) {
@@ -1200,15 +1965,28 @@
                     audioPlayer.play();
                     document.getElementById('currentTrackTitle').innerText = `${title} (${date})`;
                     document.getElementById('audioControlBar').style.display = 'flex';
+                    document.body.classList.add('audio-playing'); // Add padding when audio bar shows
                     document.getElementById('controlPlayPauseBtn').textContent = "Pause";
                     document.title = title;
+                    
+                    // Phase 1: Save player session when starting new episode
+                    savePlayerSession(id, title, mp3url, date, audioPlayer.currentTime || 0, true);
+                    
                     $('#audioPlayerModal').modal('show');
                 }
 
                 // Reset tab title when playback ends
-                document.getElementById('audioPlayer').addEventListener('ended', function () {
-                    document.title = "Podcast Search"; // Change back to default
-                });
+                const audioElement = document.getElementById('audioPlayer');
+                if (audioElement) {
+                    audioElement.addEventListener('ended', function () {
+                        document.title = "TMA Searcher - Podcast Search"; // Change back to default
+                        // Phase 1: Clear session when episode ends
+                        clearPlayerSession();
+                        // Hide control bar when episode ends
+                        document.getElementById('audioControlBar').style.display = 'none';
+                        document.body.classList.remove('audio-playing'); // Remove padding when audio bar hides
+                    });
+                }
 
                 // Reopen the audio player modal
                 function reopenPlayer() {
@@ -1217,47 +1995,182 @@
 
                 // Play/Pause toggle for the modal and bottom control bar
                 function toggleAudioPlayPause() {
-                    var audioPlayer = document.getElementById('audioPlayer');
+                    const audioElement = document.getElementById('audioPlayer');
                     var playPauseBtn = document.getElementById('controlPlayPauseBtn');
                     var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
 
-                    if (audioPlayer.paused) {
-                        audioPlayer.play();
+                    if (audioElement.paused) {
+                        audioElement.play();
                         playPauseBtn.textContent = "Pause";        // Update control bar button
                         modalPlayPauseBtn.textContent = "Pause";   // Update modal button
+                        
+                        // Phase 1: Save playing state
+                        const session = loadPlayerSession();
+                        if (session && currentEpisodeId) {
+                            savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioElement.currentTime, true);
+                        }
                     } else {
-                        audioPlayer.pause();
+                        audioElement.pause();
                         playPauseBtn.textContent = "Play";         // Update control bar button
                         modalPlayPauseBtn.textContent = "Play";    // Update modal button
+                        
+                        // Phase 1: Save paused state
+                        const session = loadPlayerSession();
+                        if (session && currentEpisodeId) {
+                            savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioElement.currentTime, false);
+                        }
                     }
                 }
 
                 // Ensure the control bar is shown when the modal is closed
                 $('#audioPlayerModal').on('hide.bs.modal', function () {
-                    var audioPlayer = document.getElementById('audioPlayer');
+                    const audioElement = document.getElementById('audioPlayer');
 
                     // If audio is still playing, show the bottom bar
-                    if (!audioPlayer.paused && !audioPlayer.ended) {
+                    if (audioElement && !audioElement.paused && !audioElement.ended) {
                         document.getElementById('audioControlBar').style.display = 'flex';
+                        // Phase 1: Update session when modal closes while playing
+                        const session = loadPlayerSession();
+                        if (session && currentEpisodeId) {
+                            savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioElement.currentTime, !audioElement.paused);
+                        }
                     }
+                    
+                    // Fix aria-hidden accessibility issue by removing focus from modal elements
+                    $(this).find('button, input, select, textarea, [tabindex]:not([tabindex="-1"])').blur();
                 });
 
                 // Hide the control bar when the audio ends
-                document.getElementById('audioPlayer').addEventListener('ended', function () {
-                    document.getElementById('audioControlBar').style.display = 'none';
-                });
+                const audioPlayerElement = document.getElementById('audioPlayer');
+                if (audioPlayerElement) {
+                    audioPlayerElement.addEventListener('ended', function () {
+                        const controlBar = document.getElementById('audioControlBar');
+                        if (controlBar) {
+                            controlBar.style.display = 'none';
+                        }
+                    });
+                }
 
                 // Seek audio forward/backward by a specific number of seconds
                 function seekAudio(seconds) {
-                    var audioPlayer = document.getElementById('audioPlayer');
-                    audioPlayer.currentTime += seconds;
+                    const audioElement = document.getElementById('audioPlayer');
+                    if (audioElement) {
+                        audioElement.currentTime += seconds;
+                    }
                 }
 
                 function trackStream(title, date, mp3url, id) {
-                    if (typeof umami !== 'undefined') {
-                        umami.track('Stream Click', { episode: title, date: date });
-                    }
+                    trackSearchResultInteraction('Stream Click', title, date);
                     openPlayer(title, mp3url, date, id);
+                }
+                
+                // Toast notification system
+                function showToast(message, isRemove = false) {
+                    // Remove existing toast if any
+                    const existingToast = document.querySelector('.toast-notification');
+                    if (existingToast) {
+                        existingToast.remove();
+                    }
+                    
+                    const toast = document.createElement('div');
+                    toast.className = `toast-notification ${isRemove ? 'remove' : ''}`;
+                    toast.innerHTML = `
+                        <i class="fas fa-${isRemove ? 'heart-broken' : 'heart'}"></i>
+                        <span>${message}</span>
+                    `;
+                    
+                    document.body.appendChild(toast);
+                    
+                    // Show toast
+                    setTimeout(() => toast.classList.add('show'), 100);
+                    
+                    // Hide and remove toast
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 2500);
+                }
+
+                // Handle favorite button clicks
+                function handleFavoriteClick(episodeId, title, date, showNotes, mp3url, url, buttonElement) {
+                    const episodeData = {
+                        title: title,
+                        date: date,
+                        show_notes: showNotes,
+                        mp3url: mp3url,
+                        url: url
+                    };
+                    
+                    if (isFavorited(episodeId)) {
+                        // Confirmation dialog for removal
+                        if (confirm('Remove this episode from your favorites?')) {
+                            removeFromFavorites(episodeId, title, date);
+                            updateFavoriteButton(buttonElement, false);
+                            updateFavoritesBadge();
+                            showToast('Removed from favorites', true);
+                        }
+                    } else {
+                        addToFavorites(episodeId, episodeData);
+                        updateFavoriteButton(buttonElement, true);
+                        updateFavoritesBadge();
+                        showToast('Added to favorites');
+                    }
+                }
+                
+                // Update the favorites navigation badge
+                function updateFavoritesBadge() {
+                    const favorites = getFavorites();
+                    const count = Object.keys(favorites).length;
+                    const badge = document.getElementById('favoritesNavBadge');
+                    
+                    if (count > 0) {
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                
+                // Random episode functionality
+                function getRandomEpisode() {
+                    const button = document.querySelector('.random-episode-btn');
+                    const originalText = button.innerHTML;
+                    
+                    // Show loading state
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Finding Episode...';
+                    
+                    // Track random episode click
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Random Episode Click', {
+                            session_id: getSessionId()
+                        });
+                    }
+                    
+                    $.ajax({
+                        url: '/random_episode',
+                        type: 'GET',
+                        success: function(data) {
+                            // Navigate to the random episode page
+                            window.location.href = `/episode/${data.episode.id}`;
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error fetching random episode:', error);
+                            alert('Sorry, there was an error getting a random episode. Please try again.');
+                            
+                            // Reset button
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                        },
+                        complete: function() {
+                            // Reset button if still on page (in case of navigation delay)
+                            setTimeout(() => {
+                                if (button) {
+                                    button.disabled = false;
+                                    button.innerHTML = originalText;
+                                }
+                            }, 2000);
+                        }
+                    });
                 }
             </script>
 
@@ -1351,6 +2264,27 @@
                 </div>
             </div>
             <script>
+                // Session management for analytics
+                function getSessionId() {
+                    let sessionId = localStorage.getItem('tma_session');
+                    if (!sessionId) {
+                        sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        localStorage.setItem('tma_session', sessionId);
+                    }
+                    return sessionId;
+                }
+                
+                function getReferrerType() {
+                    const referrer = document.referrer;
+                    if (!referrer) return 'direct';
+                    if (referrer.includes('tmasearcher.com')) return 'internal';
+                    if (referrer.includes('google.com')) return 'search_google';
+                    if (referrer.includes('bing.com')) return 'search_bing';
+                    return 'external';
+                }
+
+                // Enhanced page tracking will be called after script loads
+
                 // Check for new updates and show the "New" badge if updates are unseen
                 document.addEventListener("DOMContentLoaded", () => {
                     fetch('/notes.json')

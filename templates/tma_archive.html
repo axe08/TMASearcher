@@ -22,6 +22,12 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             line-height: 1.6;
             background-color: #f8f9fa;
+            padding-bottom: 0;
+            transition: padding-bottom 0.3s ease;
+        }
+        
+        body.audio-playing {
+            padding-bottom: 80px; /* Height of audio control bar + some margin */
         }
 
         .custom-button {
@@ -354,7 +360,61 @@
         }
     }
     </style>
-    <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
+    <script>
+        // Environment-aware Umami tracking
+        const isProduction = window.location.hostname === 'tmasearcher.com';
+        const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
+                         window.location.hostname === '192.168.1.153';
+        
+        let websiteId;
+        if (isProduction) {
+            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
+        } else if (isStaging) {
+            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
+        } else {
+            console.log('Analytics disabled - unknown environment');
+        }
+        
+        // Session management for analytics
+        function getSessionId() {
+            let sessionId = localStorage.getItem('tma_session');
+            if (!sessionId) {
+                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('tma_session', sessionId);
+            }
+            return sessionId;
+        }
+        
+        function getReferrerType() {
+            const referrer = document.referrer;
+            if (!referrer) return 'direct';
+            if (referrer.includes('tmasearcher.com')) return 'internal';
+            if (referrer.includes('google.com')) return 'search_google';
+            if (referrer.includes('bing.com')) return 'search_bing';
+            return 'external';
+        }
+
+        // Load Umami script dynamically (only if we have a valid website ID)
+        if (websiteId) {
+            const script = document.createElement('script');
+            script.defer = true;
+            script.src = 'https://analytics.tmasearcher.com/script.js';
+            script.setAttribute('data-website-id', websiteId);
+            document.head.appendChild(script);
+            
+            // Add enhanced page tracking after script loads
+            script.onload = function() {
+                if (typeof umami !== 'undefined') {
+                    umami.track('Page View Detailed', {
+                        page_type: 'archive',
+                        section: 'archive_main',
+                        referrer_type: getReferrerType(),
+                        session_id: getSessionId()
+                    });
+                }
+            };
+        }
+    </script>
 </head>
 <body>
     <div class="container my-3">
@@ -364,6 +424,9 @@
                 <div class="d-flex gap-2">
                     <a href="/" class="btn btn-outline-primary">
                         <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="/favorites" class="btn btn-outline-primary">
+                        <i class="fas fa-heart mr-2"></i>Favorites
                     </a>
                     <button id="dark-mode-toggle" class="btn btn-outline-secondary">
                         <i class="fas fa-moon mr-2"></i>Dark Mode
@@ -505,6 +568,9 @@
                             <div class="btn-group-mobile mt-auto">
                                 ${playButton}
                                 ${downloadButton}
+                                <button class="btn btn-outline-secondary btn-sm" onclick="searchByDate('${podcast.date}')" title="Find episodes from ${podcast.date}">
+                                    <i class="fas fa-calendar mr-1"></i>This Day
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -631,6 +697,7 @@
             // Show the audio control bar
             $('#audioControlBar').show();
             $('#controlPlayPauseBtn').text('Pause');
+            document.body.classList.add('audio-playing'); // Add padding when audio bar shows
 
             // Open the modal
             $('#audioPlayerModal').modal('show');
@@ -652,11 +719,30 @@
             }
         }
         function seekAudio(seconds) {
-        var audioPlayer = document.getElementById('popupAudioPlayer'); // Ensure we are targeting the correct audio element
-        if (audioPlayer) {
-            audioPlayer.currentTime += seconds; // Add or subtract seconds from the current time
+            var audioPlayer = document.getElementById('popupAudioPlayer'); // Ensure we are targeting the correct audio element
+            if (audioPlayer) {
+                audioPlayer.currentTime += seconds; // Add or subtract seconds from the current time
+            }
         }
-    }
+
+        // Reopen the audio player modal
+        function reopenPlayer() {
+            $('#audioPlayerModal').modal('show');
+        }
+        
+        // Phase 3: Search by date function - navigate to main page with date search
+        function searchByDate(date) {
+            // Navigate to main page with date parameter and trigger search
+            window.location.href = `/?searchDate=${encodeURIComponent(date)}`;
+            
+            // Track this action
+            if (typeof umami !== 'undefined') {
+                umami.track('Episodes on This Day Click from Archive', {
+                    search_date: date,
+                    session_id: getSessionId()
+                });
+            }
+        }
 
     </script>
 </body>
