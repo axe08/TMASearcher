@@ -360,17 +360,10 @@
         }
     }
     </style>
+    
+    <!-- Umami Analytics - Static loading for reliability -->
+    <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
     <script>
-        // Environment-aware Umami tracking
-        let websiteId;
-        if (window.location.hostname === 'tmasearcher.com') {
-            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
-        } else if (window.location.hostname.includes('tmasearcher') || window.location.hostname.includes('pythonanywhere')) {
-            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
-        } else {
-            console.log('Analytics disabled - unknown environment:', window.location.hostname);
-        }
-        
         // Session management for analytics
         function getSessionId() {
             let sessionId = localStorage.getItem('tma_session');
@@ -390,26 +383,17 @@
             return 'external';
         }
 
-        // Load Umami script dynamically (only if we have a valid website ID)
-        if (websiteId) {
-            const script = document.createElement('script');
-            script.defer = true;
-            script.src = 'https://analytics.tmasearcher.com/script.js';
-            script.setAttribute('data-website-id', websiteId);
-            document.head.appendChild(script);
-            
-            // Add enhanced page tracking after script loads
-            script.onload = function() {
-                if (typeof umami !== 'undefined') {
-                    umami.track('Page View Detailed', {
-                        page_type: 'archive',
-                        section: 'archive_main',
-                        referrer_type: getReferrerType(),
-                        session_id: getSessionId()
-                    });
-                }
-            };
-        }
+        // Page load analytics tracking - now using static script tag
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof umami !== 'undefined') {
+                umami.track('Page View Detailed', {
+                    page_type: 'archive',
+                    section: 'archive_main',
+                    referrer_type: getReferrerType(),
+                    session_id: getSessionId()
+                });
+            }
+        });
     </script>
 </head>
 <body>
