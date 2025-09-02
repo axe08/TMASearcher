@@ -432,7 +432,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <h2 class="header-text mb-2 mb-sm-0">TMA Episode</h2>
                 <div class="d-flex align-items-center" style="gap: 0.5rem;">
-                    <a href="/favorites" class="btn btn-outline-primary btn-sm">
+                    <a href="/favorites" class="btn btn-outline-primary btn-sm" onclick="umami && umami.track('Favorites Navigation Click from Episode Page', {session_id: getSessionId()})">
                         <i class="fas fa-heart mr-1"></i>Favorites
                     </a>
                     <button id="dark-mode-toggle" class="btn btn-outline-secondary">

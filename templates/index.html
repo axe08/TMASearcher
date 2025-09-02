@@ -1093,7 +1093,7 @@
             <a href="{{ url_for('tma_archive') }}" class="nav-btn">
                 <i class="fas fa-archive"></i>Archive
             </a>
-            <a href="/favorites" class="nav-btn" id="favoritesNavLink">
+            <a href="/favorites" class="nav-btn" id="favoritesNavLink" onclick="umami && umami.track('Favorites Navigation Click from Search', {session_id: getSessionId()})">
                 <i class="fas fa-heart"></i>Favorites
                 <span id="favoritesNavBadge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;"></span>
             </a>

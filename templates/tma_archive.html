@@ -425,7 +425,7 @@
                     <a href="/" class="btn btn-outline-primary">
                         <i class="fas fa-home mr-2"></i>Home
                     </a>
-                    <a href="/favorites" class="btn btn-outline-primary">
+                    <a href="/favorites" class="btn btn-outline-primary" onclick="umami && umami.track('Favorites Navigation Click from Archive', {session_id: getSessionId()})">
                         <i class="fas fa-heart mr-2"></i>Favorites
                     </a>
                     <button id="dark-mode-toggle" class="btn btn-outline-secondary">

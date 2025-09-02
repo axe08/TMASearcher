@@ -894,17 +894,46 @@
             return text.replace(regex, '<mark class="search-highlight">$1</mark>');
         }
 
+        // Favorites interaction tracking function
+        function trackFavoritesInteraction(action, episode, date, extraData = {}) {
+            if (typeof umami !== 'undefined') {
+                umami.track(action, { 
+                    episode, 
+                    date, 
+                    session_id: getSessionId(),
+                    ...extraData 
+                });
+            }
+        }
+
         // Search favorites functionality
         let currentSearchTerm = '';
         
         function searchFavorites(searchTerm) {
             currentSearchTerm = searchTerm;
+            
+            // Track favorites search
+            if (typeof umami !== 'undefined' && searchTerm.trim()) {
+                umami.track('Favorites Search', {
+                    search_term: searchTerm,
+                    session_id: getSessionId()
+                });
+            }
+            
             loadFavorites();
         }
         
         function clearFavoritesSearch() {
             document.getElementById('favoritesSearch').value = '';
             currentSearchTerm = '';
+            
+            // Track favorites search clear
+            if (typeof umami !== 'undefined') {
+                umami.track('Favorites Search Clear', {
+                    session_id: getSessionId()
+                });
+            }
+            
             loadFavorites();
         }
         
@@ -944,22 +973,22 @@
 
             // Stream button
             const streamButton = favorite.mp3url
-                ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${favorite.mp3url}', '${favorite.date}', ${favorite.id})">
+                ? `<button class="btn btn-success" onclick="trackFavoritesInteraction('Stream Click from Favorites', '${safeTitle}', '${favorite.date}'); openPlayer('${safeTitle}', '${favorite.mp3url}', '${favorite.date}', ${favorite.id})">
                    <i class="fas fa-play" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Episode</span></button>`
                 : `<button class="btn btn-secondary" disabled>
                    <i class="fas fa-ban" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Not Available</span></button>`;
 
-            // Share and download buttons
-            const shareButton = `<a href="${episodeLink}" class="btn btn-info btn-share">
+            // Share and download buttons with tracking
+            const shareButton = `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="trackFavoritesInteraction('Segment Page Click from Favorites', '${safeTitle}', '${favorite.date}')">
                                <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Segment Page</span></a>`;
 
             const downloadButton = favorite.mp3url
-                ? `<a href="${favorite.mp3url}" download class="btn btn-success btn-download" title="Download Episode">
+                ? `<a href="${favorite.mp3url}" download class="btn btn-success btn-download" onclick="trackFavoritesInteraction('Download Click from Favorites', '${safeTitle}', '${favorite.date}')" title="Download Episode">
                    <i class="fas fa-download" style="font-size: 14px;"></i></a>`
                 : `<button class="btn btn-secondary btn-download" disabled title="Download Not Available">
                    <i class="fas fa-ban" style="font-size: 14px;"></i></button>`;
 
-            const tmastlButton = `<a href="${favorite.url}" class="btn btn-outline-primary">
+            const tmastlButton = `<a href="${favorite.url}" class="btn btn-outline-primary" onclick="trackFavoritesInteraction('TMASTL Click from Favorites', '${safeTitle}', '${favorite.date}')">
                                 <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">Listen on TMASTL</span></a>`;
 
             return `
@@ -968,7 +997,7 @@
                 ${favoriteButton}
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">
-                        <a href="${episodeLink}" style="text-decoration: none; color: inherit;">${displayTitle}</a>
+                        <a href="${episodeLink}" style="text-decoration: none; color: inherit;" onclick="trackFavoritesInteraction('Episode Title Click from Favorites', '${safeTitle}', '${favorite.date}')">${displayTitle}</a>
                     </h5>
                     <div class="card-date">
                         <i class="fas fa-calendar mr-1"></i>${favorite.date}
@@ -1071,6 +1100,14 @@
                 return;
             }
             
+            // Track favorites export
+            if (typeof umami !== 'undefined') {
+                umami.track('Favorites Export', {
+                    favorites_count: favoritesList.length,
+                    session_id: getSessionId()
+                });
+            }
+            
             // Create export data
             let exportText = 'My TMA Searcher Favorites\n';
             exportText += '========================\n\n';
@@ -1117,6 +1154,36 @@
                 localStorage.setItem('darkMode', 'disabled');
             }
         });
+
+        // Environment-aware Umami tracking setup
+        function getSessionId() {
+            let sessionId = sessionStorage.getItem('tma_session_id');
+            if (!sessionId) {
+                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('tma_session_id', sessionId);
+            }
+            return sessionId;
+        }
+
+        // Only load analytics in production (when served from tmasearcher.com)
+        if (window.location.hostname === 'tmasearcher.com' || window.location.hostname.includes('tmasearcher')) {
+            const script = document.createElement('script');
+            script.defer = true;
+            script.src = 'https://analytics.tmasearcher.com/script.js';
+            script.setAttribute('data-website-id', 'db811831-d34a-4968-9ec0-67828c6ce545');
+            document.head.appendChild(script);
+
+            // Add enhanced page tracking after script loads
+            script.onload = function() {
+                if (typeof umami !== 'undefined') {
+                    umami.track('Favorites Page View', {
+                        session_id: getSessionId(),
+                        user_agent: navigator.userAgent,
+                        referrer: document.referrer
+                    });
+                }
+            };
+        }
 
         // Check for saved user preference on page load
         if (localStorage.getItem('darkMode') === 'enabled') {
