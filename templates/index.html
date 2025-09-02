@@ -1546,9 +1546,14 @@
                     var favClass = isFav ? 'favorited' : '';
                     var favTitle = isFav ? 'Remove from favorites' : 'Add to favorites';
                     
+                    // Clean show notes for JavaScript - remove newlines and escape quotes
+                    var cleanShowNotes = podcast.show_notes.replace(/[\r\n]+/g, ' ').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    var cleanMp3Url = (podcast.mp3url || '').replace(/'/g, "\\'");
+                    var cleanUrl = (podcast.url || '').replace(/'/g, "\\'");
+                    
                     var favoriteButton = podcast.id ? `
                         <button class="favorite-btn ${favClass}" 
-                                onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${podcast.show_notes.replace(/'/g, "\\'")}', '${podcast.mp3url}', '${podcast.url}', this)" 
+                                onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
                                 title="${favTitle}">
                             <i class="heart ${heartIcon}"></i>
                         </button>
