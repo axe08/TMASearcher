@@ -520,7 +520,7 @@
         const progressKey = `progress-${episodeId}`;
     
         // Session management for analytics
-        function getSessionId() {
+        window.getSessionId = function getSessionId() {
             let sessionId = localStorage.getItem('tma_session');
             if (!sessionId) {
                 sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -690,8 +690,8 @@
             }
         }
         
-        // Another Random Episode functionality
-        function getAnotherRandomEpisode() {
+        // Another Random Episode functionality - ensure it's globally accessible
+        window.getAnotherRandomEpisode = function getAnotherRandomEpisode() {
             const button = document.querySelector('.btn-outline-danger');
             const originalText = button.innerHTML;
             
