@@ -9,6 +9,7 @@
     <!-- Bootstrap & Font Awesome -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -17,10 +18,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}"></script>
 
     <style>
         * {
             box-sizing: border-box;
+        }
+
+        :root {
+            --audio-bar-offset: 0px;
         }
 
         body {
@@ -33,7 +40,7 @@
         }
         
         body.audio-playing {
-            padding-bottom: calc(2rem + 80px); /* Original padding + audio control bar height */
+            padding-bottom: calc(2rem + var(--audio-bar-offset, 0px) + 20px);
         }
         
         body.dark-mode {
@@ -110,17 +117,6 @@
             grid-template-columns: 1fr;
             gap: 12px;
             margin-top: 1.5rem;
-        }
-        
-        .seek-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .seek-controls .btn {
-            min-width: 80px;
         }
         
         /* Tablet and larger */
@@ -310,46 +306,92 @@
             background: rgba(31, 41, 55, 1);
         }
 
-        /* Toast Notifications */
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 10000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .queue-btn {
+            background: none;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            position: absolute;
+            top: 1rem;
+            right: 4.25rem;
+            z-index: 10;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            min-width: 250px;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-        
-        .toast-notification.show {
-            transform: translateX(0);
+
+        .queue-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.18);
         }
-        
-        .toast-notification.remove {
-            background: #dc3545;
+
+        .queue-btn i {
+            color: #0d6efd;
+            font-size: 18px;
         }
-        
-        .toast-notification i {
-            font-size: 16px;
+
+        .dark-mode .queue-btn {
+            background: rgba(31, 41, 55, 0.95);
         }
-        
-        .dark-mode .toast-notification {
-            background: #059669;
+
+        .dark-mode .queue-btn:hover {
+            background: rgba(31, 41, 55, 1);
         }
-        
-        .dark-mode .toast-notification.remove {
-            background: #dc2626;
+
+        #audioPlayerModal .modal-content {
+            background-color: #343a40;
+            color: #f9fafb;
         }
+
+        #audioPlayerModal .modal-header,
+        #audioPlayerModal .modal-body,
+        #audioPlayerModal .modal-footer {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #audioPlayerModal .modal-dialog {
+            max-width: 480px;
+            width: calc(100% - 32px);
+            margin: 1.75rem auto;
+        }
+
+        @media (max-width: 576px) {
+            #audioPlayerModal .modal-dialog {
+                margin: 1rem auto;
+                width: calc(100% - 24px);
+            }
+        }
+
+        .dark-mode #audioPlayerModal .modal-content {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+
+        .dark-mode #audioPlayerModal .modal-header,
+        .dark-mode #audioPlayerModal .modal-body,
+        .dark-mode #audioPlayerModal .modal-footer {
+            border-color: #374151;
+        }
+
+        .dark-mode #audioPlayerModal .modal-content {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+
+        .dark-mode #audioPlayerModal .modal-header,
+        .dark-mode #audioPlayerModal .modal-body,
+        .dark-mode #audioPlayerModal .modal-footer {
+            border-color: #374151;
+        }
+
     </style>
 
     <script>
@@ -378,6 +420,8 @@
         });
     </script>
     <script>
+        const episodeDetails = {{ episode | tojson }};
+        const originalDocumentTitle = document.title;
         // Environment-aware Umami tracking
         const isProduction = window.location.hostname === 'tmasearcher.com';
         const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
@@ -404,16 +448,16 @@
                 if (typeof umami !== 'undefined') {
                     // Keep original event for continuity
                     umami.track('Shareable Page View', {
-                        episode: "{{ episode.title }}",
-                        date: "{{ episode.date }}"
+                        episode: episodeDetails.title,
+                        date: episodeDetails.date
                     });
                     
                     // New detailed tracking
                     umami.track('Page View Detailed', {
                         page_type: 'episode',
                         section: 'episode_detail',
-                        episode_title: "{{ episode.title }}",
-                        episode_date: "{{ episode.date }}",
+                        episode_title: episodeDetails.title,
+                        episode_date: episodeDetails.date,
                         referrer_type: getReferrerType(),
                         session_id: getSessionId()
                     });
@@ -445,6 +489,9 @@
         <!-- Episode Card -->
         <div class="card" style="position: relative;">
             <!-- Favorite Heart Button -->
+            <button id="episodeQueueBtn" class="queue-btn" onclick="handleAddToQueue()" title="Add to queue">
+                <i class="fas fa-plus"></i>
+            </button>
             <button id="episodeFavoriteBtn" class="episode-favorite-btn" onclick="handleEpisodeFavorite()" title="Add to favorites">
                 <i class="heart far fa-heart"></i>
             </button>
@@ -455,41 +502,32 @@
                 </p>
                 <p class="card-text mb-4">{{ episode.show_notes }}</p>
 
-                <!-- Audio Player -->
-                <div class="audio-section mb-4">
-                    <audio id="episodePlayer" controls class="w-100" preload="metadata">
-                        <source src="{{ episode.mp3url }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                    
-                    <!-- Seek Controls -->
-                    <div class="seek-controls">
-                        <button class="btn btn-outline-primary" onclick="seekAudio(-30)">
-                            <i class="fas fa-backward mr-1"></i>30s
-                        </button>
-                        <button class="btn btn-outline-primary" onclick="seekAudio(30)">
-                            30s<i class="fas fa-forward ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-                
                 <!-- Action Buttons -->
                 <div class="button-group">
+                    {% if episode.mp3url %}
+                    <button class="btn btn-success" onclick="playEpisodeFromObject(episodeDetails)" title="Stream this episode now">
+                        <i class="fas fa-play mr-2"></i>Play Episode
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary" disabled title="Stream not available">
+                        <i class="fas fa-ban mr-2"></i>Stream Not Available
+                    </button>
+                    {% endif %}
                     <a id="backButton" href="/" class="btn btn-outline-dark">
                         <i class="fas fa-arrow-left mr-2"></i><span id="backButtonText">Back</span>
                     </a>
                     <a href="{{ episode.mp3url }}" class="btn btn-success" download
-                    onclick="umami.track('Download Click', { episode: '{{ episode.title }}', date: '{{ episode.date }}' })">
+                    onclick="if (typeof umami !== 'undefined') { umami.track('Download Click', { episode: episodeDetails.title, date: episodeDetails.date }); }">
                         <i class="fas fa-download mr-2"></i>Download
                     </a>
                     <a href="{{ episode.url }}" class="btn btn-primary"
-                    onclick="umami.track('TMASTL Click', { episode: '{{ episode.title }}', date: '{{ episode.date }}' })">
+                    onclick="if (typeof umami !== 'undefined') { umami.track('TMASTL Click', { episode: episodeDetails.title, date: episodeDetails.date }); }">
                         <i class="fas fa-external-link-alt mr-2"></i>TMASTL
                     </a>
                     <button class="btn btn-info" onclick="trackCopyLink()">
                         <i class="fas fa-share mr-2"></i>Share Link
                     </button>
-                    <button class="btn btn-outline-secondary" onclick="searchByDate('{{ episode.date }}')" title="Find episodes from {{ episode.date }}">
+                    <button class="btn btn-outline-secondary" onclick="searchByDate(episodeDetails.date)" title="Find episodes from {{ episode.date }}">
                         <i class="fas fa-calendar mr-2"></i>This Day
                     </button>
                     <button class="btn btn-outline-danger" onclick="getAnotherRandomEpisode()" title="Get another random episode">
@@ -498,7 +536,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Feature #3: Related Episodes Section -->
         <div id="relatedEpisodesSection" style="display: none; margin-top: 1.5rem;">
             <div class="card">
@@ -514,11 +552,108 @@
             </div>
         </div>
     </div>
+    <!-- Audio Player Modal -->
+    <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="audioPlayerModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <audio id="audioPlayer" controls style="width: 100%;" preload="metadata">
+                        <source id="audioSource" src="" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="mt-3 d-flex justify-content-center">
+                        <button id="modalPlayPauseBtn" class="btn btn-primary mx-2" onclick="toggleAudioPlayPause()">Pause</button>
+                        <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
+                        <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="audioControlBar" class="audio-control-bar">
+        <div class="control-bar-content">
+            <span id="currentTrackTitle" class="track-title"></span>
+            <div class="control-bar-actions">
+                <div class="control-primary-actions">
+                    <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
+                    <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
+                </div>
+                <div class="control-secondary-actions">
+                    <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
+                    <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="playQueuePanel" class="play-queue-panel collapsed" style="display: none;">
+        <div class="play-queue-header" id="playQueueHeader">
+            <h6><i class="fas fa-list"></i> Queue <span id="queueCount" class="queue-count">(0)</span></h6>
+            <button type="button" id="queueCollapseBtn">Hide</button>
+        </div>
+        <div class="play-queue-body">
+            <div id="queueEmptyState" class="play-queue-empty">Your play queue is empty. Add episodes to hear them in order.</div>
+            <div id="playQueueList"></div>
+        </div>
+        <div class="play-queue-footer">
+            <button type="button" id="queueClearBtn">Clear Queue</button>
+        </div>
+    </div>
     <script>
-        const audio = document.getElementById('episodePlayer');
-        const episodeId = {{ episode.id | tojson }};
-        const progressKey = `progress-${episodeId}`;
-    
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.PlayerUI) {
+                PlayerUI.init({
+                    defaultTitle: originalDocumentTitle,
+                    onQueueAdvance: function (nextEpisode) {
+                        if (nextEpisode && nextEpisode.id) {
+                            sessionStorage.setItem('tma_queue_autoplay', '1');
+                            window.location.href = `/episode/${nextEpisode.id}`;
+                            return true;
+                        }
+                        return false;
+                    }
+                });
+            }
+        });
+
+        function handleAddToQueue() {
+            if (!episodeDetails.mp3url) {
+                alert('Stream not available for this episode.');
+                return;
+            }
+            if (typeof PlayQueue === 'undefined' || typeof PlayerUI === 'undefined') {
+                showToast('Queue unavailable', true);
+                return;
+            }
+            if (PlayQueue.contains(episodeDetails.id)) {
+                showToast('Already in queue');
+                return;
+            }
+            PlayQueue.add(episodeDetails);
+            showToast('Added to queue');
+            PlayerUI.renderQueuePanel(PlayerUI.getQueueState());
+        }
+
+        function playEpisodeFromObject(episode, options = {}) {
+            if (typeof PlayerUI === 'undefined' || !episode || !episode.mp3url) {
+                return;
+            }
+
+            const playbackOptions = { autoScroll: true, ...options };
+            const playbackEpisode = { ...episode };
+
+            if (typeof PlayQueue !== 'undefined') {
+                PlayQueue.setCurrent(playbackEpisode);
+            }
+
+            PlayerUI.startPlayback(playbackEpisode, { openModal: playbackOptions.autoScroll });
+        }
+
         // Session management for analytics
         function getSessionId() {
             let sessionId = localStorage.getItem('tma_session');
@@ -559,26 +694,22 @@
                 if (typeof umami !== 'undefined') {
                     backButton.onclick = function() {
                         umami.track('Back to Search Results Click', {
-                            episode: "{{ episode.title }}",
-                            date: "{{ episode.date }}"
+                            episode: episodeDetails.title,
+                            date: episodeDetails.date
                         });
                     };
                 }
             }
     
-            // Restore playback position
-            const saved = localStorage.getItem(progressKey);
-            if (saved) {
-                audio.currentTime = parseFloat(saved);
-            }
         });
-    
-        // Save playback progress
-        audio.addEventListener('timeupdate', function () {
-            if (!audio.paused && !audio.ended) {
-                localStorage.setItem(progressKey, audio.currentTime);
+
+        const shouldAutoplay = sessionStorage.getItem('tma_queue_autoplay');
+        if (shouldAutoplay === '1') {
+            sessionStorage.removeItem('tma_queue_autoplay');
+            if (episodeDetails.mp3url) {
+                playEpisodeFromObject(episodeDetails, { autoScroll: false });
             }
-        });
+        }
     
         function copyLink() {
             let url = window.location.href;
@@ -590,19 +721,13 @@
         function trackCopyLink() {
             if (typeof umami !== 'undefined') {
                 umami.track('Copy Link', {
-                    episode: "{{ episode.title }}",
-                    date: "{{ episode.date }}"
+                    episode: episodeDetails.title,
+                    date: episodeDetails.date
                 });
             }
             copyLink();
         }
     
-        function seekAudio(seconds) {
-            if (audio) {
-                audio.currentTime += seconds;
-            }
-        }
-        
         // Phase 3: Search by date function - navigate to main page with date search
         function searchByDate(date) {
             // Navigate to main page with date parameter and trigger search
@@ -611,7 +736,7 @@
             // Track this action
             if (typeof umami !== 'undefined') {
                 umami.track('Episodes on This Day Click from Episode Page', {
-                    episode: "{{ episode.title }}",
+                    episode: episodeDetails.title,
                     search_date: date,
                     session_id: getSessionId()
                 });
@@ -683,7 +808,7 @@
             // Track that related episodes were loaded
             if (typeof umami !== 'undefined') {
                 umami.track('Related Episodes Loaded', {
-                    episode: "{{ episode.title }}",
+                    episode: episodeDetails.title,
                     related_count: episodes.length,
                     session_id: getSessionId()
                 });
@@ -702,8 +827,8 @@
             // Track random episode click from episode page
             if (typeof umami !== 'undefined') {
                 umami.track('Another Random Episode Click', {
-                    from_episode: "{{ episode.title }}",
-                    from_date: "{{ episode.date }}",
+                    from_episode: episodeDetails.title,
+                    from_date: episodeDetails.date,
                     session_id: getSessionId()
                 });
             }
@@ -804,13 +929,7 @@
         }
         
         function handleEpisodeFavorite() {
-            const episodeData = {
-                title: "{{ episode.title }}",
-                date: "{{ episode.date }}",
-                show_notes: "{{ episode.show_notes }}",
-                mp3url: "{{ episode.mp3url }}",
-                url: "{{ episode.url }}"
-            };
+            const episodeData = { ...episodeDetails };
             
             const isFav = isFavorited(episodeId);
             
@@ -857,6 +976,8 @@
                 loadRelatedEpisodes();
             }, 500); // Small delay to let main content load first
         });
+
+        window.handleAddToQueue = handleAddToQueue;
     </script>    
 </body>
 </html>

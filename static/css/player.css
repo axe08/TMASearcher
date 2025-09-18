@@ -1,0 +1,336 @@
+/* Shared styling for the persistent audio player and play queue */
+.audio-control-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #343a40;
+    color: #ffffff;
+    padding: 12px 20px;
+    display: none;
+    justify-content: center;
+    z-index: 1030;
+    font-size: 16px;
+    box-shadow: 0px -2px 16px rgba(0, 0, 0, 0.25);
+}
+
+.audio-control-bar .track-title {
+    flex: 1 1 45%;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.audio-control-bar .btn {
+    margin: 0;
+    min-height: 44px;
+    padding: 10px 16px;
+    border-radius: 999px;
+}
+
+.audio-control-bar .btn.btn-sm {
+    min-height: 40px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+}
+
+.control-bar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+    max-width: 960px;
+}
+
+.control-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.control-primary-actions,
+.control-secondary-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dark-mode .audio-control-bar {
+    background-color: #1f2937;
+    color: #f9fafb;
+}
+
+.play-queue-panel {
+    position: fixed;
+    right: 20px;
+    bottom: calc(14px + var(--audio-bar-offset, 0px));
+    width: 320px;
+    max-width: calc(100% - 40px);
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.25s ease;
+}
+
+.play-queue-panel.collapsed {
+    max-height: 52px;
+    opacity: 0.95;
+}
+
+.play-queue-panel.collapsed .play-queue-body,
+.play-queue-panel.collapsed .play-queue-footer {
+    display: none;
+}
+
+.play-queue-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #ffffff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.play-queue-header h6 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.play-queue-header button {
+    border: none;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.play-queue-body {
+    max-height: 260px;
+    overflow-y: auto;
+    background: inherit;
+}
+
+.play-queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+    gap: 12px;
+}
+
+.play-queue-item:last-child {
+    border-bottom: none;
+}
+
+.play-queue-item.active {
+    background: rgba(0, 123, 255, 0.08);
+}
+
+.play-queue-info {
+    flex: 1;
+}
+
+.play-queue-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #212529;
+}
+
+.play-queue-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.play-queue-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.play-queue-actions button {
+    border: none;
+    background: none;
+    color: #007bff;
+    padding: 0;
+    font-size: 0.8rem;
+    text-align: right;
+}
+
+.play-queue-actions button:hover {
+    color: #0056b3;
+}
+
+.play-queue-footer {
+    padding: 10px 16px;
+    background: inherit;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.play-queue-footer button {
+    border: none;
+    background: rgba(0, 123, 255, 0.12);
+    color: #0056b3;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.play-queue-empty {
+    padding: 16px;
+    font-size: 0.9rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.dark-mode .play-queue-panel {
+    background: #1f2937;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .play-queue-item {
+    border-bottom: 1px solid #374151;
+}
+
+.dark-mode .play-queue-item.active {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.dark-mode .play-queue-title {
+    color: #f9fafb;
+}
+
+.dark-mode .play-queue-date {
+    color: #9ca3af;
+}
+
+.dark-mode .play-queue-header {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.dark-mode .play-queue-footer button {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+}
+
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 250px;
+}
+
+.toast-notification.show {
+    transform: translateX(0);
+}
+
+.toast-notification.remove {
+    background: #dc2626;
+}
+
+.toast-notification i {
+    font-size: 16px;
+}
+
+.dark-mode .toast-notification {
+    background: #059669;
+}
+
+.dark-mode .toast-notification.remove {
+    background: #b91c1c;
+}
+
+@media (max-width: 576px) {
+    .play-queue-panel {
+        right: 12px;
+        left: 12px;
+        width: calc(100% - 24px);
+        bottom: calc(8px + var(--audio-bar-offset, 0px));
+    }
+
+    .play-queue-panel.collapsed {
+        max-height: 48px;
+    }
+
+    .play-queue-header {
+        padding: 10px 14px;
+    }
+
+    .audio-control-bar {
+        padding: 14px 16px 18px;
+        border-radius: 18px 18px 0 0;
+        backdrop-filter: blur(6px);
+    }
+
+    .control-bar-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .audio-control-bar .track-title {
+        flex: 1 1 auto;
+        font-size: 0.95rem;
+        line-height: 1.35;
+    }
+
+    .control-bar-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .control-primary-actions,
+    .control-secondary-actions {
+        gap: 10px;
+    }
+
+    .control-primary-actions {
+        justify-content: space-between;
+    }
+
+    .control-secondary-actions {
+        justify-content: space-between;
+    }
+
+    .control-primary-actions .btn,
+    .control-secondary-actions .btn {
+        flex: 1;
+    }
+
+    .control-secondary-actions .btn {
+        font-size: 0.95rem;
+    }
+
+    .play-queue-panel {
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+    }
+}

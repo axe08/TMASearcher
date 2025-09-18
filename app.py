@@ -222,62 +222,64 @@ def get_podcast_data():
 
 
 
-def search_database(table_name, title, date, notes, match_type):
-    try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            query = f"SELECT ID, TITLE, DATE, URL, SHOW_NOTES, mp3url FROM {table_name} WHERE "
-            conditions = []
-            params = []
+def build_search_filters(title, date, notes, match_type):
+    """Return an SQL WHERE clause and parameters for podcast searches."""
 
-            # Function to standardize apostrophes
-            def standardize_apostrophes(text):
-                return text.replace("'", "’") if text else text
+    def standardize_apostrophes(text):
+        return text.replace("'", "’") if text else text
 
-            # Adjust search terms
-            std_title = standardize_apostrophes(title)
-            std_notes = standardize_apostrophes(notes)
+    std_title = standardize_apostrophes(title or '')
+    std_notes = standardize_apostrophes(notes or '')
 
-            # Prepare conditions for title and notes
-            if match_type == 'exact':
-                if std_title:
-                    conditions.append("REPLACE(TITLE, '''', '’') LIKE ?")
-                    params.append(f'%{std_title}%')
-                if std_notes:
-                    conditions.append("REPLACE(SHOW_NOTES, '''', '’') LIKE ?")
-                    params.append(f'%{std_notes}%')
-            else:
-                for word in std_title.split():
-                    conditions.append("REPLACE(TITLE, '''', '’') LIKE ?")
-                    params.append(f'%{word}%')
-                for word in std_notes.split():
-                    conditions.append("REPLACE(SHOW_NOTES, '''', '’') LIKE ?")
-                    params.append(f'%{word}%')
+    text_conditions = []
+    text_params = []
 
-            # Date condition
-            if date:
-                date_pattern = parse_date_input(date)
-                if date_pattern:
-                    conditions.append("DATE LIKE ?")
-                    params.append(date_pattern)
+    if match_type == 'exact':
+        if std_title:
+            text_conditions.append("REPLACE(TITLE, '''', '’') LIKE ?")
+            text_params.append(f'%{std_title}%')
+        if std_notes:
+            text_conditions.append("REPLACE(SHOW_NOTES, '''', '’') LIKE ?")
+            text_params.append(f'%{std_notes}%')
+    else:
+        for word in std_title.split():
+            text_conditions.append("REPLACE(TITLE, '''', '’') LIKE ?")
+            text_params.append(f'%{word}%')
+        for word in std_notes.split():
+            text_conditions.append("REPLACE(SHOW_NOTES, '''', '’') LIKE ?")
+            text_params.append(f'%{word}%')
 
-            # Constructing the query based on conditions
-            if match_type == 'all':
-                query += " AND ".join(conditions) if conditions else "1 = 1"
-            elif match_type == 'any':
-                query += "(" + " OR ".join(conditions) + ")" if conditions else "1 = 1"
-            else:  # For 'exact' and other cases
-                query += " AND ".join(conditions) if conditions else "1 = 1"
+    date_condition = None
+    date_param = None
+    if date:
+        date_pattern = parse_date_input(date)
+        if date_pattern:
+            date_condition = "DATE LIKE ?"
+            date_param = date_pattern
 
-            # Finalize query
-            query += ";"
+    clauses = []
+    params = []
 
-            cursor.execute(query, params)
-            rows = cursor.fetchall()
-            return rows
-    except sqlite3.Error as e:
-        print(f"An error occurred during database operation: {e}")
-        return []
+    if match_type == 'any':
+        if text_conditions:
+            clauses.append("(" + " OR ".join(text_conditions) + ")")
+            params.extend(text_params)
+        else:
+            clauses.append("1 = 1")
+    else:
+        if text_conditions:
+            clauses.extend(text_conditions)
+            params.extend(text_params)
+
+    if date_condition:
+        clauses.append(date_condition)
+        params.append(date_param)
+
+    if not clauses:
+        clauses.append("1 = 1")
+
+    where_clause = " AND ".join(clauses)
+    return where_clause, params
 
 
 @app.route('/search', methods=['GET'])
@@ -295,20 +297,29 @@ def search():
     table_name = valid_podcasts.get(current_podcast)  # return None if the podcast_name is not valid
 
     if table_name is not None:
-        # Get all search results for counting
-        search_results = search_database(table_name, title, date, notes, match_type)
-        total_count = len(search_results)
-        
-        # Calculate pagination
-        total_pages = (total_count + per_page - 1) // per_page
-        has_next = page < total_pages
-        has_prev = page > 1
-        
-        # Apply pagination to results
-        start = (page - 1) * per_page
-        end = start + per_page
-        paginated_results = search_results[start:end]
-        
+        where_clause, base_params = build_search_filters(title, date, notes, match_type)
+
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+
+            count_query = f"SELECT COUNT(*) FROM {table_name} WHERE {where_clause}"
+            cursor.execute(count_query, base_params)
+            total_count = cursor.fetchone()[0]
+
+            total_pages = (total_count + per_page - 1) // per_page
+            has_next = page < total_pages
+            has_prev = page > 1
+
+            start = (page - 1) * per_page
+            data_query = (
+                f"SELECT ID, TITLE, DATE, URL, SHOW_NOTES, mp3url FROM {table_name} "
+                f"WHERE {where_clause} ORDER BY DATE DESC LIMIT ? OFFSET ?"
+            )
+            data_params = base_params + [per_page, start]
+
+            cursor.execute(data_query, data_params)
+            paginated_results = cursor.fetchall()
+
         podcasts = [
             {'id': row[0], 'title': row[1], 'date': row[2], 'url': row[3], 'show_notes': row[4], 'mp3url': row[5]}
             for row in paginated_results

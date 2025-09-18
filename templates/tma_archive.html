@@ -551,7 +551,7 @@
 
             var downloadButton = podcast.mp3url
                 ? `<a href="${podcast.mp3url}" download class="btn btn-info" 
-                   onclick="umami.track('Download Click', { episode: '${safeFilename}', date: '${podcast.date}' })">
+                   onclick="trackArchiveDownload('${safeFilename}', '${podcast.date}')">
                    <i class="fas fa-download mr-1"></i>Download</a>` 
                 : '';
 
@@ -575,6 +575,12 @@
                         </div>
                     </div>
                 </div>`;
+        }
+
+        function trackArchiveDownload(filename, date) {
+            if (typeof umami !== 'undefined') {
+                umami.track('Download Click', { episode: filename, date: date });
+            }
         }
 
         // Add the missing trackStream function

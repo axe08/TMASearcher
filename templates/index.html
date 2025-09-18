@@ -8,6 +8,7 @@
     <title>TMA Searcher - Podcast Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -16,10 +17,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}"></script>
     <style>
         /* Base styles with mobile-first approach */
         * {
             box-sizing: border-box;
+        }
+
+        :root {
+            --audio-bar-offset: 0px;
         }
 
         body {
@@ -33,7 +40,7 @@
         }
         
         body.audio-playing {
-            padding-bottom: 80px; /* Height of audio control bar + some margin */
+            padding-bottom: calc(var(--audio-bar-offset, 0px) + 20px);
         }
         
         /* Episode Progress Indicators */
@@ -134,52 +141,49 @@
         .dark-mode .favorite-btn {
             background: rgba(31, 41, 55, 0.9);
         }
-        
+
         .dark-mode .favorite-btn:hover {
             background: rgba(31, 41, 55, 1);
         }
 
-        /* Toast Notifications */
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 10000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        .queue-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 56px;
+            z-index: 10;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            min-width: 250px;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
         }
-        
-        .toast-notification.show {
-            transform: translateX(0);
+
+        .queue-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
         }
-        
-        .toast-notification.remove {
-            background: #dc3545;
-        }
-        
-        .toast-notification i {
+
+        .queue-btn i {
             font-size: 16px;
+            color: #007bff;
         }
-        
-        .dark-mode .toast-notification {
-            background: #059669;
+
+        .dark-mode .queue-btn {
+            background: rgba(31, 41, 55, 0.9);
         }
-        
-        .dark-mode .toast-notification.remove {
-            background: #dc2626;
+
+        .dark-mode .queue-btn:hover {
+            background: rgba(31, 41, 55, 1);
         }
-        
+
         .random-episode-btn:hover {
             background: linear-gradient(135deg, #ff5757, #e04848);
             transform: translateY(-2px);
@@ -272,8 +276,7 @@
 
         #back-to-top {
             position: fixed;
-            bottom: 55px;
-            /* Adjust this value to be above the audio control bar */
+            bottom: calc(70px + var(--audio-bar-offset, 0px));
             right: 20px;
             background-color: #007bff;
             /* Bootstrap primary color */
@@ -284,7 +287,7 @@
             cursor: pointer;
             display: none;
             /* Hidden by default */
-            z-index: 10000;
+            z-index: 1035;
             /* Ensure it's above other elements */
         }
 
@@ -938,50 +941,47 @@
             background-color: #4b5563;
         }
 
+        #audioPlayerModal .modal-content {
+            background-color: #343a40;
+            color: #f9fafb;
+        }
+
+        #audioPlayerModal .modal-header,
+        #audioPlayerModal .modal-body,
+        #audioPlayerModal .modal-footer {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #audioPlayerModal .modal-dialog {
+            max-width: 480px;
+            width: calc(100% - 32px);
+            margin: 1.75rem auto;
+        }
+
+        @media (max-width: 576px) {
+            #audioPlayerModal .modal-dialog {
+                margin: 1rem auto;
+                width: calc(100% - 24px);
+            }
+        }
+
+        .dark-mode #audioPlayerModal .modal-content {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+
+        .dark-mode #audioPlayerModal .modal-header,
+        .dark-mode #audioPlayerModal .modal-body,
+        .dark-mode #audioPlayerModal .modal-footer {
+            border-color: #374151;
+        }
+
         .dark-mode .close {
             color: #f9fafb;
         }
 
         .dark-mode .close:hover {
             color: #d1d5db;
-        }
-
-        .audio-control-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #343a40;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 9999;
-            font-size: 16px;
-            box-shadow: 0px -1px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .dark-mode .audio-control-bar {
-            background-color: #1f2937;
-            color: #f9fafb;
-        }
-
-
-
-        .control-bar-content {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .track-title {
-            flex: 1;
-            margin-right: 20px;
-            font-weight: bold;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
         .btn {
@@ -1177,70 +1177,48 @@
                 if (localStorage.getItem('darkMode') === 'enabled') {
                     document.body.classList.add('dark-mode');
                 }
-                //playback history
-                let currentEpisodeId = null;
-                let audioPlayer = null;
-                
-                // Phase 1: Enhanced session management
-                function savePlayerSession(episodeId, title, mp3url, date, currentTime, isPlaying) {
-                    const sessionData = {
-                        episodeId: episodeId,
-                        title: title,
-                        mp3url: mp3url,
-                        date: date,
-                        currentTime: currentTime || 0,
-                        isPlaying: isPlaying || false,
-                        timestamp: Date.now()
+                document.addEventListener('DOMContentLoaded', function () {
+                    if (window.PlayerUI) {
+                        PlayerUI.init({ defaultTitle: document.title });
+                    }
+                });
+
+                function scheduleAudioBarRefresh() {
+                    if (window.PlayerUI) {
+                        PlayerUI.scheduleAudioBarRefresh();
+                    }
+                }
+
+                function getQueueState() {
+                    return window.PlayerUI ? PlayerUI.getQueueState() : { current: null, queue: [] };
+                }
+
+                function renderQueuePanel(state) {
+                    if (window.PlayerUI) {
+                        PlayerUI.renderQueuePanel(state);
+                    }
+                }
+
+                function toggleQueuePanel(forceState) {
+                    if (window.PlayerUI) {
+                        PlayerUI.toggleQueuePanel(forceState);
+                    }
+                }
+
+                function buildEpisodePayload(id, title, date, showNotes, mp3url, url) {
+                    if (window.PlayerUI) {
+                        return PlayerUI.buildEpisodePayload(id, title, date, showNotes, mp3url, url);
+                    }
+                    return {
+                        id,
+                        title,
+                        date,
+                        show_notes: showNotes,
+                        mp3url,
+                        url
                     };
-                    localStorage.setItem('lastPlayerSession', JSON.stringify(sessionData));
                 }
-                
-                function loadPlayerSession() {
-                    const sessionData = localStorage.getItem('lastPlayerSession');
-                    if (sessionData) {
-                        try {
-                            return JSON.parse(sessionData);
-                        } catch (e) {
-                            console.error('Error parsing player session:', e);
-                            return null;
-                        }
-                    }
-                    return null;
-                }
-                
-                function clearPlayerSession() {
-                    localStorage.removeItem('lastPlayerSession');
-                }
-                
-                function initializePlayerFromSession() {
-                    const session = loadPlayerSession();
-                    if (session && session.episodeId) {
-                        // Show the collapsed player with session info
-                        currentEpisodeId = session.episodeId;
-                        document.getElementById('currentTrackTitle').innerText = `${session.title} (${session.date})`;
-                        document.getElementById('audioControlBar').style.display = 'flex';
-                        document.body.classList.add('audio-playing'); // Add padding when audio bar shows
-                        
-                        // Set up the audio player
-                        $('#audioSource').attr('src', session.mp3url);
-                        audioPlayer.load();
-                        
-                        // Update play/pause button state
-                        const playPauseBtn = document.getElementById('controlPlayPauseBtn');
-                        if (session.isPlaying) {
-                            // Set up to resume playing
-                            audioPlayer.currentTime = session.currentTime;
-                            playPauseBtn.textContent = "Pause";
-                        } else {
-                            // Set up in paused state
-                            audioPlayer.currentTime = session.currentTime;
-                            playPauseBtn.textContent = "Play";
-                        }
-                        
-                        document.title = session.title;
-                    }
-                }
-                
+
                 // Phase 2: Search context management
                 function saveSearchContext(searchParams, resultsCount, currentPage) {
                     const searchContext = {
@@ -1551,6 +1529,14 @@
                     var cleanMp3Url = (podcast.mp3url || '').replace(/'/g, "\\'");
                     var cleanUrl = (podcast.url || '').replace(/'/g, "\\'");
                     
+                    var queueButton = podcast.mp3url ? `
+                        <button class="queue-btn" 
+                                onclick="queueEpisode(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')" 
+                                title="Add to queue">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    ` : '';
+
                     var favoriteButton = podcast.id ? `
                         <button class="favorite-btn ${favClass}" 
                                 onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
@@ -1561,7 +1547,7 @@
 
                     // Primary action - Stream button (full width)
                     var streamButton = podcast.mp3url
-                        ? `<button class="btn btn-success" onclick="trackStream('${safeTitle}', '${podcast.date}', '${podcast.mp3url}', ${podcast.id})">
+                        ? `<button class="btn btn-success" onclick="playEpisodeNow(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')">
                            <i class="fas fa-play" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Episode</span></button>`
                         : `<button class="btn btn-secondary" disabled>
                            <i class="fas fa-ban" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Not Available</span></button>`;
@@ -1590,6 +1576,7 @@
                     return `
         <div class="col-lg-4 col-md-6 col-12">
             <div class="card h-100" style="position: relative;">
+                ${queueButton}
                 ${favoriteButton}
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">
@@ -1654,6 +1641,46 @@
                 let currentPage = 1;
                 let currentPagination = null;
                 let lastSearchParams = null;
+
+                function queueEpisode(id, title, date, showNotes, mp3url, url) {
+                    if (typeof PlayQueue === 'undefined' || typeof PlayerUI === 'undefined') {
+                        return;
+                    }
+                    const episodeData = buildEpisodePayload(id, title, date, showNotes, mp3url, url);
+                    if (!episodeData.mp3url) {
+                        alert('Stream not available for this episode.');
+                        return;
+                    }
+                    if (PlayQueue.contains(episodeData.id)) {
+                        showToast('Already in queue');
+                        return;
+                    }
+                    PlayQueue.add(episodeData);
+                    showToast('Added to queue');
+                    renderQueuePanel(getQueueState());
+                }
+
+                function playEpisodeNow(id, title, date, showNotes, mp3url, url) {
+                    const episodeData = buildEpisodePayload(id, title, date, showNotes, mp3url, url);
+                    if (!episodeData.mp3url) {
+                        alert('Stream not available for this episode.');
+                        return;
+                    }
+
+                    trackSearchResultInteraction('Stream Click', episodeData.title, episodeData.date);
+
+                    if (typeof PlayQueue !== 'undefined') {
+                        PlayQueue.setCurrent(episodeData);
+                    }
+
+                    if (window.PlayerUI) {
+                        PlayerUI.startPlayback(episodeData, { openModal: true });
+                        renderQueuePanel(getQueueState());
+                    }
+                }
+
+                window.queueEpisode = queueEpisode;
+                window.playEpisodeNow = playEpisodeNow;
 
                 function performSearch(page = 1) {
                     var title = $('input[name="title"]').val();
@@ -1863,28 +1890,15 @@
                         // Normal page load - fetch recent episodes
                         fetchPodcast('TMA');
                     }
-                    
+                    renderQueuePanel(getQueueState());
+                    toggleQueuePanel(true);
+                    scheduleAudioBarRefresh();
+
                     // Initialize tooltips
                     $('[data-toggle="tooltip"]').tooltip();
-                    //used for playback tracking
-                    audioPlayer = document.getElementById('audioPlayer');
-                    
-                    // Phase 1: Initialize player from saved session
-                    initializePlayerFromSession();
-                    
+
                     // Initialize favorites badge
                     updateFavoritesBadge();
-                    
-                    audioPlayer.addEventListener('timeupdate', function () {
-                        if (currentEpisodeId && !audioPlayer.paused && !audioPlayer.ended) {
-                            localStorage.setItem(`progress-${currentEpisodeId}`, audioPlayer.currentTime);
-                            // Save session state with current time
-                            const session = loadPlayerSession();
-                            if (session) {
-                                savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioPlayer.currentTime, !audioPlayer.paused);
-                            }
-                        }
-                    });
                     // Attach the submit event to the search form
                     $('#searchForm').on('submit', function (e) {
                         e.preventDefault();
@@ -1928,7 +1942,9 @@
                         document.body.scrollTop = 0; // For Safari
                         document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
                     };
-                    
+
+                    window.addEventListener('resize', scheduleAudioBarRefresh);
+
                     // Handle browser back/forward buttons
                     window.addEventListener('popstate', function(event) {
                         if (event.state && event.state.type === 'search') {
@@ -1948,122 +1964,19 @@
                         }
                     });
                 });
-                // Handle opening the full audio player
+                // Handle opening the full audio player (legacy helper)
                 function openPlayer(title, mp3url, date, id) {
-                    currentEpisodeId = id;
-
-                    $('#audioPlayerModalLabel').text(`${title} (${date})`);
-                    $('#audioSource').attr('src', mp3url);
-                    audioPlayer.load();
-
-                    // Resume from saved progress
-                    const saved = localStorage.getItem(`progress-${id}`);
-                    if (saved) {
-                        audioPlayer.currentTime = parseFloat(saved);
+                    const episode = buildEpisodePayload(id, title, date, '', mp3url, '');
+                    if (typeof PlayQueue !== 'undefined') {
+                        PlayQueue.setCurrent(episode, { enqueueIfMissing: false });
+                        renderQueuePanel(getQueueState());
                     }
-
-                    audioPlayer.play();
-                    document.getElementById('currentTrackTitle').innerText = `${title} (${date})`;
-                    document.getElementById('audioControlBar').style.display = 'flex';
-                    document.body.classList.add('audio-playing'); // Add padding when audio bar shows
-                    document.getElementById('controlPlayPauseBtn').textContent = "Pause";
-                    document.title = title;
-                    
-                    // Phase 1: Save player session when starting new episode
-                    savePlayerSession(id, title, mp3url, date, audioPlayer.currentTime || 0, true);
-                    
-                    $('#audioPlayerModal').modal('show');
-                }
-
-                // Reset tab title when playback ends
-                const audioElement = document.getElementById('audioPlayer');
-                if (audioElement) {
-                    audioElement.addEventListener('ended', function () {
-                        document.title = "TMA Searcher - Podcast Search"; // Change back to default
-                        // Phase 1: Clear session when episode ends
-                        clearPlayerSession();
-                        // Hide control bar when episode ends
-                        document.getElementById('audioControlBar').style.display = 'none';
-                        document.body.classList.remove('audio-playing'); // Remove padding when audio bar hides
-                    });
-                }
-
-                // Reopen the audio player modal
-                function reopenPlayer() {
-                    $('#audioPlayerModal').modal('show');
-                }
-
-                // Play/Pause toggle for the modal and bottom control bar
-                function toggleAudioPlayPause() {
-                    const audioElement = document.getElementById('audioPlayer');
-                    var playPauseBtn = document.getElementById('controlPlayPauseBtn');
-                    var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
-
-                    if (audioElement.paused) {
-                        audioElement.play();
-                        playPauseBtn.textContent = "Pause";        // Update control bar button
-                        modalPlayPauseBtn.textContent = "Pause";   // Update modal button
-                        
-                        // Phase 1: Save playing state
-                        const session = loadPlayerSession();
-                        if (session && currentEpisodeId) {
-                            savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioElement.currentTime, true);
-                        }
-                    } else {
-                        audioElement.pause();
-                        playPauseBtn.textContent = "Play";         // Update control bar button
-                        modalPlayPauseBtn.textContent = "Play";    // Update modal button
-                        
-                        // Phase 1: Save paused state
-                        const session = loadPlayerSession();
-                        if (session && currentEpisodeId) {
-                            savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioElement.currentTime, false);
-                        }
+                    if (window.PlayerUI) {
+                        PlayerUI.startPlayback(episode, { openModal: true });
                     }
                 }
 
-                // Ensure the control bar is shown when the modal is closed
-                $('#audioPlayerModal').on('hide.bs.modal', function () {
-                    const audioElement = document.getElementById('audioPlayer');
-
-                    // If audio is still playing, show the bottom bar
-                    if (audioElement && !audioElement.paused && !audioElement.ended) {
-                        document.getElementById('audioControlBar').style.display = 'flex';
-                        // Phase 1: Update session when modal closes while playing
-                        const session = loadPlayerSession();
-                        if (session && currentEpisodeId) {
-                            savePlayerSession(currentEpisodeId, session.title, session.mp3url, session.date, audioElement.currentTime, !audioElement.paused);
-                        }
-                    }
-                    
-                    // Fix aria-hidden accessibility issue by removing focus from modal elements
-                    $(this).find('button, input, select, textarea, [tabindex]:not([tabindex="-1"])').blur();
-                });
-
-                // Hide the control bar when the audio ends
-                const audioPlayerElement = document.getElementById('audioPlayer');
-                if (audioPlayerElement) {
-                    audioPlayerElement.addEventListener('ended', function () {
-                        const controlBar = document.getElementById('audioControlBar');
-                        if (controlBar) {
-                            controlBar.style.display = 'none';
-                        }
-                    });
-                }
-
-                // Seek audio forward/backward by a specific number of seconds
-                function seekAudio(seconds) {
-                    const audioElement = document.getElementById('audioPlayer');
-                    if (audioElement) {
-                        audioElement.currentTime += seconds;
-                    }
-                }
-
-                function trackStream(title, date, mp3url, id) {
-                    trackSearchResultInteraction('Stream Click', title, date);
-                    openPlayer(title, mp3url, date, id);
-                }
-                
+                // Reset tab title when playback ends and advance queue if available
                 // Toast notification system
                 function showToast(message, isRemove = false) {
                     // Remove existing toast if any
@@ -2258,9 +2171,29 @@
             <div id="audioControlBar" class="audio-control-bar" style="display: none;">
                 <div class="control-bar-content">
                     <span id="currentTrackTitle" class="track-title"></span>
-                    <button id="controlPlayPauseBtn" class="btn btn-light"
-                        onclick="toggleAudioPlayPause()">Pause</button>
-                    <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
+                    <div class="control-bar-actions">
+                        <div class="control-primary-actions">
+                            <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
+                            <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
+                        </div>
+                        <div class="control-secondary-actions">
+                            <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
+                            <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="playQueuePanel" class="play-queue-panel collapsed" style="display: none;">
+                <div class="play-queue-header" id="playQueueHeader">
+                    <h6><i class="fas fa-list"></i> Queue <span id="queueCount" class="queue-count">(0)</span></h6>
+                    <button type="button" id="queueCollapseBtn">Hide</button>
+                </div>
+                <div class="play-queue-body">
+                    <div id="queueEmptyState" class="play-queue-empty">Your play queue is empty. Add episodes to listen in sequence.</div>
+                    <div id="playQueueList"></div>
+                </div>
+                <div class="play-queue-footer">
+                    <button type="button" id="queueClearBtn">Clear Queue</button>
                 </div>
             </div>
             <script>
