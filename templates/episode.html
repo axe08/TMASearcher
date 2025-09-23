@@ -393,6 +393,9 @@
         }
 
     </style>
+    
+    <!-- Umami Analytics - Static loading for reliability -->
+    <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
 
     <script>
         function copyLink() {
@@ -422,50 +425,24 @@
     <script>
         const episodeDetails = {{ episode | tojson }};
         const originalDocumentTitle = document.title;
-        // Environment-aware Umami tracking
-        const isProduction = window.location.hostname === 'tmasearcher.com';
-        const isStaging = window.location.hostname === 'staging.tmasearcher.lan' || 
-                         window.location.hostname === '192.168.1.153';
-        
-        let websiteId;
-        if (isProduction) {
-            websiteId = 'db811831-d34a-4968-9ec0-67828c6ce545';  // Production ID
-        } else if (isStaging) {
-            websiteId = '96b2fb05-8e51-4570-82c2-be952c169939';  // Staging ID
-        } else {
-            console.log('Analytics disabled - unknown environment');
-        }
-        
-        // Load Umami script dynamically (only if we have a valid website ID)
-        if (websiteId) {
-            const script = document.createElement('script');
-            script.defer = true;
-            script.src = 'https://analytics.tmasearcher.com/script.js';
-            script.setAttribute('data-website-id', websiteId);
-            
-            // Add enhanced page tracking after script loads
-            script.onload = function() {
-                if (typeof umami !== 'undefined') {
-                    // Keep original event for continuity
-                    umami.track('Shareable Page View', {
-                        episode: episodeDetails.title,
-                        date: episodeDetails.date
-                    });
-                    
-                    // New detailed tracking
-                    umami.track('Page View Detailed', {
-                        page_type: 'episode',
-                        section: 'episode_detail',
-                        episode_title: episodeDetails.title,
-                        episode_date: episodeDetails.date,
-                        referrer_type: getReferrerType(),
-                        session_id: getSessionId()
-                    });
-                }
-            };
-            
-            document.head.appendChild(script);
-        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof umami !== 'undefined') {
+                umami.track('Shareable Page View', {
+                    episode: episodeDetails.title,
+                    date: episodeDetails.date
+                });
+
+                umami.track('Page View Detailed', {
+                    page_type: 'episode',
+                    section: 'episode_detail',
+                    episode_title: episodeDetails.title,
+                    episode_date: episodeDetails.date,
+                    referrer_type: getReferrerType(),
+                    session_id: getSessionId()
+                });
+            }
+        });
     </script>
 </head>
 
@@ -476,7 +453,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <h2 class="header-text mb-2 mb-sm-0">TMA Episode</h2>
                 <div class="d-flex align-items-center" style="gap: 0.5rem;">
-                    <a href="/favorites" class="btn btn-outline-primary btn-sm">
+                    <a href="/favorites" class="btn btn-outline-primary btn-sm" onclick="umami && umami.track('Favorites Navigation Click from Episode Page', {session_id: getSessionId()})">
                         <i class="fas fa-heart mr-1"></i>Favorites
                     </a>
                     <button id="dark-mode-toggle" class="btn btn-outline-secondary">
@@ -655,7 +632,7 @@
         }
 
         // Session management for analytics
-        function getSessionId() {
+        window.getSessionId = function getSessionId() {
             let sessionId = localStorage.getItem('tma_session');
             if (!sessionId) {
                 sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -815,8 +792,8 @@
             }
         }
         
-        // Another Random Episode functionality
-        function getAnotherRandomEpisode() {
+        // Another Random Episode functionality - ensure it's globally accessible
+        window.getAnotherRandomEpisode = function getAnotherRandomEpisode() {
             const button = document.querySelector('.btn-outline-danger');
             const originalText = button.innerHTML;
             
