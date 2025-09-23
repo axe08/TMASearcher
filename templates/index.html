@@ -99,31 +99,43 @@
         }
         
         /* Favorites Heart Button */
-        .favorite-btn {
-            background: none;
-            border: none;
-            padding: 6px;
+        .episode-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .favorite-btn,
+        .queue-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border-radius: 50%;
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            z-index: 10;
-            width: 36px;
-            height: 36px;
+            border-radius: 12px;
+            width: 42px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: static;
         }
-        
-        .favorite-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: scale(1.1);
+
+        .favorite-btn:hover,
+        .queue-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
         }
-        
+
+        .favorite-btn:focus,
+        .queue-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
         .favorite-btn .heart {
             font-size: 16px;
             transition: all 0.2s ease;
@@ -139,36 +151,17 @@
         }
         
         .dark-mode .favorite-btn {
-            background: rgba(31, 41, 55, 0.9);
+            background: rgba(31, 41, 55, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
         }
 
         .dark-mode .favorite-btn:hover {
-            background: rgba(31, 41, 55, 1);
+            background: rgba(55, 65, 81, 0.92);
         }
 
         .queue-btn {
-            background: none;
-            border: none;
-            padding: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 50%;
-            position: absolute;
-            top: 12px;
-            right: 56px;
-            z-index: 10;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(4px);
-        }
-
-        .queue-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .queue-btn i {
@@ -177,11 +170,13 @@
         }
 
         .dark-mode .queue-btn {
-            background: rgba(31, 41, 55, 0.9);
+            background: rgba(31, 41, 55, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
         }
 
         .dark-mode .queue-btn:hover {
-            background: rgba(31, 41, 55, 1);
+            background: rgba(55, 65, 81, 0.92);
         }
 
         .random-episode-btn:hover {
@@ -1532,7 +1527,8 @@
                     var queueButton = podcast.mp3url ? `
                         <button class="queue-btn" 
                                 onclick="queueEpisode(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')" 
-                                title="Add to queue">
+                                title="Add to queue"
+                                aria-label="Add to queue">
                             <i class="fas fa-plus"></i>
                         </button>
                     ` : '';
@@ -1540,9 +1536,17 @@
                     var favoriteButton = podcast.id ? `
                         <button class="favorite-btn ${favClass}" 
                                 onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
-                                title="${favTitle}">
+                                title="${favTitle}"
+                                aria-label="${favTitle}">
                             <i class="heart ${heartIcon}"></i>
                         </button>
+                    ` : '';
+
+                    var actionButtons = (queueButton || favoriteButton) ? `
+                        <div class="episode-card-actions">
+                            ${queueButton}
+                            ${favoriteButton}
+                        </div>
                     ` : '';
 
                     // Primary action - Stream button (full width)
@@ -1575,10 +1579,9 @@
 
                     return `
         <div class="col-lg-4 col-md-6 col-12">
-            <div class="card h-100" style="position: relative;">
-                ${queueButton}
-                ${favoriteButton}
+            <div class="card h-100">
                 <div class="card-body d-flex flex-column">
+                    ${actionButtons}
                     <h5 class="card-title">
                         <a href="${episodeLink}" style="text-decoration: none; color: inherit;" onclick="trackSearchResultInteraction('Episode Title Click', '${safeTitle}', '${podcast.date}')">${displayTitle}</a>
                     </h5>

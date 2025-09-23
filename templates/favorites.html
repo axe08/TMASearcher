@@ -10,16 +10,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
 
     <!-- jQuery, Popper.js, and Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}"></script>
     
     <style>
         /* Base styles with mobile-first approach */
         * {
             box-sizing: border-box;
+        }
+
+        :root {
+            --audio-bar-offset: 0px;
         }
 
         body {
@@ -33,7 +40,7 @@
         }
         
         body.audio-playing {
-            padding-bottom: 80px;
+            padding-bottom: calc(var(--audio-bar-offset, 0px) + 20px);
         }
         
         /* Episode Progress Indicators */
@@ -60,32 +67,44 @@
             color: #63b3ed !important;
         }
 
+        .episode-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
         /* Favorites Heart Button */
-        .favorite-btn {
-            background: none;
-            border: none;
-            padding: 6px;
+        .favorite-btn,
+        .queue-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border-radius: 50%;
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            z-index: 10;
-            width: 36px;
-            height: 36px;
+            border-radius: 12px;
+            width: 42px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: static;
         }
-        
-        .favorite-btn:hover {
-            background: rgba(255, 255, 255, 1);
-            transform: scale(1.1);
+
+        .favorite-btn:hover,
+        .queue-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
         }
-        
+
+        .favorite-btn:focus,
+        .queue-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
         .favorite-btn .heart {
             font-size: 16px;
             transition: all 0.2s ease;
@@ -101,11 +120,28 @@
         }
         
         .dark-mode .favorite-btn {
-            background: rgba(31, 41, 55, 0.9);
+            background: rgba(31, 41, 55, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
         }
-        
+
         .dark-mode .favorite-btn:hover {
-            background: rgba(31, 41, 55, 1);
+            background: rgba(55, 65, 81, 0.92);
+        }
+
+        .queue-btn i {
+            font-size: 16px;
+            color: #007bff;
+        }
+
+        .dark-mode .queue-btn {
+            background: rgba(31, 41, 55, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark-mode .queue-btn:hover {
+            background: rgba(55, 65, 81, 0.92);
         }
 
         /* Primary search button */
@@ -823,6 +859,63 @@
         </div>
     </div>
 
+    <!-- Audio Player Modal -->
+    <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="audioPlayerModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <audio id="audioPlayer" controls style="width: 100%;">
+                        <source id="audioSource" src="" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="mt-3 d-flex justify-content-center">
+                        <button id="modalPlayPauseBtn" class="btn btn-primary mx-2" onclick="toggleAudioPlayPause()">Pause</button>
+                        <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
+                        <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Control Bar -->
+    <div id="audioControlBar" class="audio-control-bar" style="display: none;">
+        <div class="control-bar-content">
+            <span id="currentTrackTitle" class="track-title"></span>
+            <div class="control-bar-actions">
+                <div class="control-primary-actions">
+                    <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
+                    <button class="btn btn-primary" onclick="reopenPlayer()">Open Player</button>
+                </div>
+                <div class="control-secondary-actions">
+                    <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
+                    <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="playQueuePanel" class="play-queue-panel collapsed" style="display: none;">
+        <div class="play-queue-header" id="playQueueHeader">
+            <h6><i class="fas fa-list"></i> Queue <span id="queueCount" class="queue-count">(0)</span></h6>
+            <button type="button" id="queueCollapseBtn">Hide</button>
+        </div>
+        <div class="play-queue-body">
+            <div id="queueEmptyState" class="play-queue-empty">Your play queue is empty. Add episodes to listen in sequence.</div>
+            <div id="playQueueList"></div>
+        </div>
+        <div class="play-queue-footer">
+            <button type="button" id="queueClearBtn">Clear Queue</button>
+        </div>
+    </div>
+
     <script>
         // Favorites Management System
         function getFavorites() {
@@ -911,6 +1004,9 @@
         function createFavoriteCard(favorite) {
             const safeTitle = favorite.title.replace(/'/g, "\\'");
             const episodeLink = `/episode/${favorite.id}`;
+            const cleanShowNotes = (favorite.show_notes || '').replace(/[\r\n]+/g, ' ').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            const cleanMp3Url = (favorite.mp3url || '').replace(/'/g, "\\'");
+            const cleanUrl = (favorite.url || '').replace(/'/g, "\\'");
             
             // Apply search highlighting to title and notes
             const displayTitle = highlightSearchTerms(favorite.title, currentSearchTerm);
@@ -933,18 +1029,35 @@
                 `;
             }
             
+            const queueButton = favorite.mp3url ? `
+                <button class="queue-btn" 
+                        onclick="queueEpisode(${favorite.id}, '${safeTitle}', '${favorite.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')" 
+                        title="Add to queue"
+                        aria-label="Add to queue">
+                    <i class="fas fa-plus"></i>
+                </button>
+            ` : '';
+
             // Favorite button (always shows as favorited since we're on favorites page)
             const favoriteButton = `
                 <button class="favorite-btn favorited" 
-                        onclick="handleFavoriteClick(${favorite.id}, '${safeTitle}', '${favorite.date}', '${favorite.show_notes.replace(/'/g, "\\'")}', '${favorite.mp3url}', '${favorite.url}', this)" 
-                        title="Remove from favorites">
+                        onclick="handleFavoriteClick(${favorite.id}, '${safeTitle}', '${favorite.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
+                        title="Remove from favorites"
+                        aria-label="Remove from favorites">
                     <i class="heart fas fa-heart"></i>
                 </button>
             `;
 
+            const actionButtons = `
+                <div class="episode-card-actions">
+                    ${queueButton}
+                    ${favoriteButton}
+                </div>
+            `;
+
             // Stream button
             const streamButton = favorite.mp3url
-                ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${favorite.mp3url}', '${favorite.date}', ${favorite.id})">
+                ? `<button class="btn btn-success" onclick="openPlayer('${safeTitle}', '${cleanMp3Url}', '${favorite.date}', ${favorite.id}, '${cleanShowNotes}', '${cleanUrl}')">
                    <i class="fas fa-play" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Episode</span></button>`
                 : `<button class="btn btn-secondary" disabled>
                    <i class="fas fa-ban" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Not Available</span></button>`;
@@ -964,9 +1077,9 @@
 
             return `
         <div class="col-lg-4 col-md-6 col-12">
-            <div class="card h-100" style="position: relative;">
-                ${favoriteButton}
+            <div class="card h-100">
                 <div class="card-body d-flex flex-column">
+                    ${actionButtons}
                     <h5 class="card-title">
                         <a href="${episodeLink}" style="text-decoration: none; color: inherit;">${displayTitle}</a>
                     </h5>
@@ -1099,13 +1212,59 @@
             URL.revokeObjectURL(url);
         }
         
-        // Simple audio player functions (copied from main page)
-        let currentEpisodeId = null;
-        let audioPlayer = null;
+        function queueEpisode(id, title, date, showNotes, mp3url, url) {
+            if (typeof buildEpisodePayload === 'undefined' || typeof PlayQueue === 'undefined') {
+                alert('Queue is not available right now. Please try again after the page finishes loading.');
+                return;
+            }
 
-        function openPlayer(title, mp3url, date, id) {
-            // For now, just redirect to the episode page
-            window.location.href = `/episode/${id}`;
+            const episodeData = buildEpisodePayload(id, title, date, showNotes, mp3url, url);
+
+            if (!episodeData.mp3url) {
+                alert('Stream not available for this episode.');
+                return;
+            }
+
+            if (typeof PlayQueue.contains === 'function' && PlayQueue.contains(episodeData.id)) {
+                if (typeof showToast === 'function') {
+                    showToast('Already in queue');
+                }
+                return;
+            }
+
+            PlayQueue.add(episodeData);
+
+            if (typeof showToast === 'function') {
+                showToast('Added to queue');
+            }
+
+            if (typeof getQueueState === 'function' && typeof renderQueuePanel === 'function') {
+                renderQueuePanel(getQueueState());
+            }
+        }
+
+        function openPlayer(title, mp3url, date, id, showNotes = '', url = '') {
+            if (!mp3url) {
+                alert('Stream not available for this episode.');
+                return;
+            }
+
+            if (typeof buildEpisodePayload === 'undefined' || typeof PlayerUI === 'undefined') {
+                window.location.href = `/episode/${id}`;
+                return;
+            }
+
+            const episodeData = buildEpisodePayload(id, title, date, showNotes, mp3url, url);
+
+            if (typeof PlayQueue !== 'undefined') {
+                PlayQueue.setCurrent(episodeData);
+            }
+
+            PlayerUI.startPlayback(episodeData, { openModal: true });
+
+            if (typeof getQueueState === 'function' && typeof renderQueuePanel === 'function') {
+                renderQueuePanel(getQueueState());
+            }
         }
 
         // Dark mode functionality
@@ -1125,6 +1284,9 @@
 
         // Load favorites when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            if (window.PlayerUI) {
+                PlayerUI.init({ defaultTitle: document.title });
+            }
             loadFavorites();
         });
     </script>

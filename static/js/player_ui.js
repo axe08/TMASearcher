@@ -25,9 +25,20 @@
   let queueListenersBound = false;
   let audioBarRefreshRaf = null;
   let initialised = false;
+  const queueDragState = {
+    id: null,
+  };
 
   function cloneEpisode(episode) {
     return episode ? { ...episode } : null;
+  }
+
+  function coerceEpisodeId(value) {
+    if (value === null || value === undefined) {
+      return value;
+    }
+    const numeric = Number(value);
+    return Number.isNaN(numeric) ? value : numeric;
   }
 
   function showToast(message, isRemove) {
@@ -150,6 +161,107 @@
     setQueueCollapsed(!queueCollapsed);
   }
 
+  function resetQueueDragState() {
+    queueDragState.id = null;
+  }
+
+  function clearQueueDragIndicators() {
+    if (!queueElements.list) {
+      return;
+    }
+    queueElements.list.querySelectorAll('.play-queue-item').forEach((item) => {
+      item.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
+      delete item.dataset.dropPosition;
+    });
+  }
+
+  function handleQueueDragStart(event) {
+    const item = event.currentTarget;
+    const id = coerceEpisodeId(item.dataset.id);
+    if (!id && id !== 0) {
+      return;
+    }
+    queueDragState.id = id;
+    item.classList.add('dragging');
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(id));
+    }
+  }
+
+  function handleQueueDragOver(event) {
+    if (!queueDragState.id && queueDragState.id !== 0) {
+      return;
+    }
+    event.preventDefault();
+    const item = event.currentTarget;
+    const targetId = coerceEpisodeId(item.dataset.id);
+    if (targetId === queueDragState.id) {
+      return;
+    }
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+
+    const rect = item.getBoundingClientRect();
+    const offsetY = event.clientY - rect.top;
+    const position = offsetY < rect.height / 2 ? 'before' : 'after';
+
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (position === 'before') {
+      item.classList.add('drag-over-top');
+    } else {
+      item.classList.add('drag-over-bottom');
+    }
+    item.dataset.dropPosition = position;
+  }
+
+  function handleQueueDragLeave(event) {
+    const item = event.currentTarget;
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+    delete item.dataset.dropPosition;
+  }
+
+  function handleQueueDrop(event) {
+    event.preventDefault();
+    const item = event.currentTarget;
+    const draggedId = queueDragState.id;
+    const targetId = coerceEpisodeId(item.dataset.id);
+    const dropPosition = item.dataset.dropPosition === 'after' ? 'after' : 'before';
+    clearQueueDragIndicators();
+
+    if ((draggedId || draggedId === 0) && (targetId || targetId === 0) && draggedId !== targetId) {
+      if (typeof PlayQueue !== 'undefined' && typeof PlayQueue.reorder === 'function') {
+        const queueItems = PlayQueue.getQueue();
+        const draggedIndex = queueItems.findIndex((episode) => coerceEpisodeId(episode.id) === draggedId);
+        let targetIndex = queueItems.findIndex((episode) => coerceEpisodeId(episode.id) === targetId);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          if (dropPosition === 'after') {
+            targetIndex += 1;
+          }
+          if (draggedIndex < targetIndex) {
+            targetIndex -= 1;
+          }
+
+          const boundedIndex = Math.max(0, Math.min(queueItems.length - 1, targetIndex));
+          if (boundedIndex !== draggedIndex) {
+            PlayQueue.reorder(draggedId, boundedIndex);
+            renderQueuePanel(PlayQueue.getState());
+            scheduleAudioBarRefresh();
+          }
+        }
+      }
+    }
+
+    resetQueueDragState();
+  }
+
+  function handleQueueDragEnd() {
+    clearQueueDragIndicators();
+    resetQueueDragState();
+  }
+
   function renderQueuePanel(state) {
     if (!hydrateQueueElements()) {
       return;
@@ -192,6 +304,8 @@
       queue.forEach((episode) => entries.push({ ...episode, isCurrent: false }));
     }
 
+    const totalQueueItems = Array.isArray(queue) ? queue.length : 0;
+
     queueElements.list.innerHTML = '';
 
     if (!entries.length) {
@@ -208,16 +322,45 @@
 
     const fragment = document.createDocumentFragment();
 
+    let queueIndexCounter = 0;
+
     entries.forEach((episode) => {
       const itemEl = document.createElement('div');
       itemEl.className = 'play-queue-item' + (episode.isCurrent ? ' active' : '');
+      if (typeof episode.id !== 'undefined') {
+        itemEl.dataset.id = episode.id;
+      }
+      if (episode.isCurrent) {
+        itemEl.dataset.isCurrent = 'true';
+      }
+
+      const handleEl = document.createElement('div');
+      handleEl.className = 'play-queue-handle';
+      handleEl.setAttribute('draggable', 'false');
+      handleEl.setAttribute('aria-hidden', 'true');
+      handleEl.innerHTML = '<i class="fas fa-grip-vertical" aria-hidden="true"></i>';
+      if (episode.isCurrent) {
+        handleEl.classList.add('play-queue-handle-disabled');
+      } else {
+        handleEl.title = 'Drag to reorder';
+      }
+      itemEl.appendChild(handleEl);
 
       const infoEl = document.createElement('div');
       infoEl.className = 'play-queue-info';
 
-      const titleEl = document.createElement('div');
-      titleEl.className = 'play-queue-title';
-      titleEl.textContent = episode.title;
+      let titleEl;
+      if (typeof episode.id !== 'undefined' && episode.id !== null) {
+        titleEl = document.createElement('a');
+        titleEl.href = `/episode/${episode.id}`;
+        titleEl.className = 'play-queue-title';
+        titleEl.textContent = episode.title;
+        titleEl.setAttribute('draggable', 'false');
+      } else {
+        titleEl = document.createElement('div');
+        titleEl.className = 'play-queue-title';
+        titleEl.textContent = episode.title;
+      }
 
       const dateEl = document.createElement('div');
       dateEl.className = 'play-queue-date';
@@ -242,6 +385,7 @@
           startPlayback(episode, { openModal: false });
           setQueueCollapsed(false);
         });
+        playBtn.setAttribute('draggable', 'false');
         actionsEl.appendChild(playBtn);
       }
 
@@ -255,6 +399,7 @@
         }
         showToast('Removed from queue', true);
       });
+      removeBtn.setAttribute('draggable', 'false');
       actionsEl.appendChild(removeBtn);
 
       itemEl.appendChild(actionsEl);
@@ -267,6 +412,58 @@
           startPlayback(episode, { openModal: false });
           setQueueCollapsed(false);
         });
+      }
+
+      if (!episode.isCurrent) {
+        const isFirstQueueItem = queueIndexCounter === 0;
+        const isLastQueueItem = queueIndexCounter === totalQueueItems - 1;
+
+        itemEl.dataset.queueIndex = String(queueIndexCounter);
+        queueIndexCounter += 1;
+        itemEl.classList.add('queue-draggable');
+        itemEl.setAttribute('draggable', 'true');
+        itemEl.addEventListener('dragstart', handleQueueDragStart);
+        itemEl.addEventListener('dragover', handleQueueDragOver);
+        itemEl.addEventListener('dragleave', handleQueueDragLeave);
+        itemEl.addEventListener('drop', handleQueueDrop);
+        itemEl.addEventListener('dragend', handleQueueDragEnd);
+
+        const reorderEl = document.createElement('div');
+        reorderEl.className = 'play-queue-reorder';
+
+        const moveUpBtn = document.createElement('button');
+        moveUpBtn.type = 'button';
+        moveUpBtn.className = 'play-queue-reorder-btn';
+        moveUpBtn.innerHTML = '<i class="fas fa-chevron-up" aria-hidden="true"></i><span class="sr-only">Move up</span>';
+        moveUpBtn.title = 'Move up';
+        moveUpBtn.disabled = isFirstQueueItem;
+        moveUpBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          if (!moveUpBtn.disabled && typeof PlayQueue !== 'undefined') {
+            const updatedState = PlayQueue.move(episode.id, -1);
+            renderQueuePanel(updatedState);
+          }
+        });
+        reorderEl.appendChild(moveUpBtn);
+
+        const moveDownBtn = document.createElement('button');
+        moveDownBtn.type = 'button';
+        moveDownBtn.className = 'play-queue-reorder-btn';
+        moveDownBtn.innerHTML = '<i class="fas fa-chevron-down" aria-hidden="true"></i><span class="sr-only">Move down</span>';
+        moveDownBtn.title = 'Move down';
+        moveDownBtn.disabled = isLastQueueItem;
+        moveDownBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          if (!moveDownBtn.disabled && typeof PlayQueue !== 'undefined') {
+            const updatedState = PlayQueue.move(episode.id, 1);
+            renderQueuePanel(updatedState);
+          }
+        });
+        reorderEl.appendChild(moveDownBtn);
+
+        actionsEl.appendChild(reorderEl);
+      } else {
+        itemEl.setAttribute('draggable', 'false');
       }
 
       fragment.appendChild(itemEl);
