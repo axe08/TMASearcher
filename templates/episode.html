@@ -531,22 +531,75 @@
                     </button>
                 </div>
                 <div class="modal-body text-center">
-                    <audio id="audioPlayer" controls style="width: 100%;" preload="metadata">
+                    <audio id="audioPlayer" preload="metadata">
                         <source id="audioSource" src="" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
-                    <div class="mt-3 d-flex justify-content-center">
-                        <button id="modalPlayPauseBtn" class="btn btn-primary mx-2" onclick="toggleAudioPlayPause()">Pause</button>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-container mt-3" id="progressContainer">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" id="progressBarFill"></div>
+                            <div class="progress-bar-buffered" id="progressBarBuffered"></div>
+                            <div class="progress-bar-handle" id="progressBarHandle"></div>
+                        </div>
+                        <div class="time-display">
+                            <span id="currentTimeDisplay">0:00</span>
+                            <span class="time-separator">/</span>
+                            <span id="totalTimeDisplay">0:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Playback Controls -->
+                    <div class="mt-3 d-flex justify-content-center align-items-center flex-wrap">
+                        <button id="modalPlayPauseBtn" class="btn btn-primary mx-2"
+                            onclick="toggleAudioPlayPause()">Pause</button>
                         <button class="btn btn-info mx-2" onclick="seekAudio(-30)">-30s</button>
                         <button class="btn btn-info mx-2" onclick="seekAudio(30)">+30s</button>
+                    </div>
+
+                    <!-- Playback Speed Control -->
+                    <div class="mt-3 playback-speed-control">
+                        <label class="speed-label">Playback Speed:</label>
+                        <div class="speed-buttons">
+                            <button class="btn btn-sm btn-outline-secondary speed-btn" onclick="setPlaybackSpeed(0.75)" data-speed="0.75">0.75×</button>
+                            <button class="btn btn-sm btn-outline-secondary speed-btn active" onclick="setPlaybackSpeed(1)" data-speed="1">1×</button>
+                            <button class="btn btn-sm btn-outline-secondary speed-btn" onclick="setPlaybackSpeed(1.25)" data-speed="1.25">1.25×</button>
+                            <button class="btn btn-sm btn-outline-secondary speed-btn" onclick="setPlaybackSpeed(1.5)" data-speed="1.5">1.5×</button>
+                            <button class="btn btn-sm btn-outline-secondary speed-btn" onclick="setPlaybackSpeed(1.75)" data-speed="1.75">1.75×</button>
+                            <button class="btn btn-sm btn-outline-secondary speed-btn" onclick="setPlaybackSpeed(2)" data-speed="2">2×</button>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div class="audio-loading-indicator" id="audioLoadingIndicator" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <span class="loading-text">Loading audio...</span>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="audio-error-state" id="audioErrorState" style="display: none;">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <p class="error-message">Unable to load audio stream</p>
+                        <button class="btn btn-sm btn-outline-primary" onclick="retryAudio()">Retry</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div id="audioControlBar" class="audio-control-bar">
+    <div id="audioControlBar" class="audio-control-bar" style="display: none;">
         <div class="control-bar-content">
-            <span id="currentTrackTitle" class="track-title"></span>
+            <div class="control-bar-info">
+                <span id="currentTrackTitle" class="track-title"></span>
+                <div class="control-bar-progress">
+                    <div class="control-bar-progress-fill" id="controlBarProgressFill"></div>
+                </div>
+                <div class="control-bar-time">
+                    <span id="controlBarCurrentTime">0:00</span> / <span id="controlBarTotalTime">0:00</span>
+                </div>
+            </div>
             <div class="control-bar-actions">
                 <div class="control-primary-actions">
                     <button id="controlPlayPauseBtn" class="btn btn-light" onclick="toggleAudioPlayPause()">Pause</button>
@@ -555,6 +608,9 @@
                 <div class="control-secondary-actions">
                     <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
                     <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
+                    <div class="control-speed-display" onclick="reopenPlayer()" title="Click to change speed">
+                        <span id="controlBarSpeed">1×</span>
+                    </div>
                 </div>
             </div>
         </div>
