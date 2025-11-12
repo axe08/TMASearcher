@@ -432,15 +432,6 @@
                     episode: episodeDetails.title,
                     date: episodeDetails.date
                 });
-
-                umami.track('Page View Detailed', {
-                    page_type: 'episode',
-                    section: 'episode_detail',
-                    episode_title: episodeDetails.title,
-                    episode_date: episodeDetails.date,
-                    referrer_type: getReferrerType(),
-                    session_id: getSessionId()
-                });
             }
         });
     </script>
@@ -631,26 +622,9 @@
             PlayerUI.startPlayback(playbackEpisode, { openModal: playbackOptions.autoScroll });
         }
 
-        // Session management for analytics
-        window.getSessionId = function getSessionId() {
-            let sessionId = localStorage.getItem('tma_session');
-            if (!sessionId) {
-                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('tma_session', sessionId);
-            }
-            return sessionId;
-        }
-        
-        function getReferrerType() {
-            const referrer = document.referrer;
-            if (!referrer) return 'direct';
-            if (referrer.includes('tmasearcher.com')) return 'internal';
-            if (referrer.includes('google.com')) return 'search_google';
-            if (referrer.includes('bing.com')) return 'search_bing';
-            return 'external';
-        }
-    
-        // Apply dark mode + enhanced page tracking
+        // Analytics helper functions removed - using Umami's native tracking
+
+        // Apply dark mode
         document.addEventListener("DOMContentLoaded", function () {
             // Restore dark mode
             if (localStorage.getItem('darkMode') === 'enabled') {
@@ -805,8 +779,7 @@
             if (typeof umami !== 'undefined') {
                 umami.track('Another Random Episode Click', {
                     from_episode: episodeDetails.title,
-                    from_date: episodeDetails.date,
-                    session_id: getSessionId()
+                    from_date: episodeDetails.date
                 });
             }
             

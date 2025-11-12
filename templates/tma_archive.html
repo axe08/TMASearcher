@@ -364,36 +364,7 @@
     <!-- Umami Analytics - Static loading for reliability -->
     <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
     <script>
-        // Session management for analytics
-        function getSessionId() {
-            let sessionId = localStorage.getItem('tma_session');
-            if (!sessionId) {
-                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('tma_session', sessionId);
-            }
-            return sessionId;
-        }
-        
-        function getReferrerType() {
-            const referrer = document.referrer;
-            if (!referrer) return 'direct';
-            if (referrer.includes('tmasearcher.com')) return 'internal';
-            if (referrer.includes('google.com')) return 'search_google';
-            if (referrer.includes('bing.com')) return 'search_bing';
-            return 'external';
-        }
-
-        // Page load analytics tracking - now using static script tag
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof umami !== 'undefined') {
-                umami.track('Page View Detailed', {
-                    page_type: 'archive',
-                    section: 'archive_main',
-                    referrer_type: getReferrerType(),
-                    session_id: getSessionId()
-                });
-            }
-        });
+        // Analytics helper functions removed - using Umami's native tracking
     </script>
 </head>
 <body>

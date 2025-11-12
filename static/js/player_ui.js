@@ -608,6 +608,9 @@
     currentEpisode = episode ? { ...episode } : null;
   }
 
+  // Track playback milestones
+  const playbackMilestones = {};
+
   function persistProgress() {
     const player = ensureAudioPlayer();
     if (!player || !currentEpisode || !currentEpisode.id) {
@@ -620,6 +623,27 @@
       }
     } catch (err) {
       console.warn('Unable to persist progress', err);
+    }
+
+    // Track playback completion at 75% threshold
+    if (player.duration && player.currentTime) {
+      const progress = (player.currentTime / player.duration) * 100;
+      const episodeKey = currentEpisode.id;
+
+      if (!playbackMilestones[episodeKey]) {
+        playbackMilestones[episodeKey] = { tracked75: false };
+      }
+
+      if (progress >= 75 && !playbackMilestones[episodeKey].tracked75) {
+        playbackMilestones[episodeKey].tracked75 = true;
+        if (typeof umami !== 'undefined') {
+          umami.track('playback_completed', {
+            episode_title: currentEpisode.title,
+            episode_date: currentEpisode.date,
+            completion_percent: 75
+          });
+        }
+      }
     }
 
     savePlayerSession(

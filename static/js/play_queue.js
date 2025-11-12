@@ -101,12 +101,31 @@
       if (playNext) {
         queue = [normalised, ...queue.filter((item) => item.id !== normalised.id)];
         persistState();
+        // Track play next reorder
+        if (typeof umami !== 'undefined') {
+          umami.track('queue_play_next', {
+            episode_title: normalised.title,
+            episode_date: normalised.date,
+            queue_size: queue.length
+          });
+        }
       }
       return getState();
     }
 
     queue = playNext ? [normalised, ...queue] : [...queue, normalised];
     persistState();
+
+    // Track queue addition
+    if (typeof umami !== 'undefined') {
+      umami.track('queue_added', {
+        episode_title: normalised.title,
+        episode_date: normalised.date,
+        position: playNext ? 'next' : 'end',
+        queue_size: queue.length
+      });
+    }
+
     return getState();
   }
 
@@ -142,10 +161,22 @@
     }
 
     const wasCurrent = current && current.id === id;
+    const removedItem = wasCurrent ? current : queue.find((item) => item.id === id);
+
     removeFromQueueById(id);
     if (wasCurrent) {
       current = null;
     }
+
+    // Track queue removal
+    if (typeof umami !== 'undefined' && removedItem) {
+      umami.track('queue_removed', {
+        episode_title: removedItem.title,
+        episode_date: removedItem.date,
+        queue_size: queue.length
+      });
+    }
+
     persistState();
     return getState();
   }

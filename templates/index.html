@@ -27,6 +27,38 @@
 
         :root {
             --audio-bar-offset: 0px;
+            /* Color palette */
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --warning-color: #ffc107;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --muted-color: #6c757d;
+
+            /* Spacing */
+            --border-radius-sm: 6px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 12px;
+            --border-radius-pill: 50px;
+
+            /* Transitions */
+            --transition-speed: 0.2s;
+            --transition-timing: ease;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark-mode {
+            --primary-color: #63b3ed;
+            --light-color: #1f2937;
+            --dark-color: #f9fafb;
+            --muted-color: #9ca3af;
         }
 
         body {
@@ -41,6 +73,24 @@
         
         body.audio-playing {
             padding-bottom: calc(var(--audio-bar-offset, 0px) + 20px);
+        }
+
+        /* Global focus styles for better accessibility */
+        button:focus,
+        a:focus,
+        select:focus,
+        input:focus,
+        .btn:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+        }
+
+        .dark-mode button:focus,
+        .dark-mode a:focus,
+        .dark-mode select:focus,
+        .dark-mode input:focus,
+        .dark-mode .btn:focus {
+            outline-color: #63b3ed;
         }
         
         /* Episode Progress Indicators */
@@ -78,8 +128,8 @@
         }
         
         .dark-mode .search-highlight {
-            background-color: #d4a617;
-            color: #1a1a1a;
+            background-color: #fbbf24;
+            color: #000000;
             font-weight: 700;
         }
         
@@ -132,7 +182,8 @@
 
         .favorite-btn:focus,
         .queue-btn:focus {
-            outline: none;
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
@@ -158,6 +209,10 @@
 
         .dark-mode .favorite-btn:hover {
             background: rgba(55, 65, 81, 0.92);
+        }
+
+        .dark-mode .favorite-btn:not(.favorited) .heart {
+            color: #9ca3af;
         }
 
         .queue-btn {
@@ -204,6 +259,17 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        @keyframes heartPulse {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1.1); }
+            75% { transform: scale(1.25); }
+        }
+
+        .favorite-btn.just-favorited .heart {
+            animation: heartPulse 0.6s ease;
+        }
         
         .dark-mode .random-episode-btn {
             background: linear-gradient(135deg, #f56565, #e53e3e);
@@ -245,6 +311,12 @@
             transform: translateY(0);
         }
 
+        .search-button:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+        }
+
         /* Secondary utility button */
         .utility-button {
             background: #f8f9fa;
@@ -269,6 +341,12 @@
             transform: translateY(-1px);
         }
 
+        .utility-button:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
         #back-to-top {
             position: fixed;
             bottom: calc(70px + var(--audio-bar-offset, 0px));
@@ -289,6 +367,27 @@
         /* Tighter card spacing for more cards per screen */
         #resultsBody .card {
             margin: 0 7px 1rem 7px !important;
+            animation: fadeInUp 0.4s ease-out;
+            animation-fill-mode: both;
+        }
+
+        /* Stagger animation for cards */
+        #resultsBody .card:nth-child(1) { animation-delay: 0.05s; }
+        #resultsBody .card:nth-child(2) { animation-delay: 0.1s; }
+        #resultsBody .card:nth-child(3) { animation-delay: 0.15s; }
+        #resultsBody .card:nth-child(4) { animation-delay: 0.2s; }
+        #resultsBody .card:nth-child(5) { animation-delay: 0.25s; }
+        #resultsBody .card:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         /* Ensure no horizontal overflow */
@@ -346,13 +445,13 @@
             background: #f8f9fa;
             border: 1px solid #dee2e6;
             color: #495057;
-            padding: 8px 12px;
+            padding: 10px 16px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
             text-decoration: none;
             transition: all 0.2s ease;
-            min-height: 36px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             white-space: nowrap;
@@ -363,6 +462,12 @@
             border-color: #adb5bd;
             color: #495057;
             text-decoration: none;
+        }
+
+        .nav-btn:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
         .nav-btn.active {
@@ -395,11 +500,11 @@
             background: #17a2b8;
             border: 1px solid #17a2b8;
             color: white;
-            padding: 8px 12px;
+            padding: 10px 16px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
-            min-height: 36px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             position: relative;
@@ -409,6 +514,12 @@
             background: #138496;
             border-color: #117a8b;
             color: white;
+        }
+
+        .updates-btn:focus {
+            outline: 2px solid #17a2b8;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
         }
 
         .updates-btn i {
@@ -1034,16 +1145,7 @@
     <script defer src="https://analytics.tmasearcher.com/script.js" data-website-id="db811831-d34a-4968-9ec0-67828c6ce545"></script>
     <script>
         // Page load analytics tracking - now using static script tag  
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof umami !== 'undefined') {
-                umami.track('Page View Detailed', {
-                    page_type: 'index',
-                    section: 'main',
-                    referrer_type: getReferrerType(),
-                    session_id: getSessionId()
-                });
-            }
-        });
+        // Page view tracking removed - Umami automatically tracks page views
     </script>
 </head>
 
@@ -1053,39 +1155,41 @@
         <div class="header-container">
             <h1>TMA Searcher</h1>
             <div class="header-coffee">
-                <a href="https://www.buymeacoffee.com/tmasearcher" target="_blank">
-                    <img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee">
+                <a href="https://www.buymeacoffee.com/tmasearcher" target="_blank" rel="noopener">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me A Coffee" width="160" height="45" loading="lazy">
                 </a>
             </div>
         </div>
         
         <!-- Single Row Navigation -->
-        <div class="top-nav">
-            <a href="#" class="nav-btn active" onclick="fetchPodcast('TMA')">
-                <i class="fas fa-clock"></i>Recent
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="#" class="nav-btn active" onclick="fetchPodcast('TMA')" aria-label="View recent episodes">
+                <i class="fas fa-clock" aria-hidden="true"></i>Recent
             </a>
-            <a href="{{ url_for('tma_archive') }}" class="nav-btn">
-                <i class="fas fa-archive"></i>Archive
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn" aria-label="Browse episode archive">
+                <i class="fas fa-archive" aria-hidden="true"></i>Archive
             </a>
-            <a href="/favorites" class="nav-btn" id="favoritesNavLink" onclick="umami && umami.track('Favorites Navigation Click from Search', {session_id: getSessionId()})">
-                <i class="fas fa-heart"></i>Favorites
-                <span id="favoritesNavBadge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;"></span>
+            <a href="/favorites" class="nav-btn" id="favoritesNavLink" aria-label="View favorite episodes">
+                <i class="fas fa-heart" aria-hidden="true"></i>Favorites
+                <span id="favoritesNavBadge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;" aria-label="Number of favorites"></span>
             </a>
-            <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal">
-                <i class="fas fa-bell"></i>Updates
-                <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none;">•</span>
+            <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal" aria-label="View update notifications">
+                <i class="fas fa-bell" aria-hidden="true"></i>Updates
+                <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none;" aria-label="New update available">•</span>
             </button>
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle">
-                <i class="fas fa-moon"></i>Dark
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+                <i class="fas fa-moon" aria-hidden="true"></i><span id="dark-mode-text">Dark</span>
             </button>
-        </div>
+        </nav>
         <!-- Primary Search Form -->
         <div class="search-form">
             <form id="searchForm">
                 <div class="form-group">
                     <label for="matchType" class="form-label">
                         Search Type
-                        <i class="fas fa-question-circle help-icon" data-toggle="modal" data-target="#helpModal"></i>
+                        <button type="button" class="help-icon" data-toggle="modal" data-target="#helpModal" aria-label="Open search help guide" style="background: none; border: none; padding: 0; cursor: pointer;">
+                            <i class="fas fa-question-circle" aria-hidden="true"></i>
+                        </button>
                     </label>
                     <select class="form-control" id="matchType" name="matchType">
                         <option value="all">Match All Keywords</option>
@@ -1095,7 +1199,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="titleInput" class="form-label">Episode Title</label>
+                    <label for="titleInput" class="form-label">Episode Title <span style="font-size: 0.75rem; color: #6c757d; font-weight: normal;">(Press <kbd>/</kbd> or <kbd>S</kbd>)</span></label>
                     <input type="text" class="form-control" name="title" id="titleInput" placeholder="Search episode titles...">
                 </div>
                 
@@ -1123,34 +1227,90 @@
             
             <!-- Random Episode Button -->
             <div class="text-center mt-3">
-                <button type="button" class="btn random-episode-btn" onclick="getRandomEpisode()">
-                    <i class="fas fa-dice mr-2"></i>Random Episode
+                <button type="button" class="btn random-episode-btn" onclick="getRandomEpisode()" aria-label="Get a random episode (Press R)" title="Press R for random episode">
+                    <i class="fas fa-dice mr-2" aria-hidden="true"></i>Random Episode <span style="opacity: 0.7; font-size: 0.85em;">(R)</span>
                 </button>
             </div>
         </div>
         </div>
         
-        <div id="results" class="mt-4">
+        <main id="results" class="mt-4" aria-live="polite" aria-atomic="false">
             <div class="row" id="resultsBody">
             </div>
-        </div>
+        </main>
             <!-- Back to Top Button -->
-            <button id="back-to-top" title="Go to top" style="display: none;">↑ Top</button>
+            <button id="back-to-top" title="Go to top" aria-label="Scroll to top" style="display: none;">↑ Top</button>
             <script>
+                function updateDarkModeToggle(isDark) {
+                    const toggle = document.getElementById('dark-mode-toggle');
+                    const text = document.getElementById('dark-mode-text');
+                    const icon = toggle.querySelector('i');
+
+                    if (isDark) {
+                        toggle.setAttribute('aria-pressed', 'true');
+                        toggle.setAttribute('aria-label', 'Switch to light mode');
+                        icon.className = 'fas fa-sun';
+                        text.textContent = 'Light';
+                    } else {
+                        toggle.setAttribute('aria-pressed', 'false');
+                        toggle.setAttribute('aria-label', 'Switch to dark mode');
+                        icon.className = 'fas fa-moon';
+                        text.textContent = 'Dark';
+                    }
+                }
+
                 document.getElementById('dark-mode-toggle').addEventListener('click', function () {
                     document.body.classList.toggle('dark-mode');
+                    const isDark = document.body.classList.contains('dark-mode');
+
                     // Save the user's preference in local storage
-                    if (document.body.classList.contains('dark-mode')) {
+                    if (isDark) {
                         localStorage.setItem('darkMode', 'enabled');
                     } else {
                         localStorage.setItem('darkMode', 'disabled');
                     }
+
+                    updateDarkModeToggle(isDark);
                 });
 
                 // Check for saved user preference, if any, on page load
                 if (localStorage.getItem('darkMode') === 'enabled') {
                     document.body.classList.add('dark-mode');
+                    updateDarkModeToggle(true);
                 }
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', function(e) {
+                    // Don't trigger shortcuts when typing in inputs
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                        // Except for Escape key to clear/blur
+                        if (e.key === 'Escape') {
+                            e.target.blur();
+                            if (e.target.value) {
+                                clearSearch();
+                            }
+                        }
+                        return;
+                    }
+
+                    // / key - Focus search title input
+                    if (e.key === '/' || e.key === 's') {
+                        e.preventDefault();
+                        document.getElementById('titleInput').focus();
+                    }
+
+                    // r key - Random episode
+                    if (e.key === 'r') {
+                        e.preventDefault();
+                        getRandomEpisode();
+                    }
+
+                    // Escape - Clear search
+                    if (e.key === 'Escape') {
+                        clearSearch();
+                    }
+                });
+
                 document.addEventListener('DOMContentLoaded', function () {
                     if (window.PlayerUI) {
                         PlayerUI.init({ defaultTitle: document.title });
@@ -1321,8 +1481,7 @@
                     // Track this action
                     if (typeof umami !== 'undefined') {
                         umami.track('Episodes on This Day Click', {
-                            search_date: date,
-                            session_id: getSessionId()
+                            search_date: date
                         });
                     }
                     
@@ -1368,7 +1527,7 @@
                         umami.track('Episode Favorited', {
                             episode_title: episodeData.title,
                             episode_date: episodeData.date,
-                            session_id: getSessionId()
+                            favorites_count: Object.keys(favorites).length
                         });
                     }
                 }
@@ -1383,7 +1542,7 @@
                         umami.track('Episode Unfavorited', {
                             episode_title: episodeTitle,
                             episode_date: episodeDate,
-                            session_id: getSessionId()
+                            favorites_count: Object.keys(favorites).length
                         });
                     }
                 }
@@ -1432,32 +1591,21 @@
                     
                     // Reset to recent episodes
                     fetchPodcast('TMA');
-                    
-                    // Track this action
-                    if (typeof umami !== 'undefined') {
-                        umami.track('Clear Search Click', {
-                            session_id: getSessionId()
-                        });
-                    }
                 }
                 
                 // Enhanced tracking function for search result interactions
                 function trackSearchResultInteraction(action, episode, date, extraData = {}) {
                     if (typeof umami !== 'undefined') {
-                        const searchQuery = lastSearchParams ? 
+                        const searchQuery = lastSearchParams ?
                             [lastSearchParams.title, lastSearchParams.date, lastSearchParams.notes].filter(Boolean).join(' | ') : '';
-                        
-                        // Keep original event for continuity
-                        umami.track(action, { episode, date, ...extraData });
-                        
-                        // Add new enhanced search result interaction tracking
+
+                        // Track search result interaction with context
                         if (searchQuery) {
                             umami.track('Search Result Interaction', {
                                 action_type: action.toLowerCase().replace(' click', ''),
                                 episode_title: episode,
                                 episode_date: date,
                                 search_query: searchQuery,
-                                session_id: getSessionId(),
                                 ...extraData
                             });
                         }
@@ -1670,23 +1818,51 @@
                     var notes = $('input[name="notes"]').val();
                     var matchType = $('#matchType').val();
                     var currentPodcast = $('#currentPodcast').val();
-                    
+
                     lastSearchParams = { title, date, notes, matchType, currentPodcast };
+
+                    // Show loading state
+                    const searchBtn = $('.search-button');
+                    const originalContent = searchBtn.html();
+                    searchBtn.prop('disabled', true);
+                    searchBtn.html('<i class="fas fa-spinner fa-spin"></i> Searching...');
+
+                    // Show loading in results
+                    $('#resultsBody').html('<div class="col-12 text-center py-5"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i><p class="mt-3">Searching episodes...</p></div>');
 
                     $.ajax({
                         url: '/search',
                         type: 'get',
-                        data: { 
-                            title: title, 
-                            date: date, 
-                            notes: notes, 
-                            matchType: matchType, 
-                            currentPodcast: currentPodcast, 
-                            page: page 
+                        data: {
+                            title: title,
+                            date: date,
+                            notes: notes,
+                            matchType: matchType,
+                            currentPodcast: currentPodcast,
+                            page: page
                         },
                         success: function (data) {
                             var resultsBody = $('#resultsBody');
                             resultsBody.empty();
+
+                            // Show friendly empty state if no results
+                            if (data.podcasts.length === 0) {
+                                const searchTerms = [lastSearchParams.title, lastSearchParams.date, lastSearchParams.notes].filter(Boolean).join(', ');
+                                resultsBody.html(`
+                                    <div class="col-12 text-center py-5">
+                                        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                                        <h4 style="color: var(--text-color, #6c757d);">No Episodes Found</h4>
+                                        <p style="color: var(--text-secondary, #6c757d); max-width: 500px; margin: 0 auto;">
+                                            We couldn't find any episodes matching "${searchTerms}".
+                                            Try different keywords, check your spelling, or use a different match type.
+                                        </p>
+                                        <button class="btn btn-outline-primary mt-3" onclick="clearSearch()">
+                                            <i class="fas fa-redo"></i> Clear Search
+                                        </button>
+                                    </div>
+                                `);
+                                return;
+                            }
 
                             $.each(data.podcasts, function (index, podcast) {
                                 var cardHtml = createPodcastCard(podcast);
@@ -1721,10 +1897,17 @@
                                     results_count: data.podcasts.length,
                                     total_pages: data.pagination.total_pages,
                                     has_results: data.podcasts.length > 0,
-                                    match_type: lastSearchParams.matchType,
-                                    session_id: getSessionId()
+                                    match_type: lastSearchParams.matchType
                                 };
                                 umami.track('Search Results', searchResultsData);
+
+                                // Track zero-result searches
+                                if (data.podcasts.length === 0) {
+                                    umami.track('Search No Results', {
+                                        search_query: searchQuery,
+                                        match_type: lastSearchParams.matchType
+                                    });
+                                }
                             }
 
                             // Update pagination
@@ -1737,7 +1920,12 @@
                             }
                         },
                         error: function () {
-                            alert('An error has occurred during the search');
+                            $('#resultsBody').html('<div class="alert alert-danger" role="alert"><i class="fas fa-exclamation-triangle"></i> An error occurred during the search. Please try again.</div>');
+                        },
+                        complete: function () {
+                            // Restore button state
+                            searchBtn.prop('disabled', false);
+                            searchBtn.html(originalContent);
                         }
                     });
                 }
@@ -2008,6 +2196,13 @@
                         addToFavorites(episodeId, episodeData);
                         updateFavoriteButton(buttonElement, true);
                         updateFavoritesBadge();
+
+                        // Add animation class
+                        buttonElement.classList.add('just-favorited');
+                        setTimeout(() => {
+                            buttonElement.classList.remove('just-favorited');
+                        }, 600);
+
                         showToast('Added to favorites');
                     }
                 }
@@ -2036,9 +2231,7 @@
                     
                     // Track random episode click
                     if (typeof umami !== 'undefined') {
-                        umami.track('Random Episode Click', {
-                            session_id: getSessionId()
-                        });
+                        umami.track('Random Episode Click');
                     }
                     
                     $.ajax({
@@ -2179,26 +2372,7 @@
                 </div>
             </div>
             <script>
-                // Session management for analytics
-                function getSessionId() {
-                    let sessionId = localStorage.getItem('tma_session');
-                    if (!sessionId) {
-                        sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                        localStorage.setItem('tma_session', sessionId);
-                    }
-                    return sessionId;
-                }
-                
-                function getReferrerType() {
-                    const referrer = document.referrer;
-                    if (!referrer) return 'direct';
-                    if (referrer.includes('tmasearcher.com')) return 'internal';
-                    if (referrer.includes('google.com')) return 'search_google';
-                    if (referrer.includes('bing.com')) return 'search_bing';
-                    return 'external';
-                }
-
-                // Enhanced page tracking will be called after script loads
+                // Analytics helper functions removed - using Umami's native session tracking
 
                 // Check for new updates and show the "New" badge if updates are unseen
                 document.addEventListener("DOMContentLoaded", () => {
