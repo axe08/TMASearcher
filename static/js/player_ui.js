@@ -1068,6 +1068,7 @@
     document.body.classList.add('audio-playing');
     scheduleAudioBarRefresh();
     updatePlaybackLabels(getCurrentPlaybackMetadata());
+    updateProgressBar();
   }
 
   function handleAudioPause() {
@@ -1124,6 +1125,7 @@
     });
 
     player.addEventListener('loadedmetadata', () => {
+      console.log('Audio metadata loaded, duration:', player.duration);
       updateProgressBar();
     });
 
@@ -1273,4 +1275,5 @@
   window.scheduleAudioBarRefresh = scheduleAudioBarRefresh;
   window.setPlaybackSpeed = setPlaybackSpeed;
   window.retryAudio = retryAudio;
+  window.updateProgressBar = updateProgressBar;
 })(window, document);
