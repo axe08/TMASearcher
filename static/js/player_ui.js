@@ -3,6 +3,7 @@
 
   const STORAGE_SESSION_KEY = 'lastPlayerSession';
   const PROGRESS_PREFIX = 'progress-';
+  const PLAYBACK_SPEED_KEY = 'playbackSpeed';
 
   const queueElements = {
     panel: null,
@@ -25,6 +26,9 @@
   let queueListenersBound = false;
   let audioBarRefreshRaf = null;
   let initialised = false;
+  let currentPlaybackSpeed = 1;
+  let progressUpdateRaf = null;
+  let isSeekingProgress = false;
   const queueDragState = {
     id: null,
   };
@@ -81,6 +85,252 @@
       mp3url: decodeInlineString(mp3url || ''),
       url: decodeInlineString(url || ''),
     };
+  }
+
+  function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) {
+      return '0:00';
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function loadPlaybackSpeed() {
+    try {
+      const saved = localStorage.getItem(PLAYBACK_SPEED_KEY);
+      if (saved) {
+        const speed = parseFloat(saved);
+        if (speed >= 0.5 && speed <= 2.5) {
+          return speed;
+        }
+      }
+    } catch (err) {
+      console.warn('Unable to load playback speed', err);
+    }
+    return 1;
+  }
+
+  function savePlaybackSpeed(speed) {
+    try {
+      localStorage.setItem(PLAYBACK_SPEED_KEY, String(speed));
+    } catch (err) {
+      console.warn('Unable to save playback speed', err);
+    }
+  }
+
+  function setPlaybackSpeed(speed) {
+    const player = ensureAudioPlayer();
+    if (!player) {
+      return;
+    }
+
+    const validSpeed = Math.max(0.5, Math.min(2.5, parseFloat(speed) || 1));
+    currentPlaybackSpeed = validSpeed;
+    player.playbackRate = validSpeed;
+    savePlaybackSpeed(validSpeed);
+
+    // Update UI
+    document.querySelectorAll('.speed-btn').forEach((btn) => {
+      const btnSpeed = parseFloat(btn.dataset.speed);
+      btn.classList.toggle('active', btnSpeed === validSpeed);
+    });
+
+    const controlBarSpeed = document.getElementById('controlBarSpeed');
+    if (controlBarSpeed) {
+      controlBarSpeed.textContent = `${validSpeed}×`;
+    }
+
+    if (typeof umami !== 'undefined') {
+      umami.track('playback_speed_changed', { speed: validSpeed });
+    }
+  }
+
+  function updateMediaSession(metadata) {
+    if (!('mediaSession' in navigator)) {
+      return;
+    }
+
+    if (!metadata || !metadata.id) {
+      navigator.mediaSession.metadata = null;
+      return;
+    }
+
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: metadata.title || 'Untitled Episode',
+        artist: 'The Morning After',
+        album: metadata.date || '',
+        artwork: [
+          { src: '/static/images/tma-icon-96.png', sizes: '96x96', type: 'image/png' },
+          { src: '/static/images/tma-icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/static/images/tma-icon-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        const player = ensureAudioPlayer();
+        if (player) {
+          player.play();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        const player = ensureAudioPlayer();
+        if (player) {
+          player.pause();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        seekAudio(-30);
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        seekAudio(30);
+      });
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        seekAudio(-30);
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        if (typeof PlayQueue !== 'undefined') {
+          const nextEpisode = PlayQueue.next();
+          if (nextEpisode) {
+            handleQueueAdvance(nextEpisode);
+          }
+        }
+      });
+    } catch (err) {
+      console.warn('Media Session API error:', err);
+    }
+  }
+
+  function updateProgressBar() {
+    const player = ensureAudioPlayer();
+    if (!player || isSeekingProgress) {
+      return;
+    }
+
+    const currentTime = player.currentTime || 0;
+    const duration = player.duration || 0;
+
+    // Update time displays
+    const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+    const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+    const controlBarCurrentTime = document.getElementById('controlBarCurrentTime');
+    const controlBarTotalTime = document.getElementById('controlBarTotalTime');
+
+    if (currentTimeDisplay) {
+      currentTimeDisplay.textContent = formatTime(currentTime);
+    }
+    if (totalTimeDisplay) {
+      totalTimeDisplay.textContent = formatTime(duration);
+    }
+    if (controlBarCurrentTime) {
+      controlBarCurrentTime.textContent = formatTime(currentTime);
+    }
+    if (controlBarTotalTime) {
+      controlBarTotalTime.textContent = formatTime(duration);
+    }
+
+    // Update progress bars
+    if (duration > 0) {
+      const progress = (currentTime / duration) * 100;
+      const progressFill = document.getElementById('progressBarFill');
+      const controlBarProgressFill = document.getElementById('controlBarProgressFill');
+
+      if (progressFill) {
+        progressFill.style.width = `${progress}%`;
+      }
+      if (controlBarProgressFill) {
+        controlBarProgressFill.style.width = `${progress}%`;
+      }
+
+      // Update handle position
+      const progressHandle = document.getElementById('progressBarHandle');
+      if (progressHandle) {
+        progressHandle.style.left = `${progress}%`;
+      }
+    }
+
+    // Update buffered progress
+    if (player.buffered && player.buffered.length > 0 && duration > 0) {
+      const buffered = player.buffered.end(player.buffered.length - 1);
+      const bufferedProgress = (buffered / duration) * 100;
+      const progressBuffered = document.getElementById('progressBarBuffered');
+      if (progressBuffered) {
+        progressBuffered.style.width = `${bufferedProgress}%`;
+      }
+    }
+  }
+
+  function scheduleProgressUpdate() {
+    if (progressUpdateRaf) {
+      cancelAnimationFrame(progressUpdateRaf);
+    }
+    progressUpdateRaf = requestAnimationFrame(() => {
+      updateProgressBar();
+      progressUpdateRaf = null;
+    });
+  }
+
+  function seekToProgress(event) {
+    const progressContainer = document.getElementById('progressContainer');
+    if (!progressContainer) {
+      return;
+    }
+
+    const rect = progressContainer.querySelector('.progress-bar-wrapper').getBoundingClientRect();
+    const offsetX = event.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, offsetX / rect.width));
+
+    const player = ensureAudioPlayer();
+    if (player && player.duration) {
+      player.currentTime = percentage * player.duration;
+      updateProgressBar();
+      persistProgress();
+
+      if (typeof umami !== 'undefined') {
+        umami.track('seeked_progress', { percentage: Math.round(percentage * 100) });
+      }
+    }
+  }
+
+  function showLoadingIndicator() {
+    const loadingIndicator = document.getElementById('audioLoadingIndicator');
+    const errorState = document.getElementById('audioErrorState');
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'flex';
+    }
+    if (errorState) {
+      errorState.style.display = 'none';
+    }
+  }
+
+  function hideLoadingIndicator() {
+    const loadingIndicator = document.getElementById('audioLoadingIndicator');
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'none';
+    }
+  }
+
+  function showErrorState() {
+    const loadingIndicator = document.getElementById('audioLoadingIndicator');
+    const errorState = document.getElementById('audioErrorState');
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'none';
+    }
+    if (errorState) {
+      errorState.style.display = 'flex';
+    }
+  }
+
+  function retryAudio() {
+    if (currentEpisode) {
+      startPlayback(currentEpisode, { openModal: false, resumeProgress: true });
+    }
   }
 
   function ensureAudioPlayer() {
@@ -671,12 +921,18 @@
     }
 
     setCurrentEpisode(episode);
+    hideLoadingIndicator();
 
     const audioSourceEl = document.getElementById('audioSource');
     if (audioSourceEl) {
       audioSourceEl.setAttribute('src', episode.mp3url || '');
     }
     player.load();
+
+    // Apply saved playback speed
+    currentPlaybackSpeed = loadPlaybackSpeed();
+    player.playbackRate = currentPlaybackSpeed;
+    setPlaybackSpeed(currentPlaybackSpeed);
 
     if (playbackOptions.resumeProgress) {
       const saved = localStorage.getItem(`${PROGRESS_PREFIX}${episode.id}`);
@@ -687,7 +943,10 @@
 
     const playPromise = player.play();
     if (playPromise && typeof playPromise.catch === 'function') {
-      playPromise.catch(() => {});
+      playPromise.catch((error) => {
+        console.error('Playback failed:', error);
+        showErrorState();
+      });
     }
 
     const controlBar = document.getElementById('audioControlBar');
@@ -715,6 +974,7 @@
     );
 
     updatePlaybackLabels(episode);
+    updateMediaSession(episode);
 
     if (playbackOptions.openModal && typeof $ !== 'undefined' && window.$) {
       const modal = window.$('#audioPlayerModal');
@@ -842,10 +1102,61 @@
       return;
     }
 
-    player.addEventListener('timeupdate', persistProgress);
+    player.addEventListener('timeupdate', () => {
+      persistProgress();
+      scheduleProgressUpdate();
+    });
     player.addEventListener('play', handleAudioPlay);
     player.addEventListener('pause', handleAudioPause);
     player.addEventListener('ended', handleAudioEnded);
+
+    // Loading states
+    player.addEventListener('loadstart', () => {
+      showLoadingIndicator();
+    });
+
+    player.addEventListener('waiting', () => {
+      showLoadingIndicator();
+    });
+
+    player.addEventListener('canplay', () => {
+      hideLoadingIndicator();
+    });
+
+    player.addEventListener('loadedmetadata', () => {
+      updateProgressBar();
+    });
+
+    player.addEventListener('progress', () => {
+      updateProgressBar();
+    });
+
+    player.addEventListener('durationchange', () => {
+      updateProgressBar();
+    });
+
+    // Error handling
+    player.addEventListener('error', (event) => {
+      console.error('Audio error:', event);
+      hideLoadingIndicator();
+      showErrorState();
+
+      if (typeof umami !== 'undefined') {
+        umami.track('playback_error', {
+          episode_title: currentEpisode?.title || 'Unknown',
+          error_code: player.error?.code || 'unknown'
+        });
+      }
+    });
+
+    // Add click handler for progress bar
+    const progressContainer = document.getElementById('progressContainer');
+    if (progressContainer) {
+      const wrapper = progressContainer.querySelector('.progress-bar-wrapper');
+      if (wrapper) {
+        wrapper.addEventListener('click', seekToProgress);
+      }
+    }
   }
 
   function initialiseFromSession() {
@@ -945,6 +1256,8 @@
     savePlayerSession,
     loadPlayerSession,
     clearPlayerSession,
+    setPlaybackSpeed,
+    retryAudio,
   };
 
   window.PlayerUI = api;
@@ -958,4 +1271,6 @@
   window.seekAudio = seekAudio;
   window.reopenPlayer = reopenPlayer;
   window.scheduleAudioBarRefresh = scheduleAudioBarRefresh;
+  window.setPlaybackSpeed = setPlaybackSpeed;
+  window.retryAudio = retryAudio;
 })(window, document);
