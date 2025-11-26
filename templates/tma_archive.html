@@ -7,12 +7,15 @@
     <meta name="description" content="Browse and search the complete TMA podcast archive">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=2"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=2"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -55,13 +58,112 @@
         }
 
         .header-container {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
 
         .header-container h2 {
             font-size: 2rem;
             font-weight: 600;
             margin: 0;
+        }
+
+        /* Single row navigation */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .nav-btn i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        /* Mobile: Icons-only navigation */
+        @media (max-width: 479px) {
+            .nav-btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 12px;
+                justify-content: center;
+            }
+
+            .nav-btn .nav-text {
+                display: none;
+            }
+
+            .nav-btn i {
+                font-size: 16px;
+                margin-right: 0;
+            }
+
+            .top-nav {
+                gap: 6px;
+            }
+        }
+
+        /* Dark mode toggle as compact button */
+        .dark-toggle {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: white;
+        }
+
+        .dark-toggle:hover {
+            background: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+
+        /* Dark mode styles for nav */
+        .dark-mode .nav-btn {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
         }
 
         .form-control {
@@ -370,21 +472,24 @@
 <body>
     <div class="container my-3">
         <div class="header-container">
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <h2 class="header-text mb-2 mb-sm-0">TMA Archive</h2>
-                <div class="d-flex gap-2">
-                    <a href="/" class="btn btn-outline-primary">
-                        <i class="fas fa-home mr-2"></i>Home
-                    </a>
-                    <a href="/favorites" class="btn btn-outline-primary" onclick="umami && umami.track('Favorites Navigation Click from Archive', {session_id: getSessionId()})">
-                        <i class="fas fa-heart mr-2"></i>Favorites
-                    </a>
-                    <button id="dark-mode-toggle" class="btn btn-outline-secondary">
-                        <i class="fas fa-moon mr-2"></i>Dark Mode
-                    </button>
-                </div>
-            </div>
+            <h2 class="header-text text-center mb-3">TMA Archive</h2>
         </div>
+
+        <!-- Single Row Navigation -->
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="/" class="nav-btn" title="Home">
+                <i class="fas fa-home" aria-hidden="true"></i><span class="nav-text">Home</span>
+            </a>
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn active" title="Episode Archive">
+                <i class="fas fa-archive" aria-hidden="true"></i><span class="nav-text">Archive</span>
+            </a>
+            <a href="/favorites" class="nav-btn" title="Favorites" onclick="umami && umami.track('Favorites Navigation Click from Archive', {session_id: getSessionId()})">
+                <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
+            </a>
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
+            </button>
+        </nav>
         <div class="alert alert-info" role="alert">
             <i class="fas fa-info-circle mr-2"></i>
             <strong>Archive:</strong> Older TMA episodes with filename, date, and audio options available.
@@ -697,7 +802,12 @@
         $(document).ready(function() {
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
-            
+
+            // Initialize PlayerUI for shared audio player functionality
+            if (typeof PlayerUI !== 'undefined' && PlayerUI.init) {
+                PlayerUI.init({ defaultTitle: 'TMA Archive | TMA Searcher' });
+            }
+
             fetchArchive(); // Fetch archive episodes on page load
 
             $('#searchForm').on('submit', function(e) {
@@ -707,49 +817,28 @@
         });
 
         function openPlayer(filename, mp3url, date) {
-            $('#audioPlayerModalLabel').text(`${filename} (${date})`);
-            $('#audioSource').attr('src', mp3url);
-            var popupAudioPlayer = document.getElementById('popupAudioPlayer');
-            
-            // Load and play the audio
-            popupAudioPlayer.load();
-            popupAudioPlayer.play();
-
-            // Show the audio control bar
-            $('#audioControlBar').show();
-            $('#controlPlayPauseBtn').text('Pause');
-            document.body.classList.add('audio-playing'); // Add padding when audio bar shows
-
-            // Open the modal
-            $('#audioPlayerModal').modal('show');
-        }
-
-        function toggleAudioPlayPause() {
-            var popupAudioPlayer = document.getElementById('popupAudioPlayer');
-            var playPauseBtn = document.getElementById('controlPlayPauseBtn');
-            var modalPlayPauseBtn = document.getElementById('modalPlayPauseBtn');
-
-            if (popupAudioPlayer.paused) {
-                popupAudioPlayer.play();
-                playPauseBtn.textContent = 'Pause';
-                modalPlayPauseBtn.textContent = 'Pause';
+            // Use shared PlayerUI module for playback
+            if (typeof PlayerUI !== 'undefined' && PlayerUI.startPlayback) {
+                // Build episode object compatible with PlayerUI
+                var episode = {
+                    id: 'archive-' + filename.replace(/[^a-zA-Z0-9]/g, '-'),
+                    title: filename,
+                    date: date,
+                    mp3url: mp3url,
+                    show_notes: '',
+                    url: ''
+                };
+                PlayerUI.startPlayback(episode, { openModal: true, resumeProgress: true });
             } else {
-                popupAudioPlayer.pause();
-                playPauseBtn.textContent = 'Play';
-                modalPlayPauseBtn.textContent = 'Play';
-            }
-        }
-        function seekAudio(seconds) {
-            var audioPlayer = document.getElementById('popupAudioPlayer'); // Ensure we are targeting the correct audio element
-            if (audioPlayer) {
-                audioPlayer.currentTime += seconds; // Add or subtract seconds from the current time
+                console.error('PlayerUI not available');
             }
         }
 
-        // Reopen the audio player modal
-        function reopenPlayer() {
-            $('#audioPlayerModal').modal('show');
-        }
+        // These functions are now provided by player_ui.js globally:
+        // - toggleAudioPlayPause()
+        // - seekAudio(seconds)
+        // - reopenPlayer()
+        // - setPlaybackSpeed(speed)
         
         // Phase 3: Search by date function - navigate to main page with date search
         function searchByDate(date) {

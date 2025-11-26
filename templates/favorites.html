@@ -288,6 +288,34 @@
             margin-right: 4px;
         }
 
+        /* Mobile: Icons-only navigation */
+        @media (max-width: 479px) {
+            .nav-btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 12px;
+                justify-content: center;
+            }
+
+            .nav-btn .nav-text {
+                display: none;
+            }
+
+            .nav-btn i {
+                font-size: 16px;
+                margin-right: 0;
+            }
+
+            .top-nav {
+                gap: 6px;
+            }
+
+            /* Hide Buy Me Coffee on mobile */
+            .header-coffee {
+                display: none;
+            }
+        }
+
         /* Dark mode toggle as compact button */
         .dark-toggle {
             background: #6c757d;
@@ -803,20 +831,20 @@
         </div>
         
         <!-- Single Row Navigation -->
-        <div class="top-nav">
-            <a href="/" class="nav-btn">
-                <i class="fas fa-clock"></i>Recent
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="/" class="nav-btn" title="Recent Episodes">
+                <i class="fas fa-clock" aria-hidden="true"></i><span class="nav-text">Recent</span>
             </a>
-            <a href="{{ url_for('tma_archive') }}" class="nav-btn">
-                <i class="fas fa-archive"></i>Archive
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn" title="Episode Archive">
+                <i class="fas fa-archive" aria-hidden="true"></i><span class="nav-text">Archive</span>
             </a>
-            <a href="/favorites" class="nav-btn active">
-                <i class="fas fa-heart"></i>Favorites
+            <a href="/favorites" class="nav-btn active" title="Favorites">
+                <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
             </a>
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle">
-                <i class="fas fa-moon"></i>Dark
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
             </button>
-        </div>
+        </nav>
         
         <!-- Condensed Search -->
         <div class="condensed-search">
