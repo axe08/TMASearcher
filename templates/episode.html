@@ -55,15 +55,102 @@
         }
         
         .header-container {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
         }
-        
+
         .header-container h2 {
             font-size: 1.75rem;
             font-weight: 600;
             margin: 0;
         }
-        
+
+        /* Single row navigation */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            text-decoration: none;
+        }
+
+        .nav-btn i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        /* Mobile: Icons-only navigation */
+        @media (max-width: 479px) {
+            .nav-btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 12px;
+                justify-content: center;
+            }
+
+            .nav-btn .nav-text {
+                display: none;
+            }
+
+            .nav-btn i {
+                font-size: 16px;
+                margin-right: 0;
+            }
+
+            .top-nav {
+                gap: 6px;
+            }
+        }
+
+        /* Dark mode toggle as compact button */
+        .dark-toggle {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: white;
+        }
+
+        .dark-toggle:hover {
+            background: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+
+        /* Dark mode styles for nav */
+        .dark-mode .nav-btn {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+
         .card {
             border: none;
             border-radius: 16px;
@@ -441,18 +528,24 @@
     <div class="container">
         <!-- Header -->
         <div class="header-container">
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <h2 class="header-text mb-2 mb-sm-0">TMA Episode</h2>
-                <div class="d-flex align-items-center" style="gap: 0.5rem;">
-                    <a href="/favorites" class="btn btn-outline-primary btn-sm" onclick="umami && umami.track('Favorites Navigation Click from Episode Page', {session_id: getSessionId()})">
-                        <i class="fas fa-heart mr-1"></i>Favorites
-                    </a>
-                    <button id="dark-mode-toggle" class="btn btn-outline-secondary">
-                        <i class="fas fa-moon mr-2"></i>Dark Mode
-                    </button>
-                </div>
-            </div>
+            <h2 class="header-text text-center mb-3">TMA Episode</h2>
         </div>
+
+        <!-- Single Row Navigation -->
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="/" class="nav-btn" title="Home">
+                <i class="fas fa-home" aria-hidden="true"></i><span class="nav-text">Home</span>
+            </a>
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn" title="Episode Archive">
+                <i class="fas fa-archive" aria-hidden="true"></i><span class="nav-text">Archive</span>
+            </a>
+            <a href="/favorites" class="nav-btn" title="Favorites" onclick="umami && umami.track('Favorites Navigation Click from Episode Page', {session_id: getSessionId()})">
+                <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
+            </a>
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
+            </button>
+        </nav>
 
         <!-- Episode Card -->
         <div class="card" style="position: relative;">

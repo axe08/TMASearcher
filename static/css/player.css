@@ -741,6 +741,23 @@
     display: none;
 }
 
+/* When modal is open: hide bottom bar, move queue to bottom */
+body.player-modal-open .audio-control-bar {
+    display: none !important;
+}
+
+body.player-modal-open .play-queue-panel {
+    bottom: 12px;
+    transition: bottom 0.2s ease;
+}
+
+/* Mobile: even smaller offset when modal open */
+@media (max-width: 576px) {
+    body.player-modal-open .play-queue-panel {
+        bottom: 8px;
+    }
+}
+
 /* Mobile Responsive Adjustments */
 @media (max-width: 576px) {
     .progress-bar-wrapper {
