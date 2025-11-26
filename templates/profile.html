@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>My Profile | TMA Searcher</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=2"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=2"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --audio-bar-offset: 0px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+            font-size: 16px;
+            padding-bottom: 0;
+            transition: padding-bottom 0.3s ease;
+        }
+
+        body.audio-playing {
+            padding-bottom: calc(var(--audio-bar-offset, 0px) + 20px);
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .profile-header {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .profile-username {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem;
+        }
+
+        .profile-email {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .profile-meta {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #007bff;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.5rem;
+        }
+
+        .profile-section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .profile-section-header {
+            padding: 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            color: #343a40;
+            text-decoration: none;
+            transition: background 0.15s ease;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .profile-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-menu-item:hover {
+            background: #f8f9fa;
+            text-decoration: none;
+            color: #343a40;
+        }
+
+        .profile-menu-item i {
+            width: 24px;
+            margin-right: 12px;
+            color: #6c757d;
+        }
+
+        .profile-menu-item .chevron {
+            margin-left: auto;
+            color: #adb5bd;
+        }
+
+        .logout-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            background: white;
+            border: 1px solid #dc3545;
+            border-radius: 12px;
+            color: #dc3545;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: #dc3545;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Single row navigation - matching other pages */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            padding: 0 1rem;
+        }
+
+        .nav-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            color: #495057;
+            text-decoration: none;
+        }
+
+        .nav-btn.active {
+            background: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .nav-btn i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+
+        .dark-toggle {
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: white;
+        }
+
+        .dark-toggle:hover {
+            background: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+
+        @media (max-width: 479px) {
+            .nav-btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 12px;
+                justify-content: center;
+            }
+
+            .nav-btn .nav-text {
+                display: none;
+            }
+
+            .nav-btn i {
+                font-size: 16px;
+                margin-right: 0;
+            }
+
+            .top-nav {
+                gap: 6px;
+            }
+        }
+
+        /* Dark Mode */
+        .dark-mode {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        .dark-mode .profile-avatar {
+            background: linear-gradient(135deg, #4a90d9 0%, #8b5cf6 100%);
+        }
+
+        .dark-mode .profile-email,
+        .dark-mode .profile-meta {
+            color: #9ca3af;
+        }
+
+        .dark-mode .stat-card,
+        .dark-mode .profile-section {
+            background: #16213e;
+        }
+
+        .dark-mode .stat-value {
+            color: #63b3ed;
+        }
+
+        .dark-mode .stat-label {
+            color: #9ca3af;
+        }
+
+        .dark-mode .profile-section-header {
+            border-color: #2d3748;
+        }
+
+        .dark-mode .profile-menu-item {
+            color: #e0e0e0;
+            border-color: #2d3748;
+        }
+
+        .dark-mode .profile-menu-item:hover {
+            background: #1a1a2e;
+        }
+
+        .dark-mode .profile-menu-item i {
+            color: #9ca3af;
+        }
+
+        .dark-mode .logout-btn {
+            background: #16213e;
+            border-color: #f87171;
+            color: #f87171;
+        }
+
+        .dark-mode .logout-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .dark-mode .nav-btn {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn:hover {
+            background: #4b5563;
+            border-color: #6b7280;
+            color: #f9fafb;
+        }
+
+        .dark-mode .nav-btn.active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .dark-mode .dark-toggle {
+            background: #4b5563;
+            border-color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <!-- Single Row Navigation -->
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="/" class="nav-btn" title="Home">
+                <i class="fas fa-home" aria-hidden="true"></i><span class="nav-text">Home</span>
+            </a>
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn" title="Episode Archive">
+                <i class="fas fa-archive" aria-hidden="true"></i><span class="nav-text">Archive</span>
+            </a>
+            <a href="/favorites" class="nav-btn" title="Favorites">
+                <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
+            </a>
+            <a href="{{ url_for('auth.profile') }}" class="nav-btn active" title="Profile">
+                <i class="fas fa-user" aria-hidden="true"></i><span class="nav-text">Profile</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-btn" title="Logout">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i><span class="nav-text">Logout</span>
+            </a>
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text">Dark</span>
+            </button>
+        </nav>
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-3" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ current_user.username[0].upper() }}
+            </div>
+            <h1 class="profile-username">{{ current_user.username }}</h1>
+            <p class="profile-email">{{ current_user.email }}</p>
+            <p class="profile-meta">
+                Member since {{ current_user.created_at[:10] if current_user.created_at else 'N/A' }}
+            </p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" style="grid-template-columns: 1fr;">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.favorites }}</div>
+                <div class="stat-label">Favorited Episodes</div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="profile-section">
+            <div class="profile-section-header">Settings</div>
+            <a href="{{ url_for('auth.change_password') }}" class="profile-menu-item">
+                <i class="fas fa-lock"></i>
+                <span>Change Password</span>
+                <i class="fas fa-chevron-right chevron"></i>
+            </a>
+            <a href="{{ url_for('favorites') }}" class="profile-menu-item">
+                <i class="fas fa-heart"></i>
+                <span>My Favorites</span>
+                <i class="fas fa-chevron-right chevron"></i>
+            </a>
+        </div>
+
+        <!-- Logout -->
+        <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+    </div>
+
+    <!-- Dark Mode Script -->
+    <script>
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Dark mode toggle
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        // Initialize player UI when available
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof PlayerUI !== 'undefined') {
+                PlayerUI.init();
+            }
+        });
+    </script>
+</body>
+</html>

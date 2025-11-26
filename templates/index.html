@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1370,6 +1371,21 @@
                 <i class="fas fa-bell" aria-hidden="true"></i><span class="nav-text">Updates</span>
                 <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none;" aria-label="New update available">•</span>
             </button>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.profile') }}" class="nav-btn" title="Profile">
+                <i class="fas fa-user" aria-hidden="true"></i><span class="nav-text">{{ current_user.username }}</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-btn" title="Logout">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i><span class="nav-text">Logout</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-btn" title="Login">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i><span class="nav-text">Login</span>
+            </a>
+            <a href="{{ url_for('auth.signup') }}" class="nav-btn" title="Sign Up">
+                <i class="fas fa-user-plus" aria-hidden="true"></i><span class="nav-text">Sign Up</span>
+            </a>
+            {% endif %}
             <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
                 <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
             </button>
@@ -1439,6 +1455,13 @@
             <!-- Back to Top Button -->
             <button id="back-to-top" title="Go to top" aria-label="Scroll to top" style="display: none;">↑ Top</button>
             <script>
+                // User authentication status (passed from Flask)
+                const USER_AUTH = {
+                    isAuthenticated: {% if current_user.is_authenticated %}true{% else %}false{% endif %},
+                    userId: {% if current_user.is_authenticated %}{{ current_user.id }}{% else %}null{% endif %},
+                    username: {% if current_user.is_authenticated %}"{{ current_user.username }}"{% else %}null{% endif %}
+                };
+
                 function updateDarkModeToggle(isDark) {
                     const toggle = document.getElementById('dark-mode-toggle');
                     const text = document.getElementById('dark-mode-text');
@@ -1713,68 +1736,142 @@
                 }
                 
                 // Favorites Management System
+                // Supports both localStorage (logged out) and API (logged in)
+                let _favoritesCache = null; // Cache for logged-in users
+
                 function getFavorites() {
-                    const favorites = localStorage.getItem('tma_favorites');
-                    return favorites ? JSON.parse(favorites) : {};
+                    // For logged-out users, use localStorage
+                    if (!USER_AUTH.isAuthenticated) {
+                        const favorites = localStorage.getItem('tma_favorites');
+                        return favorites ? JSON.parse(favorites) : {};
+                    }
+                    // For logged-in users, return cache (sync version for compatibility)
+                    return _favoritesCache || {};
                 }
-                
+
                 function saveFavorites(favorites) {
-                    localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+                    // Only for localStorage (logged-out users)
+                    if (!USER_AUTH.isAuthenticated) {
+                        localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+                    }
                 }
-                
+
                 function isFavorited(episodeId) {
                     const favorites = getFavorites();
-                    return favorites.hasOwnProperty(episodeId);
+                    return favorites.hasOwnProperty(String(episodeId));
                 }
-                
-                function addToFavorites(episodeId, episodeData) {
-                    const favorites = getFavorites();
-                    favorites[episodeId] = {
-                        id: episodeId,
-                        title: episodeData.title,
-                        date: episodeData.date,
-                        show_notes: episodeData.show_notes,
-                        mp3url: episodeData.mp3url,
-                        url: episodeData.url,
-                        addedAt: Date.now()
-                    };
-                    saveFavorites(favorites);
-                    
+
+                async function loadFavoritesFromAPI() {
+                    // Load favorites from API for logged-in users
+                    if (!USER_AUTH.isAuthenticated) return;
+
+                    try {
+                        const response = await fetch('/api/favorites');
+                        if (response.ok) {
+                            const data = await response.json();
+                            _favoritesCache = {};
+                            data.favorites.forEach(fav => {
+                                _favoritesCache[String(fav.id)] = fav;
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error loading favorites:', error);
+                    }
+                }
+
+                async function addToFavorites(episodeId, episodeData) {
+                    if (USER_AUTH.isAuthenticated) {
+                        // Use API for logged-in users
+                        try {
+                            const response = await fetch('/api/favorites', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    episode_id: episodeId,
+                                    podcast_name: 'TMA'
+                                })
+                            });
+                            if (response.ok) {
+                                // Update cache
+                                _favoritesCache = _favoritesCache || {};
+                                _favoritesCache[String(episodeId)] = {
+                                    id: episodeId,
+                                    title: episodeData.title,
+                                    date: episodeData.date,
+                                    show_notes: episodeData.show_notes,
+                                    mp3url: episodeData.mp3url,
+                                    url: episodeData.url,
+                                    addedAt: new Date().toISOString()
+                                };
+                            }
+                        } catch (error) {
+                            console.error('Error adding favorite:', error);
+                        }
+                    } else {
+                        // Use localStorage for logged-out users
+                        const favorites = getFavorites();
+                        favorites[String(episodeId)] = {
+                            id: episodeId,
+                            title: episodeData.title,
+                            date: episodeData.date,
+                            show_notes: episodeData.show_notes,
+                            mp3url: episodeData.mp3url,
+                            url: episodeData.url,
+                            addedAt: Date.now()
+                        };
+                        saveFavorites(favorites);
+                    }
+
                     // Track favorite added
                     if (typeof umami !== 'undefined') {
                         umami.track('Episode Favorited', {
                             episode_title: episodeData.title,
                             episode_date: episodeData.date,
-                            favorites_count: Object.keys(favorites).length
+                            favorites_count: Object.keys(getFavorites()).length
                         });
                     }
                 }
-                
-                function removeFromFavorites(episodeId, episodeTitle = '', episodeDate = '') {
-                    const favorites = getFavorites();
-                    delete favorites[episodeId];
-                    saveFavorites(favorites);
-                    
+
+                async function removeFromFavorites(episodeId, episodeTitle = '', episodeDate = '') {
+                    if (USER_AUTH.isAuthenticated) {
+                        // Use API for logged-in users
+                        try {
+                            const response = await fetch(`/api/favorites/${episodeId}?podcast_name=TMA`, {
+                                method: 'DELETE'
+                            });
+                            if (response.ok && _favoritesCache) {
+                                delete _favoritesCache[String(episodeId)];
+                            }
+                        } catch (error) {
+                            console.error('Error removing favorite:', error);
+                        }
+                    } else {
+                        // Use localStorage for logged-out users
+                        const favorites = getFavorites();
+                        delete favorites[String(episodeId)];
+                        saveFavorites(favorites);
+                    }
+
                     // Track favorite removed
                     if (typeof umami !== 'undefined') {
                         umami.track('Episode Unfavorited', {
                             episode_title: episodeTitle,
                             episode_date: episodeDate,
-                            favorites_count: Object.keys(favorites).length
+                            favorites_count: Object.keys(getFavorites()).length
                         });
                     }
                 }
-                
-                function toggleFavorite(episodeId, episodeData) {
+
+                async function toggleFavorite(episodeId, episodeData) {
                     if (isFavorited(episodeId)) {
-                        removeFromFavorites(episodeId, episodeData.title, episodeData.date);
+                        await removeFromFavorites(episodeId, episodeData.title, episodeData.date);
                         return false; // Not favorited anymore
                     } else {
-                        addToFavorites(episodeId, episodeData);
+                        await addToFavorites(episodeId, episodeData);
                         return true; // Now favorited
                     }
                 }
-                
+
                 function updateFavoriteButton(button, isFav) {
                     if (isFav) {
                         button.classList.add('favorited');
@@ -1787,6 +1884,11 @@
                         button.querySelector('.heart').classList.add('far');
                         button.title = 'Add to favorites';
                     }
+                }
+
+                // Load favorites on page load for logged-in users
+                if (USER_AUTH.isAuthenticated) {
+                    loadFavoritesFromAPI();
                 }
                 
                 // Clear search function

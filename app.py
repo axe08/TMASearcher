@@ -7,13 +7,36 @@ from urllib.parse import quote
 from dotenv import load_dotenv
 from fuzzywuzzy import process
 import re
+from flask_login import LoginManager, current_user, login_required
 
 # Load environment variables
 load_dotenv('spot.env')
 
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Please sign in to access this page.'
+login_manager.login_message_category = 'info'
+
+# Import and register auth blueprint
+from auth import auth_bp, User, get_user_by_id
+
+app.register_blueprint(auth_bp, url_prefix='/auth')
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Load user by ID for Flask-Login."""
+    user_row = get_user_by_id(int(user_id))
+    if user_row:
+        return User(user_row)
+    return None
 
 def parse_date_input(date_input):
     """
@@ -547,6 +570,129 @@ def random_episode():
 def notes():
     from flask import send_file
     return send_file('notes.json', mimetype='application/json')
+
+
+# ==========================================
+# User Favorites API
+# ==========================================
+
+@app.route('/api/favorites', methods=['GET'])
+@login_required
+def get_favorites():
+    """Get all favorites for the logged-in user."""
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT uf.episode_id, uf.podcast_name, uf.created_at,
+               t.title, t.date, t.url, t.show_notes, t.mp3url
+        FROM user_favorites uf
+        JOIN TMA t ON uf.episode_id = t.id AND uf.podcast_name = 'TMA'
+        WHERE uf.user_id = ?
+        ORDER BY uf.created_at DESC
+    ''', (current_user.id,))
+
+    favorites = []
+    for row in cursor.fetchall():
+        favorites.append({
+            'id': row['episode_id'],
+            'title': row['title'],
+            'date': row['date'],
+            'url': row['url'],
+            'show_notes': row['show_notes'],
+            'mp3url': row['mp3url'],
+            'addedAt': row['created_at']
+        })
+
+    conn.close()
+    return jsonify({'favorites': favorites})
+
+
+@app.route('/api/favorites', methods=['POST'])
+@login_required
+def add_favorite():
+    """Add an episode to user's favorites."""
+    data = request.get_json()
+    episode_id = data.get('episode_id')
+    podcast_name = data.get('podcast_name', 'TMA')
+
+    if not episode_id:
+        return jsonify({'error': 'Episode ID required'}), 400
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('''
+            INSERT OR IGNORE INTO user_favorites (user_id, podcast_name, episode_id)
+            VALUES (?, ?, ?)
+        ''', (current_user.id, podcast_name, episode_id))
+        conn.commit()
+
+        return jsonify({'success': True, 'message': 'Added to favorites'})
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/favorites/<int:episode_id>', methods=['DELETE'])
+@login_required
+def remove_favorite(episode_id):
+    """Remove an episode from user's favorites."""
+    podcast_name = request.args.get('podcast_name', 'TMA')
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('''
+            DELETE FROM user_favorites
+            WHERE user_id = ? AND episode_id = ? AND podcast_name = ?
+        ''', (current_user.id, episode_id, podcast_name))
+        conn.commit()
+
+        return jsonify({'success': True, 'message': 'Removed from favorites'})
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/favorites/check/<int:episode_id>', methods=['GET'])
+@login_required
+def check_favorite(episode_id):
+    """Check if an episode is favorited by the user."""
+    podcast_name = request.args.get('podcast_name', 'TMA')
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT 1 FROM user_favorites
+        WHERE user_id = ? AND episode_id = ? AND podcast_name = ?
+    ''', (current_user.id, episode_id, podcast_name))
+
+    is_favorited = cursor.fetchone() is not None
+    conn.close()
+
+    return jsonify({'is_favorited': is_favorited})
+
+
+@app.route('/api/auth/status', methods=['GET'])
+def auth_status():
+    """Check if user is logged in (for frontend)."""
+    if current_user.is_authenticated:
+        return jsonify({
+            'authenticated': True,
+            'user': {
+                'id': current_user.id,
+                'username': current_user.username
+            }
+        })
+    return jsonify({'authenticated': False})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
