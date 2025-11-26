@@ -316,17 +316,61 @@
             }
         }
 
-        /* Dark mode toggle as compact button */
-        .dark-toggle {
+        /* Dark mode toggle - fixed position top-right */
+        .dark-toggle-fixed {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
             background: #6c757d;
             border: 1px solid #6c757d;
             color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
         }
 
-        .dark-toggle:hover {
+        .dark-toggle-fixed:hover {
             background: #5a6268;
             border-color: #545b62;
             color: white;
+        }
+
+        .dark-toggle-fixed i {
+            font-size: 14px;
+        }
+
+        .dark-toggle-fixed .nav-text {
+            margin-left: 6px;
+        }
+
+        @media (max-width: 479px) {
+            .dark-toggle-fixed {
+                padding: 10px;
+                min-width: 44px;
+                min-height: 44px;
+                justify-content: center;
+            }
+
+            .dark-toggle-fixed .nav-text {
+                display: none;
+            }
+
+            .dark-toggle-fixed i {
+                margin: 0;
+            }
+        }
+
+        .dark-mode .dark-toggle-fixed {
+            background: #4b5563;
+            border-color: #4b5563;
         }
 
         /* Dark mode styles for compact nav */
@@ -841,6 +885,9 @@
             <a href="/favorites" class="nav-btn active" title="Favorites">
                 <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
             </a>
+            <a href="/popular" class="nav-btn" title="Popular">
+                <i class="fas fa-fire" aria-hidden="true"></i><span class="nav-text">Popular</span>
+            </a>
             {% if current_user.is_authenticated %}
             <a href="{{ url_for('auth.profile') }}" class="nav-btn" title="Profile">
                 <i class="fas fa-user" aria-hidden="true"></i><span class="nav-text">{{ current_user.username }}</span>
@@ -856,10 +903,12 @@
                 <i class="fas fa-user-plus" aria-hidden="true"></i><span class="nav-text">Sign Up</span>
             </a>
             {% endif %}
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
-                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
-            </button>
         </nav>
+
+        <!-- Dark Mode Toggle - Fixed Position -->
+        <button type="button" id="dark-mode-toggle" class="dark-toggle-fixed" title="Toggle Dark Mode">
+            <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
+        </button>
         
         <!-- Condensed Search -->
         <div class="condensed-search">

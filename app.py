@@ -8,14 +8,28 @@ from dotenv import load_dotenv
 from fuzzywuzzy import process
 import re
 from flask_login import LoginManager, current_user, login_required
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # Load environment variables
 load_dotenv('spot.env')
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Security: Require SECRET_KEY in production
+app.secret_key = os.environ.get('SECRET_KEY')
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY environment variable must be set in spot.env")
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
+
+# Rate limiting for security
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -28,6 +42,10 @@ login_manager.login_message_category = 'info'
 from auth import auth_bp, User, get_user_by_id
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
+
+# Apply rate limits to auth routes (protect against brute force)
+limiter.limit("5 per minute")(app.view_functions['auth.login'])
+limiter.limit("5 per minute")(app.view_functions['auth.signup'])
 
 
 @login_manager.user_loader
@@ -174,18 +192,18 @@ def recent_episodes():
     
     # Get paginated results
     offset = (page - 1) * per_page
-    query = f"SELECT * FROM {table_name} WHERE DATE >= ? ORDER BY DATE DESC LIMIT ? OFFSET ?"
+    query = f"SELECT ID, TITLE, DATE, URL, SHOW_NOTES, mp3url, comments_count, favorites_count, likes_count FROM {table_name} WHERE DATE >= ? ORDER BY DATE DESC LIMIT ? OFFSET ?"
     cursor.execute(query, (thirty_days_ago.strftime('%Y-%m-%d'), per_page, offset))
     episodes = cursor.fetchall()
     conn.close()
-    
+
     # Calculate pagination info
     total_pages = (total_count + per_page - 1) // per_page
     has_next = page < total_pages
     has_prev = page > 1
-    
-    # include the mp3url
-    episodes_json = [{'id': e[0], 'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5]} for e in episodes]
+
+    # include the mp3url, comments_count, favorites_count, and likes_count
+    episodes_json = [{'id': e[0], 'title': e[1], 'date': e[2], 'url': e[3], 'show_notes': e[4], 'mp3url': e[5], 'comments_count': e[6] or 0, 'favorites_count': e[7] or 0, 'likes_count': e[8] or 0} for e in episodes]
     
     return jsonify({
         'episodes': episodes_json,
@@ -206,7 +224,7 @@ def episode(episode_id):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT title, date, url, show_notes, mp3url FROM TMA WHERE id = ?", (episode_id,))
+    cursor.execute("SELECT title, date, url, show_notes, mp3url, comments_count, favorites_count, likes_count FROM TMA WHERE id = ?", (episode_id,))
     episode = cursor.fetchone()
     conn.close()
 
@@ -217,7 +235,10 @@ def episode(episode_id):
             'date': episode[1],
             'url': episode[2],
             'show_notes': episode[3],
-            'mp3url': episode[4]
+            'mp3url': episode[4],
+            'comments_count': episode[5] or 0,
+            'favorites_count': episode[6] or 0,
+            'likes_count': episode[7] or 0
         }
         return render_template('episode.html', episode=episode_data)
     else:
@@ -335,7 +356,7 @@ def search():
 
             start = (page - 1) * per_page
             data_query = (
-                f"SELECT ID, TITLE, DATE, URL, SHOW_NOTES, mp3url FROM {table_name} "
+                f"SELECT ID, TITLE, DATE, URL, SHOW_NOTES, mp3url, comments_count, favorites_count, likes_count FROM {table_name} "
                 f"WHERE {where_clause} ORDER BY DATE DESC LIMIT ? OFFSET ?"
             )
             data_params = base_params + [per_page, start]
@@ -344,7 +365,7 @@ def search():
             paginated_results = cursor.fetchall()
 
         podcasts = [
-            {'id': row[0], 'title': row[1], 'date': row[2], 'url': row[3], 'show_notes': row[4], 'mp3url': row[5]}
+            {'id': row[0], 'title': row[1], 'date': row[2], 'url': row[3], 'show_notes': row[4], 'mp3url': row[5], 'comments_count': row[6] or 0, 'favorites_count': row[7] or 0, 'likes_count': row[8] or 0}
             for row in paginated_results
         ]
 
@@ -369,6 +390,87 @@ def search():
 @app.route('/tma_archive')
 def tma_archive():
     return render_template('tma_archive.html')
+
+
+@app.route('/popular')
+def popular_episodes_page():
+    """Popular episodes page - shows most engaged-with episodes."""
+    return render_template('popular.html')
+
+
+@app.route('/api/popular_episodes', methods=['GET'])
+def popular_episodes_api():
+    """Get popular episodes sorted by engagement metrics."""
+    sort_by = request.args.get('sort', 'likes')  # likes, favorites, comments, streams
+    page = request.args.get('page', 1, type=int)
+    per_page = 30
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Determine sort column
+    if sort_by == 'favorites':
+        sort_col = 'favorites_count'
+    elif sort_by == 'comments':
+        sort_col = 'comments_count'
+    elif sort_by == 'streams':
+        sort_col = 'streams_count'
+    else:
+        sort_col = 'likes_count'
+
+    # Get total count of episodes with at least 1 engagement
+    cursor.execute(f'''
+        SELECT COUNT(*) FROM TMA
+        WHERE {sort_col} > 0
+    ''')
+    total_count = cursor.fetchone()[0]
+
+    # Get paginated results
+    offset = (page - 1) * per_page
+    cursor.execute(f'''
+        SELECT id, title, date, url, show_notes, mp3url,
+               favorites_count, comments_count, likes_count, streams_count
+        FROM TMA
+        WHERE {sort_col} > 0
+        ORDER BY {sort_col} DESC, date DESC
+        LIMIT ? OFFSET ?
+    ''', (per_page, offset))
+
+    episodes = cursor.fetchall()
+    conn.close()
+
+    # Calculate pagination
+    total_pages = max(1, (total_count + per_page - 1) // per_page)
+    has_next = page < total_pages
+    has_prev = page > 1
+
+    episodes_json = [{
+        'id': e[0],
+        'title': e[1],
+        'date': e[2],
+        'url': e[3],
+        'show_notes': e[4],
+        'mp3url': e[5],
+        'favorites_count': e[6] or 0,
+        'comments_count': e[7] or 0,
+        'likes_count': e[8] or 0,
+        'streams_count': e[9] or 0
+    } for e in episodes]
+
+    return jsonify({
+        'episodes': episodes_json,
+        'sort_by': sort_by,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': total_count,
+            'total_pages': total_pages,
+            'has_next': has_next,
+            'has_prev': has_prev,
+            'next_num': page + 1 if has_next else None,
+            'prev_num': page - 1 if has_prev else None
+        }
+    })
 
 
 @app.route('/fetch_archive_episodes', methods=['GET'])
@@ -692,6 +794,329 @@ def auth_status():
             }
         })
     return jsonify({'authenticated': False})
+
+
+# ==========================================
+# Comments API
+# ==========================================
+
+@app.route('/api/comments/<int:episode_id>', methods=['GET'])
+def get_comments(episode_id):
+    """Get all comments for an episode (public endpoint)."""
+    podcast_name = request.args.get('podcast_name', 'TMA')
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT c.id, c.user_id, c.comment_text, c.timestamp_ref,
+               c.created_at, c.updated_at, c.is_edited, c.likes_count,
+               u.username
+        FROM comments c
+        JOIN users u ON c.user_id = u.id
+        WHERE c.podcast_name = ? AND c.episode_id = ?
+        ORDER BY c.created_at DESC
+    ''', (podcast_name, episode_id))
+
+    comments = []
+    for row in cursor.fetchall():
+        comments.append({
+            'id': row['id'],
+            'user_id': row['user_id'],
+            'username': row['username'],
+            'comment_text': row['comment_text'],
+            'timestamp_ref': row['timestamp_ref'],
+            'created_at': row['created_at'],
+            'updated_at': row['updated_at'],
+            'is_edited': bool(row['is_edited']),
+            'likes_count': row['likes_count']
+        })
+
+    conn.close()
+    return jsonify({'comments': comments, 'count': len(comments)})
+
+
+@app.route('/api/comments', methods=['POST'])
+@limiter.limit("10 per minute")
+@login_required
+def add_comment():
+    """Add a comment to an episode."""
+    data = request.get_json()
+    episode_id = data.get('episode_id')
+    podcast_name = data.get('podcast_name', 'TMA')
+    comment_text = data.get('comment_text', '').strip()
+    timestamp_ref = data.get('timestamp_ref')  # Optional: timestamp in seconds
+
+    if not episode_id:
+        return jsonify({'error': 'Episode ID required'}), 400
+
+    if not comment_text:
+        return jsonify({'error': 'Comment text required'}), 400
+
+    if len(comment_text) > 2000:
+        return jsonify({'error': 'Comment too long (max 2000 characters)'}), 400
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('''
+            INSERT INTO comments (user_id, podcast_name, episode_id, comment_text, timestamp_ref)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (current_user.id, podcast_name, episode_id, comment_text, timestamp_ref))
+        conn.commit()
+
+        comment_id = cursor.lastrowid
+
+        return jsonify({
+            'success': True,
+            'message': 'Comment added',
+            'comment': {
+                'id': comment_id,
+                'user_id': current_user.id,
+                'username': current_user.username,
+                'comment_text': comment_text,
+                'timestamp_ref': timestamp_ref,
+                'created_at': datetime.now().isoformat(),
+                'is_edited': False,
+                'likes_count': 0
+            }
+        })
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/comments/<int:comment_id>', methods=['PUT'])
+@login_required
+def edit_comment(comment_id):
+    """Edit a comment (owner only)."""
+    data = request.get_json()
+    comment_text = data.get('comment_text', '').strip()
+
+    if not comment_text:
+        return jsonify({'error': 'Comment text required'}), 400
+
+    if len(comment_text) > 2000:
+        return jsonify({'error': 'Comment too long (max 2000 characters)'}), 400
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Check ownership
+    cursor.execute('SELECT user_id FROM comments WHERE id = ?', (comment_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return jsonify({'error': 'Comment not found'}), 404
+
+    if row[0] != current_user.id:
+        conn.close()
+        return jsonify({'error': 'Not authorized to edit this comment'}), 403
+
+    try:
+        cursor.execute('''
+            UPDATE comments
+            SET comment_text = ?, updated_at = CURRENT_TIMESTAMP, is_edited = 1
+            WHERE id = ?
+        ''', (comment_text, comment_id))
+        conn.commit()
+
+        return jsonify({'success': True, 'message': 'Comment updated'})
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/comments/<int:comment_id>', methods=['DELETE'])
+@login_required
+def delete_comment(comment_id):
+    """Delete a comment (owner only)."""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Check ownership
+    cursor.execute('SELECT user_id FROM comments WHERE id = ?', (comment_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return jsonify({'error': 'Comment not found'}), 404
+
+    if row[0] != current_user.id:
+        conn.close()
+        return jsonify({'error': 'Not authorized to delete this comment'}), 403
+
+    try:
+        cursor.execute('DELETE FROM comments WHERE id = ?', (comment_id,))
+        conn.commit()
+
+        return jsonify({'success': True, 'message': 'Comment deleted'})
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+# ==========================================
+# Stream Tracking API
+# ==========================================
+
+@app.route('/api/stream/<int:episode_id>', methods=['POST'])
+@limiter.limit("60 per minute")
+def track_stream(episode_id):
+    """Track when an episode is streamed (played)."""
+    podcast_name = request.args.get('podcast_name', 'TMA')
+
+    # Validate podcast name
+    valid_podcasts = {'TMA': 'TMA', 'Balloon Party': 'Balloon', 'The Tim McKernan Show': 'TMShow'}
+    table_name = valid_podcasts.get(podcast_name, 'TMA')
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        # Increment streams_count
+        cursor.execute(f'''
+            UPDATE {table_name}
+            SET streams_count = COALESCE(streams_count, 0) + 1
+            WHERE id = ?
+        ''', (episode_id,))
+        conn.commit()
+
+        # Get updated count
+        cursor.execute(f'SELECT streams_count FROM {table_name} WHERE id = ?', (episode_id,))
+        result = cursor.fetchone()
+        streams_count = result[0] if result else 0
+
+        return jsonify({'success': True, 'streams_count': streams_count})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+# ==========================================
+# Episode Likes API
+# ==========================================
+
+@app.route('/api/likes/<int:episode_id>', methods=['POST', 'DELETE'])
+@limiter.limit("30 per minute")
+@login_required
+def toggle_like(episode_id):
+    """Toggle like on an episode."""
+    podcast_name = request.args.get('podcast_name', 'TMA')
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Check if already liked
+    cursor.execute('''
+        SELECT id FROM episode_likes
+        WHERE user_id = ? AND episode_id = ? AND podcast_name = ?
+    ''', (current_user.id, episode_id, podcast_name))
+    existing = cursor.fetchone()
+
+    try:
+        if existing:
+            # Unlike
+            cursor.execute('''
+                DELETE FROM episode_likes
+                WHERE user_id = ? AND episode_id = ? AND podcast_name = ?
+            ''', (current_user.id, episode_id, podcast_name))
+            conn.commit()
+            action = 'unliked'
+        else:
+            # Like
+            cursor.execute('''
+                INSERT INTO episode_likes (user_id, podcast_name, episode_id)
+                VALUES (?, ?, ?)
+            ''', (current_user.id, podcast_name, episode_id))
+            conn.commit()
+            action = 'liked'
+
+        # Get updated count
+        cursor.execute('''
+            SELECT likes_count FROM TMA WHERE id = ?
+        ''', (episode_id,))
+        row = cursor.fetchone()
+        likes_count = row[0] if row else 0
+
+        return jsonify({
+            'success': True,
+            'action': action,
+            'likes_count': likes_count
+        })
+    except sqlite3.Error as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/likes/<int:episode_id>/status', methods=['GET'])
+def get_like_status(episode_id):
+    """Check if current user has liked an episode."""
+    podcast_name = request.args.get('podcast_name', 'TMA')
+
+    if not current_user.is_authenticated:
+        return jsonify({'is_liked': False, 'likes_count': 0})
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Check if liked
+    cursor.execute('''
+        SELECT 1 FROM episode_likes
+        WHERE user_id = ? AND episode_id = ? AND podcast_name = ?
+    ''', (current_user.id, episode_id, podcast_name))
+    is_liked = cursor.fetchone() is not None
+
+    # Get count
+    cursor.execute('SELECT likes_count FROM TMA WHERE id = ?', (episode_id,))
+    row = cursor.fetchone()
+    likes_count = row[0] if row else 0
+
+    conn.close()
+    return jsonify({'is_liked': is_liked, 'likes_count': likes_count})
+
+
+@app.route('/api/likes', methods=['GET'])
+@login_required
+def get_user_likes():
+    """Get all episodes liked by current user."""
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        SELECT el.episode_id, el.podcast_name, el.created_at,
+               t.title, t.date, t.url, t.show_notes, t.mp3url
+        FROM episode_likes el
+        JOIN TMA t ON el.episode_id = t.id AND el.podcast_name = 'TMA'
+        WHERE el.user_id = ?
+        ORDER BY el.created_at DESC
+    ''', (current_user.id,))
+
+    likes = []
+    for row in cursor.fetchall():
+        likes.append({
+            'episode_id': row['episode_id'],
+            'podcast_name': row['podcast_name'],
+            'created_at': row['created_at'],
+            'title': row['title'],
+            'date': row['date'],
+            'url': row['url'],
+            'show_notes': row['show_notes'],
+            'mp3url': row['mp3url']
+        })
+
+    conn.close()
+    return jsonify({'likes': likes, 'count': len(likes)})
 
 
 if __name__ == '__main__':
