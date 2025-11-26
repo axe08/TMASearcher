@@ -170,12 +170,21 @@ python tagger.py
 
 ## Environment Setup
 
-**Required environment file:** `spot.env`
+**Required environment files:**
+
+`.env` - Flask configuration:
+```
+SECRET_KEY=your_secure_random_key_here
+```
+
+`spot.env` - Spotify API credentials:
 ```
 SPOTIFY_CLIENT_ID=your_client_id
 SPOTIFY_CLIENT_SECRET=your_client_secret
 DATABASE_URL=TMASTL.db  # Optional override
 ```
+
+Generate a SECRET_KEY with: `python -c "import secrets; print(secrets.token_hex(32))"`
 
 **Python dependencies:** See `requirements.txt`
 - Flask, requests, BeautifulSoup (web scraping/serving)

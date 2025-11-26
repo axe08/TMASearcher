@@ -12,7 +12,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
 # Load environment variables
-load_dotenv('spot.env')
+load_dotenv('.env')  # Flask config (SECRET_KEY, etc.)
+load_dotenv('spot.env')  # Spotify credentials
 
 
 app = Flask(__name__)
@@ -20,7 +21,7 @@ app = Flask(__name__)
 # Security: Require SECRET_KEY in production
 app.secret_key = os.environ.get('SECRET_KEY')
 if not app.secret_key:
-    raise RuntimeError("SECRET_KEY environment variable must be set in spot.env")
+    raise RuntimeError("SECRET_KEY environment variable must be set in .env")
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
 
 # Rate limiting for security
