@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sign In | TMA Searcher</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Header -->
+        <div class="auth-header">
+            <a href="{{ url_for('index') }}" class="auth-logo">
+                <i class="fas fa-podcast"></i>
+                <span>TMA Searcher</span>
+            </a>
+        </div>
+
+        <!-- Auth Card -->
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to sync your favorites across devices</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} auth-alert" role="alert">
+                            <i class="fas {% if category == 'danger' %}fa-exclamation-circle{% elif category == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="auth-form" novalidate>
+                {{ form.hidden_tag() }}
+
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control auth-input {% if form.email.errors %}is-invalid{% endif %}"
+                        placeholder="you@example.com"
+                        value="{{ form.email.data or '' }}"
+                        inputmode="email"
+                        autocomplete="email"
+                        required
+                        autofocus
+                    >
+                    {% if form.email.errors %}
+                        <div class="invalid-feedback">{{ form.email.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-input-wrapper">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control auth-input {% if form.password.errors %}is-invalid{% endif %}"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <button type="button" class="password-toggle" aria-label="Show password" tabindex="-1">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback d-block">{{ form.password.errors[0] }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Remember Me -->
+                <div class="form-options">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="remember" name="remember" checked>
+                        <label class="custom-control-label" for="remember">Remember me</label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-block auth-submit">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="auth-card-footer">
+                <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Create one</a></p>
+            </div>
+        </div>
+
+        <!-- Back Link -->
+        <div class="auth-back-link">
+            <a href="{{ url_for('index') }}">
+                <i class="fas fa-arrow-left"></i> Back to search
+            </a>
+        </div>
+    </div>
+
+    <!-- Dark Mode Script -->
+    <script>
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Password visibility toggle
+        document.querySelectorAll('.password-toggle').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var input = this.parentElement.querySelector('input');
+                var icon = this.querySelector('i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    this.setAttribute('aria-label', 'Hide password');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    this.setAttribute('aria-label', 'Show password');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

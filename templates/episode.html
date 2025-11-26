@@ -125,17 +125,61 @@
             }
         }
 
-        /* Dark mode toggle as compact button */
-        .dark-toggle {
+        /* Dark mode toggle - fixed position top-right */
+        .dark-toggle-fixed {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
             background: #6c757d;
             border: 1px solid #6c757d;
             color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
         }
 
-        .dark-toggle:hover {
+        .dark-toggle-fixed:hover {
             background: #5a6268;
             border-color: #545b62;
             color: white;
+        }
+
+        .dark-toggle-fixed i {
+            font-size: 14px;
+        }
+
+        .dark-toggle-fixed .nav-text {
+            margin-left: 6px;
+        }
+
+        @media (max-width: 479px) {
+            .dark-toggle-fixed {
+                padding: 10px;
+                min-width: 44px;
+                min-height: 44px;
+                justify-content: center;
+            }
+
+            .dark-toggle-fixed .nav-text {
+                display: none;
+            }
+
+            .dark-toggle-fixed i {
+                margin: 0;
+            }
+        }
+
+        .dark-mode .dark-toggle-fixed {
+            background: #4b5563;
+            border-color: #4b5563;
         }
 
         /* Dark mode styles for nav */
@@ -152,17 +196,18 @@
         }
 
         .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            padding: 2rem;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1.25rem;
             background: white;
         }
-        
+
         .dark-mode .card {
             background-color: #1f2937;
             color: #f9fafb;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-color: #374151;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
         }
         
         .card-title {
@@ -267,60 +312,82 @@
             line-height: 1;
         }
         
-        /* Related Episodes Card Styles */
+        /* Related Episodes Section */
+        .related-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-right: 0;
+        }
+
         .related-episode-card {
-            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
         }
-        
+
         .related-episode-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
-        
-        .related-btn {
-            font-size: 0.85rem !important;
-            padding: 0.5rem 0.75rem !important;
-            border-radius: 6px !important;
-            font-weight: 500 !important;
-            min-height: 36px;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-        
+
         .related-episode-title {
-            color: #1a202c !important;
-            font-weight: 600 !important;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
         }
-        
+
         .related-episode-date {
-            color: #718096 !important;
+            font-size: 0.8rem;
+            color: #718096;
+            margin-bottom: 0.5rem;
         }
-        
+
         .related-episode-notes {
-            color: #2d3748 !important;
+            font-size: 0.875rem;
+            color: #4a5568;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
         }
-        
-        /* Dark Mode Optimizations */
+
+        .related-episode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .related-btn {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        /* Dark Mode */
         .dark-mode .related-episode-card {
-            background: linear-gradient(145deg, #1f2937 0%, #374151 100%);
+            background: #1f2937;
+            border-color: #374151;
         }
-        
+
         .dark-mode .related-episode-card:hover {
-            box-shadow: 0 6px 16px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
-        
+
         .dark-mode .related-episode-title {
-            color: #f7fafc !important;
+            color: #f7fafc;
         }
-        
+
         .dark-mode .related-episode-date {
-            color: #a0aec0 !important;
+            color: #a0aec0;
         }
-        
+
         .dark-mode .related-episode-notes {
-            color: #e2e8f0 !important;
-            line-height: 1.7 !important;
+            color: #cbd5e0;
         }
         
         /* Dark mode button improvements */
@@ -343,6 +410,64 @@
             background-color: #4299e1 !important;
             border-color: #4299e1 !important;
             color: white !important;
+        }
+
+        /* Episode Card Title - make room for action buttons */
+        .card .card-title {
+            padding-right: 180px;
+        }
+
+        /* Episode Stats (favorites, comments counts) */
+        .episode-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .episode-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .episode-stat.favorites {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .episode-stat.comments {
+            background: rgba(108, 117, 125, 0.1);
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .episode-stat.likes {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .dark-mode .episode-stat.favorites {
+            background: rgba(248, 113, 113, 0.15);
+            border-color: rgba(248, 113, 113, 0.3);
+            color: #f87171;
+        }
+
+        .dark-mode .episode-stat.comments {
+            background: rgba(156, 163, 175, 0.15);
+            border-color: rgba(156, 163, 175, 0.3);
+            color: #9ca3af;
+        }
+
+        .dark-mode .episode-stat.likes {
+            background: rgba(96, 165, 250, 0.15);
+            border-color: rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
         }
 
         /* Episode Page Favorite Button */
@@ -433,6 +558,58 @@
             background: rgba(31, 41, 55, 1);
         }
 
+        /* Episode Page Like Button */
+        .episode-like-btn {
+            position: absolute;
+            top: 1rem;
+            right: 7.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .episode-like-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .episode-like-btn .thumb {
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .episode-like-btn.liked .thumb {
+            color: #3b82f6;
+        }
+
+        .episode-like-btn:not(.liked) .thumb {
+            color: #6c757d;
+        }
+
+        .dark-mode .episode-like-btn {
+            background: rgba(31, 41, 55, 0.95);
+        }
+
+        .dark-mode .episode-like-btn:hover {
+            background: rgba(31, 41, 55, 1);
+        }
+
+        .dark-mode .episode-like-btn.liked .thumb {
+            color: #60a5fa;
+        }
+
         #audioPlayerModal .modal-content {
             background-color: #343a40;
             color: #f9fafb;
@@ -479,6 +656,254 @@
             border-color: #374151;
         }
 
+        /* Comments Section Styles */
+        .comments-section {
+            margin-top: 1.5rem;
+        }
+
+        .comments-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .comments-header h5 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .comments-count {
+            background: #e9ecef;
+            color: #495057;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .dark-mode .comments-count {
+            background: #374151;
+            color: #d1d5db;
+        }
+
+        /* Comment Form */
+        .comment-form {
+            margin-bottom: 1.5rem;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+        }
+
+        .dark-mode .comment-form textarea {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark-mode .comment-form textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .comment-form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .char-count.warning {
+            color: #dc3545;
+        }
+
+        /* Comment List */
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .comment-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .dark-mode .comment-item {
+            background: #1f2937;
+            border-color: #374151;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .comment-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .comment-username {
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .dark-mode .comment-username {
+            color: #f9fafb;
+        }
+
+        .comment-meta {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .comment-edited {
+            font-style: italic;
+            color: #6c757d;
+            font-size: 11px;
+        }
+
+        .comment-text {
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-size: 12px;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .comment-action-btn:hover {
+            background: #e9ecef;
+            color: #343a40;
+        }
+
+        .dark-mode .comment-action-btn:hover {
+            background: #4b5563;
+            color: #f9fafb;
+        }
+
+        .comment-action-btn.delete:hover {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .dark-mode .comment-action-btn.delete:hover {
+            background: rgba(220, 53, 69, 0.2);
+            color: #f87171;
+        }
+
+        /* Login Prompt */
+        .comment-login-prompt {
+            text-align: center;
+            padding: 1.25rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 0.75rem;
+        }
+
+        .dark-mode .comment-login-prompt {
+            background: #1f2937;
+            border-color: #374151;
+        }
+
+        .comment-login-prompt p {
+            margin-bottom: 1rem;
+            color: #6c757d;
+        }
+
+        /* Empty State */
+        .comments-empty {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .comments-empty i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        /* Edit Mode */
+        .comment-edit-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 8px;
+        }
+
+        .dark-mode .comment-edit-form textarea {
+            background: #1f2937;
+            border-color: #3b82f6;
+            color: #f9fafb;
+        }
+
+        .comment-edit-actions {
+            display: flex;
+            gap: 8px;
+        }
+
     </style>
     
     <!-- Umami Analytics - Static loading for reliability -->
@@ -510,7 +935,15 @@
         });
     </script>
     <script>
+        // User authentication state for API-based favorites
+        const USER_AUTH = {
+            isAuthenticated: {% if current_user.is_authenticated %}true{% else %}false{% endif %},
+            userId: {% if current_user.is_authenticated %}{{ current_user.id }}{% else %}null{% endif %},
+            username: {% if current_user.is_authenticated %}"{{ current_user.username }}"{% else %}null{% endif %}
+        };
+
         const episodeDetails = {{ episode | tojson }};
+        const episodeId = episodeDetails.id;
         const originalDocumentTitle = document.title;
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -542,14 +975,37 @@
             <a href="/favorites" class="nav-btn" title="Favorites" onclick="umami && umami.track('Favorites Navigation Click from Episode Page', {session_id: getSessionId()})">
                 <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
             </a>
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
-                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
-            </button>
+            <a href="/popular" class="nav-btn" title="Popular">
+                <i class="fas fa-fire" aria-hidden="true"></i><span class="nav-text">Popular</span>
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.profile') }}" class="nav-btn" title="Profile">
+                <i class="fas fa-user" aria-hidden="true"></i><span class="nav-text">{{ current_user.username }}</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-btn" title="Logout">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i><span class="nav-text">Logout</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-btn" title="Login">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i><span class="nav-text">Login</span>
+            </a>
+            <a href="{{ url_for('auth.signup') }}" class="nav-btn" title="Sign Up">
+                <i class="fas fa-user-plus" aria-hidden="true"></i><span class="nav-text">Sign Up</span>
+            </a>
+            {% endif %}
         </nav>
+
+        <!-- Dark Mode Toggle - Fixed Position -->
+        <button type="button" id="dark-mode-toggle" class="dark-toggle-fixed" title="Toggle Dark Mode">
+            <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text">Dark</span>
+        </button>
 
         <!-- Episode Card -->
         <div class="card" style="position: relative;">
-            <!-- Favorite Heart Button -->
+            <!-- Action Buttons (top-right) -->
+            <button id="episodeLikeBtn" class="episode-like-btn" onclick="handleEpisodeLike()" title="Like this episode">
+                <i class="thumb far fa-thumbs-up"></i>
+            </button>
             <button id="episodeQueueBtn" class="queue-btn" onclick="handleAddToQueue()" title="Add to queue">
                 <i class="fas fa-plus"></i>
             </button>
@@ -558,9 +1014,26 @@
             </button>
             <div class="d-flex flex-column">
                 <h1 class="card-title">{{ episode.title }}</h1>
-                <p class="text-muted mb-3">
+                <p class="text-muted mb-2">
                     <i class="fas fa-calendar mr-2"></i>{{ episode.date }}
                 </p>
+                <!-- Episode Stats -->
+                <div class="episode-stats mb-3">
+                    {% if episode.favorites_count > 0 %}
+                    <span class="episode-stat favorites">
+                        <i class="fas fa-heart"></i>
+                        <span>{{ episode.favorites_count }}</span>
+                    </span>
+                    {% endif %}
+                    <span class="episode-stat likes" id="episodeLikesStat" {% if episode.likes_count == 0 %}style="display: none;"{% endif %}>
+                        <i class="fas fa-thumbs-up"></i>
+                        <span id="episodeLikesCount">{{ episode.likes_count or 0 }}</span>
+                    </span>
+                    <span class="episode-stat comments" id="episodeCommentsStat" {% if episode.comments_count == 0 %}style="display: none;"{% endif %}>
+                        <i class="fas fa-comment"></i>
+                        <span id="episodeCommentsCount">{{ episode.comments_count }}</span>
+                    </span>
+                </div>
                 <p class="card-text mb-4">{{ episode.show_notes }}</p>
 
                 <!-- Action Buttons -->
@@ -598,18 +1071,60 @@
             </div>
         </div>
 
-        <!-- Feature #3: Related Episodes Section -->
-        <div id="relatedEpisodesSection" style="display: none; margin-top: 1.5rem;">
-            <div class="card">
-                <div class="card-body" style="padding: 1.5rem;">
-                    <h5 class="card-title" style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600;">
-                        <i class="fas fa-dice mr-2" style="color: #007bff;"></i>Random Segments From Around This Time
-                        <small class="text-muted ml-2" style="font-weight: normal;">{{ episode.date }} ± 7 days</small>
-                    </h5>
-                    <div id="relatedEpisodes" class="row" style="margin: 0 -8px;">
-                        <!-- Related episodes will be loaded here -->
-                    </div>
+        <!-- Comments Section -->
+        <div class="comments-section">
+            <div class="comments-header">
+                <h5><i class="fas fa-comments mr-2" style="color: #007bff;"></i>Comments</h5>
+                <span class="comments-count" id="commentsCount">0</span>
+            </div>
+
+            <!-- Comment Form (shown only when logged in) -->
+            {% if current_user.is_authenticated %}
+            <div class="comment-form" id="commentForm">
+                <textarea
+                    id="commentText"
+                    placeholder="Share your thoughts about this episode..."
+                    maxlength="2000"
+                ></textarea>
+                <div class="comment-form-actions">
+                    <span class="char-count" id="charCount">0 / 2000</span>
+                    <button class="btn btn-primary btn-sm" onclick="submitComment()" id="submitCommentBtn">
+                        <i class="fas fa-paper-plane mr-1"></i>Post Comment
+                    </button>
                 </div>
+            </div>
+            {% else %}
+            <div class="comment-login-prompt">
+                <p><i class="fas fa-user-circle mr-2"></i>Sign in to join the conversation</p>
+                <a href="{{ url_for('auth.login') }}?next={{ request.path }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-sign-in-alt mr-1"></i>Login
+                </a>
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-outline-primary btn-sm ml-2">
+                    <i class="fas fa-user-plus mr-1"></i>Sign Up
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Comments List -->
+            <div id="commentsList" class="comment-list">
+                <!-- Comments will be loaded here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="commentsEmpty" class="comments-empty" style="display: none;">
+                <i class="fas fa-comment-slash"></i>
+                <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
+        </div>
+
+        <!-- Related Episodes Section -->
+        <div id="relatedEpisodesSection" style="display: none; margin-top: 1.5rem;">
+            <h5 class="related-section-title">
+                <i class="fas fa-dice mr-2" style="color: #007bff;"></i>Random Segments From Around This Time
+                <small class="text-muted ml-2" style="font-weight: normal;">{{ episode.date }} ± 7 days</small>
+            </h5>
+            <div id="relatedEpisodes">
+                <!-- Related episodes will be loaded here -->
             </div>
         </div>
     </div>
@@ -722,6 +1237,16 @@
         </div>
     </div>
     <script>
+        // Session ID helper for analytics
+        function getSessionId() {
+            let sessionId = localStorage.getItem('tma_session');
+            if (!sessionId) {
+                sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('tma_session', sessionId);
+            }
+            return sessionId;
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             if (window.PlayerUI) {
                 PlayerUI.init({
@@ -763,6 +1288,12 @@
 
             const playbackOptions = { autoScroll: true, ...options };
             const playbackEpisode = { ...episode };
+
+            // Track stream
+            if (episode.id) {
+                fetch(`/api/stream/${episode.id}?podcast_name=TMA`, { method: 'POST' })
+                    .catch(err => console.error('Stream tracking failed:', err));
+            }
 
             if (typeof PlayQueue !== 'undefined') {
                 PlayQueue.setCurrent(playbackEpisode);
@@ -860,48 +1391,35 @@
         function displayRelatedEpisodes(episodes) {
             const container = document.getElementById('relatedEpisodes');
             const section = document.getElementById('relatedEpisodesSection');
-            
+
             let html = '';
             episodes.forEach(episode => {
-                // Show full show notes, no truncation
                 const fullNotes = episode.show_notes || 'No description available.';
-                    
+
                 html += `
-                    <div class="col-12 mb-3" style="padding: 0 8px;">
-                        <div class="card border-0 related-episode-card" style="box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-radius: 12px; transition: all 0.2s ease;">
-                            <div class="card-body" style="padding: 1.25rem;">
-                                <div class="d-flex flex-column flex-lg-row gap-3">
-                                    <div class="flex-grow-1" style="min-width: 0;">
-                                        <h6 class="related-episode-title" style="font-size: 1.1rem; line-height: 1.3; margin-bottom: 0.6rem; font-weight: 600;">
-                                            ${episode.title}
-                                        </h6>
-                                        <div class="related-episode-date mb-3" style="font-size: 0.85rem; display: flex; align-items: center;">
-                                            <i class="fas fa-calendar mr-2" style="color: #007bff; font-size: 0.8rem;"></i>${episode.date}
-                                        </div>
-                                        <div class="related-episode-notes" style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 0;">
-                                            ${fullNotes}
-                                        </div>
-                                    </div>
-                                    <div class="d-flex flex-row flex-lg-column align-self-start" style="min-width: 200px; gap: 0.5rem;">
-                                        <a href="/episode/${episode.id}" class="btn btn-info btn-sm related-btn" style="flex: 1;">
-                                            <i class="fas fa-eye mr-1"></i>View Episode
-                                        </a>
-                                        ${episode.mp3url ? `
-                                            <a href="${episode.mp3url}" class="btn btn-success btn-sm related-btn" download style="flex: 1;">
-                                                <i class="fas fa-download mr-1"></i>Download
-                                            </a>
-                                        ` : ''}
-                                        <a href="${episode.url}" class="btn btn-outline-primary btn-sm related-btn" style="flex: 1;">
-                                            <i class="fas fa-external-link-alt mr-1"></i>TMASTL
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="related-episode-card">
+                        <div class="related-episode-title">${episode.title}</div>
+                        <div class="related-episode-date">
+                            <i class="fas fa-calendar mr-1"></i>${episode.date}
+                        </div>
+                        <div class="related-episode-notes">${fullNotes}</div>
+                        <div class="related-episode-buttons">
+                            <a href="/episode/${episode.id}" class="btn btn-info btn-sm related-btn">
+                                <i class="fas fa-eye mr-1"></i>View
+                            </a>
+                            ${episode.mp3url ? `
+                                <a href="${episode.mp3url}" class="btn btn-success btn-sm related-btn" download>
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </a>
+                            ` : ''}
+                            <a href="${episode.url}" class="btn btn-outline-primary btn-sm related-btn">
+                                <i class="fas fa-external-link-alt mr-1"></i>TMASTL
+                            </a>
                         </div>
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
             section.style.display = 'block';
             
@@ -949,38 +1467,107 @@
         }
 
         // Favorites Management System
+        // Cache for user favorites when logged in
+        let userFavoritesCache = null;
+
         function getFavorites() {
             const favorites = localStorage.getItem('tma_favorites');
             return favorites ? JSON.parse(favorites) : {};
         }
-        
+
         function saveFavorites(favorites) {
             localStorage.setItem('tma_favorites', JSON.stringify(favorites));
         }
-        
-        function isFavorited(episodeId) {
+
+        function isFavorited(epId) {
+            if (USER_AUTH.isAuthenticated) {
+                // Use cached favorites for logged-in users
+                return userFavoritesCache && userFavoritesCache.hasOwnProperty(epId);
+            }
             const favorites = getFavorites();
-            return favorites.hasOwnProperty(episodeId);
+            return favorites.hasOwnProperty(epId);
         }
-        
-        function addToFavorites(episodeId, episodeData) {
-            const favorites = getFavorites();
-            favorites[episodeId] = {
-                id: episodeId,
-                title: episodeData.title,
-                date: episodeData.date,
-                show_notes: episodeData.show_notes,
-                mp3url: episodeData.mp3url,
-                url: episodeData.url,
-                addedAt: Date.now()
-            };
-            saveFavorites(favorites);
+
+        async function addToFavorites(epId, episodeData) {
+            if (USER_AUTH.isAuthenticated) {
+                try {
+                    const response = await fetch('/api/favorites', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            episode_id: epId,
+                            podcast_name: 'TMA'
+                        })
+                    });
+                    if (response.ok) {
+                        // Update cache
+                        if (!userFavoritesCache) userFavoritesCache = {};
+                        userFavoritesCache[epId] = {
+                            id: epId,
+                            title: episodeData.title,
+                            date: episodeData.date,
+                            show_notes: episodeData.show_notes,
+                            mp3url: episodeData.mp3url,
+                            url: episodeData.url,
+                            addedAt: Date.now()
+                        };
+                    }
+                } catch (error) {
+                    console.error('Error adding favorite:', error);
+                }
+            } else {
+                const favorites = getFavorites();
+                favorites[epId] = {
+                    id: epId,
+                    title: episodeData.title,
+                    date: episodeData.date,
+                    show_notes: episodeData.show_notes,
+                    mp3url: episodeData.mp3url,
+                    url: episodeData.url,
+                    addedAt: Date.now()
+                };
+                saveFavorites(favorites);
+            }
         }
-        
-        function removeFromFavorites(episodeId) {
-            const favorites = getFavorites();
-            delete favorites[episodeId];
-            saveFavorites(favorites);
+
+        async function removeFromFavorites(epId) {
+            if (USER_AUTH.isAuthenticated) {
+                try {
+                    const response = await fetch(`/api/favorites/${epId}?podcast_name=TMA`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok && userFavoritesCache) {
+                        delete userFavoritesCache[epId];
+                    }
+                } catch (error) {
+                    console.error('Error removing favorite:', error);
+                }
+            } else {
+                const favorites = getFavorites();
+                delete favorites[epId];
+                saveFavorites(favorites);
+            }
+        }
+
+        // Load user favorites from API when authenticated
+        async function loadUserFavorites() {
+            if (USER_AUTH.isAuthenticated) {
+                try {
+                    const response = await fetch('/api/favorites');
+                    if (response.ok) {
+                        const data = await response.json();
+                        userFavoritesCache = {};
+                        data.favorites.forEach(fav => {
+                            userFavoritesCache[fav.id] = fav;
+                        });
+                        // Update button state after loading
+                        const isFav = userFavoritesCache.hasOwnProperty(episodeId);
+                        updateEpisodeFavoriteButton(isFav);
+                    }
+                } catch (error) {
+                    console.error('Error loading favorites:', error);
+                }
+            }
         }
         
         function updateEpisodeFavoriteButton(isFav) {
@@ -1027,18 +1614,18 @@
             }, 2500);
         }
         
-        function handleEpisodeFavorite() {
+        async function handleEpisodeFavorite() {
             const episodeData = { ...episodeDetails };
-            
+
             const isFav = isFavorited(episodeId);
-            
+
             if (isFav) {
                 // Confirmation dialog for removal
                 if (confirm('Remove this episode from your favorites?')) {
-                    removeFromFavorites(episodeId);
+                    await removeFromFavorites(episodeId);
                     updateEpisodeFavoriteButton(false);
                     showToast('Removed from favorites', true);
-                    
+
                     if (typeof umami !== 'undefined') {
                         umami.track('Episode Unfavorited from Episode Page', {
                             episode_title: episodeData.title,
@@ -1048,10 +1635,10 @@
                     }
                 }
             } else {
-                addToFavorites(episodeId, episodeData);
+                await addToFavorites(episodeId, episodeData);
                 updateEpisodeFavoriteButton(true);
                 showToast('Added to favorites');
-                
+
                 if (typeof umami !== 'undefined') {
                     umami.track('Episode Favorited from Episode Page', {
                         episode_title: episodeData.title,
@@ -1063,20 +1650,419 @@
         }
 
         // Load related episodes after page loads
-        document.addEventListener("DOMContentLoaded", function () {
-            // ... existing DOMContentLoaded code above ...
-            
-            // Initialize favorite button state
-            const isFav = isFavorited(episodeId);
-            updateEpisodeFavoriteButton(isFav);
-            
+        document.addEventListener("DOMContentLoaded", async function () {
+            // Load user favorites if authenticated
+            if (USER_AUTH.isAuthenticated) {
+                await loadUserFavorites();
+                // Also load like status
+                await loadUserLikeStatus();
+            } else {
+                // Initialize favorite button state from localStorage
+                const isFav = isFavorited(episodeId);
+                updateEpisodeFavoriteButton(isFav);
+            }
+
             // Load related episodes
             setTimeout(() => {
                 loadRelatedEpisodes();
             }, 500); // Small delay to let main content load first
+
+            // Load comments
+            loadComments();
+
+            // Setup character count for comment textarea
+            const commentTextarea = document.getElementById('commentText');
+            if (commentTextarea) {
+                commentTextarea.addEventListener('input', updateCharCount);
+            }
         });
 
         window.handleAddToQueue = handleAddToQueue;
+
+        // ==========================================
+        // Likes System
+        // ==========================================
+
+        let userLikeStatus = false;
+
+        async function loadUserLikeStatus() {
+            if (!USER_AUTH.isAuthenticated) return;
+
+            try {
+                const response = await fetch(`/api/likes/${episodeId}/status?podcast_name=TMA`);
+                if (response.ok) {
+                    const data = await response.json();
+                    userLikeStatus = data.is_liked;
+                    updateEpisodeLikeButton(userLikeStatus);
+                }
+            } catch (error) {
+                console.error('Error loading like status:', error);
+            }
+        }
+
+        function updateEpisodeLikeButton(isLiked) {
+            const button = document.getElementById('episodeLikeBtn');
+            const thumb = button.querySelector('.thumb');
+
+            if (isLiked) {
+                button.classList.add('liked');
+                thumb.classList.remove('far');
+                thumb.classList.add('fas');
+                button.title = 'Unlike this episode';
+            } else {
+                button.classList.remove('liked');
+                thumb.classList.remove('fas');
+                thumb.classList.add('far');
+                button.title = 'Like this episode';
+            }
+        }
+
+        function updateLikesCount(count) {
+            const statEl = document.getElementById('episodeLikesStat');
+            const countEl = document.getElementById('episodeLikesCount');
+
+            if (statEl && countEl) {
+                if (count > 0) {
+                    statEl.style.display = '';
+                    countEl.textContent = count;
+                } else {
+                    statEl.style.display = 'none';
+                }
+            }
+        }
+
+        async function handleEpisodeLike() {
+            if (!USER_AUTH.isAuthenticated) {
+                // Prompt login
+                if (confirm('Sign in to like episodes. Go to login page?')) {
+                    window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname)}`;
+                }
+                return;
+            }
+
+            const button = document.getElementById('episodeLikeBtn');
+            button.disabled = true;
+
+            try {
+                const method = userLikeStatus ? 'DELETE' : 'POST';
+                const response = await fetch(`/api/likes/${episodeId}?podcast_name=TMA`, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    userLikeStatus = !userLikeStatus;
+                    updateEpisodeLikeButton(userLikeStatus);
+                    updateLikesCount(data.likes_count);
+
+                    showToast(userLikeStatus ? 'Episode liked' : 'Like removed', !userLikeStatus);
+
+                    // Track analytics
+                    if (typeof umami !== 'undefined') {
+                        umami.track(userLikeStatus ? 'Episode Liked' : 'Episode Unliked', {
+                            episode_title: episodeDetails.title,
+                            episode_id: episodeId
+                        });
+                    }
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'Failed to update like', true);
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+                showToast('Failed to update like', true);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // Comments System
+        // ==========================================
+
+        let commentsCache = [];
+
+        function updateCharCount() {
+            const textarea = document.getElementById('commentText');
+            const charCount = document.getElementById('charCount');
+            if (textarea && charCount) {
+                const count = textarea.value.length;
+                charCount.textContent = `${count} / 2000`;
+                charCount.classList.toggle('warning', count > 1800);
+            }
+        }
+
+        async function loadComments() {
+            const listEl = document.getElementById('commentsList');
+            const emptyEl = document.getElementById('commentsEmpty');
+
+            // Show loading state
+            listEl.innerHTML = `
+                <div class="text-center py-4" style="color: #6c757d;">
+                    <i class="fas fa-spinner fa-spin fa-lg"></i>
+                    <p class="mt-2 mb-0">Loading comments...</p>
+                </div>
+            `;
+            emptyEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/comments/${episodeId}?podcast_name=TMA`);
+                const data = await response.json();
+
+                commentsCache = data.comments || [];
+                renderComments(commentsCache);
+                updateCommentsCount(data.count || 0);
+            } catch (error) {
+                console.error('Error loading comments:', error);
+                listEl.innerHTML = `
+                    <div class="text-center py-4" style="color: #dc3545;">
+                        <i class="fas fa-exclamation-circle fa-lg"></i>
+                        <p class="mt-2 mb-0">Failed to load comments</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateCommentsCount(count) {
+            // Update comments section header
+            const countEl = document.getElementById('commentsCount');
+            if (countEl) {
+                countEl.textContent = count;
+            }
+
+            // Update episode stats display
+            const statEl = document.getElementById('episodeCommentsStat');
+            const statCountEl = document.getElementById('episodeCommentsCount');
+            if (statEl && statCountEl) {
+                if (count > 0) {
+                    statEl.style.display = '';
+                    statCountEl.textContent = count;
+                } else {
+                    statEl.style.display = 'none';
+                }
+            }
+        }
+
+        function renderComments(comments) {
+            const listEl = document.getElementById('commentsList');
+            const emptyEl = document.getElementById('commentsEmpty');
+
+            if (!comments || comments.length === 0) {
+                listEl.innerHTML = '';
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+
+            listEl.innerHTML = comments.map(comment => {
+                const initial = comment.username.charAt(0).toUpperCase();
+                const isOwner = USER_AUTH.isAuthenticated && USER_AUTH.userId === comment.user_id;
+                const timeAgo = formatTimeAgo(comment.created_at);
+                const editedText = comment.is_edited ? '<span class="comment-edited">(edited)</span>' : '';
+
+                return `
+                    <div class="comment-item" id="comment-${comment.id}" data-comment-id="${comment.id}">
+                        <div class="comment-header">
+                            <div class="comment-author">
+                                <div class="comment-avatar">${initial}</div>
+                                <div>
+                                    <span class="comment-username">${escapeHtml(comment.username)}</span>
+                                    <div class="comment-meta">${timeAgo} ${editedText}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comment-body" id="comment-body-${comment.id}">
+                            <p class="comment-text">${escapeHtml(comment.comment_text)}</p>
+                            ${isOwner ? `
+                                <div class="comment-actions">
+                                    <button class="comment-action-btn" onclick="startEditComment(${comment.id})">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="comment-action-btn delete" onclick="deleteComment(${comment.id})">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTimeAgo(dateString) {
+            // Parse as UTC (database stores UTC timestamps without 'Z' suffix)
+            const date = new Date(dateString.replace(' ', 'T') + 'Z');
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        async function submitComment() {
+            const textarea = document.getElementById('commentText');
+            const submitBtn = document.getElementById('submitCommentBtn');
+            const commentText = textarea.value.trim();
+
+            if (!commentText) {
+                showToast('Please enter a comment', true);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Posting...';
+
+            try {
+                const response = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        episode_id: episodeId,
+                        podcast_name: 'TMA',
+                        comment_text: commentText
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Add new comment to the top of the list
+                    commentsCache.unshift(data.comment);
+                    renderComments(commentsCache);
+                    updateCommentsCount(commentsCache.length);
+
+                    // Clear the form
+                    textarea.value = '';
+                    updateCharCount();
+
+                    showToast('Comment posted');
+
+                    // Track analytics
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Comment Posted', {
+                            episode_title: episodeDetails.title,
+                            episode_id: episodeId
+                        });
+                    }
+                } else {
+                    showToast(data.error || 'Failed to post comment', true);
+                }
+            } catch (error) {
+                console.error('Error posting comment:', error);
+                showToast('Failed to post comment', true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Post Comment';
+            }
+        }
+
+        function startEditComment(commentId) {
+            const comment = commentsCache.find(c => c.id === commentId);
+            if (!comment) return;
+
+            const bodyEl = document.getElementById(`comment-body-${commentId}`);
+            const originalText = comment.comment_text;
+
+            bodyEl.innerHTML = `
+                <div class="comment-edit-form">
+                    <textarea id="edit-text-${commentId}" maxlength="2000">${escapeHtml(originalText)}</textarea>
+                    <div class="comment-edit-actions">
+                        <button class="btn btn-sm btn-primary" onclick="saveEditComment(${commentId})">
+                            <i class="fas fa-check mr-1"></i>Save
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="cancelEditComment(${commentId}, '${escapeHtml(originalText).replace(/'/g, "\\'")}')">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function saveEditComment(commentId) {
+            const textarea = document.getElementById(`edit-text-${commentId}`);
+            const newText = textarea.value.trim();
+
+            if (!newText) {
+                showToast('Comment cannot be empty', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/comments/${commentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment_text: newText })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Update cache
+                    const commentIndex = commentsCache.findIndex(c => c.id === commentId);
+                    if (commentIndex !== -1) {
+                        commentsCache[commentIndex].comment_text = newText;
+                        commentsCache[commentIndex].is_edited = true;
+                    }
+
+                    renderComments(commentsCache);
+                    showToast('Comment updated');
+                } else {
+                    showToast(data.error || 'Failed to update comment', true);
+                }
+            } catch (error) {
+                console.error('Error updating comment:', error);
+                showToast('Failed to update comment', true);
+            }
+        }
+
+        function cancelEditComment(commentId, originalText) {
+            renderComments(commentsCache);
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Delete this comment?')) return;
+
+            try {
+                const response = await fetch(`/api/comments/${commentId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Remove from cache
+                    commentsCache = commentsCache.filter(c => c.id !== commentId);
+                    renderComments(commentsCache);
+                    updateCommentsCount(commentsCache.length);
+
+                    showToast('Comment deleted');
+
+                    if (typeof umami !== 'undefined') {
+                        umami.track('Comment Deleted', {
+                            episode_title: episodeDetails.title,
+                            episode_id: episodeId
+                        });
+                    }
+                } else {
+                    showToast(data.error || 'Failed to delete comment', true);
+                }
+            } catch (error) {
+                console.error('Error deleting comment:', error);
+                showToast('Failed to delete comment', true);
+            }
+        }
     </script>    
 </body>
 </html>

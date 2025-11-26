@@ -316,17 +316,61 @@
             }
         }
 
-        /* Dark mode toggle as compact button */
-        .dark-toggle {
+        /* Dark mode toggle - fixed position top-right */
+        .dark-toggle-fixed {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
             background: #6c757d;
             border: 1px solid #6c757d;
             color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
         }
 
-        .dark-toggle:hover {
+        .dark-toggle-fixed:hover {
             background: #5a6268;
             border-color: #545b62;
             color: white;
+        }
+
+        .dark-toggle-fixed i {
+            font-size: 14px;
+        }
+
+        .dark-toggle-fixed .nav-text {
+            margin-left: 6px;
+        }
+
+        @media (max-width: 479px) {
+            .dark-toggle-fixed {
+                padding: 10px;
+                min-width: 44px;
+                min-height: 44px;
+                justify-content: center;
+            }
+
+            .dark-toggle-fixed .nav-text {
+                display: none;
+            }
+
+            .dark-toggle-fixed i {
+                margin: 0;
+            }
+        }
+
+        .dark-mode .dark-toggle-fixed {
+            background: #4b5563;
+            border-color: #4b5563;
         }
 
         /* Dark mode styles for compact nav */
@@ -832,8 +876,8 @@
         
         <!-- Single Row Navigation -->
         <nav class="top-nav" aria-label="Main navigation">
-            <a href="/" class="nav-btn" title="Recent Episodes">
-                <i class="fas fa-clock" aria-hidden="true"></i><span class="nav-text">Recent</span>
+            <a href="/" class="nav-btn" title="Home">
+                <i class="fas fa-home" aria-hidden="true"></i><span class="nav-text">Home</span>
             </a>
             <a href="{{ url_for('tma_archive') }}" class="nav-btn" title="Episode Archive">
                 <i class="fas fa-archive" aria-hidden="true"></i><span class="nav-text">Archive</span>
@@ -841,10 +885,30 @@
             <a href="/favorites" class="nav-btn active" title="Favorites">
                 <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
             </a>
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
-                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
-            </button>
+            <a href="/popular" class="nav-btn" title="Popular">
+                <i class="fas fa-fire" aria-hidden="true"></i><span class="nav-text">Popular</span>
+            </a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.profile') }}" class="nav-btn" title="Profile">
+                <i class="fas fa-user" aria-hidden="true"></i><span class="nav-text">{{ current_user.username }}</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-btn" title="Logout">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i><span class="nav-text">Logout</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-btn" title="Login">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i><span class="nav-text">Login</span>
+            </a>
+            <a href="{{ url_for('auth.signup') }}" class="nav-btn" title="Sign Up">
+                <i class="fas fa-user-plus" aria-hidden="true"></i><span class="nav-text">Sign Up</span>
+            </a>
+            {% endif %}
         </nav>
+
+        <!-- Dark Mode Toggle - Fixed Position -->
+        <button type="button" id="dark-mode-toggle" class="dark-toggle-fixed" title="Toggle Dark Mode">
+            <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
+        </button>
         
         <!-- Condensed Search -->
         <div class="condensed-search">
@@ -1004,30 +1068,74 @@
     </div>
 
     <script>
+        // User authentication status (passed from Flask)
+        const USER_AUTH = {
+            isAuthenticated: {% if current_user.is_authenticated %}true{% else %}false{% endif %},
+            userId: {% if current_user.is_authenticated %}{{ current_user.id }}{% else %}null{% endif %},
+            username: {% if current_user.is_authenticated %}"{{ current_user.username }}"{% else %}null{% endif %}
+        };
+
         // Favorites Management System
+        // Supports both localStorage (logged out) and API (logged in)
+        let _favoritesCache = null;
+
         function getFavorites() {
-            const favorites = localStorage.getItem('tma_favorites');
-            return favorites ? JSON.parse(favorites) : {};
+            if (!USER_AUTH.isAuthenticated) {
+                const favorites = localStorage.getItem('tma_favorites');
+                return favorites ? JSON.parse(favorites) : {};
+            }
+            return _favoritesCache || {};
         }
-        
+
         function saveFavorites(favorites) {
-            localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+            if (!USER_AUTH.isAuthenticated) {
+                localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+            }
         }
-        
+
         function isFavorited(episodeId) {
             const favorites = getFavorites();
-            return favorites.hasOwnProperty(episodeId);
+            return favorites.hasOwnProperty(String(episodeId));
         }
-        
-        function removeFromFavorites(episodeId, episodeTitle = '', episodeDate = '') {
-            const favorites = getFavorites();
-            delete favorites[episodeId];
-            saveFavorites(favorites);
-            
+
+        async function loadFavoritesFromAPI() {
+            if (!USER_AUTH.isAuthenticated) return;
+            try {
+                const response = await fetch('/api/favorites');
+                if (response.ok) {
+                    const data = await response.json();
+                    _favoritesCache = {};
+                    data.favorites.forEach(fav => {
+                        _favoritesCache[String(fav.id)] = fav;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading favorites:', error);
+            }
+        }
+
+        async function removeFromFavorites(episodeId, episodeTitle = '', episodeDate = '') {
+            if (USER_AUTH.isAuthenticated) {
+                try {
+                    const response = await fetch(`/api/favorites/${episodeId}?podcast_name=TMA`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok && _favoritesCache) {
+                        delete _favoritesCache[String(episodeId)];
+                    }
+                } catch (error) {
+                    console.error('Error removing favorite:', error);
+                }
+            } else {
+                const favorites = getFavorites();
+                delete favorites[String(episodeId)];
+                saveFavorites(favorites);
+            }
+
             // Reload favorites display
             loadFavorites();
         }
-        
+
         function updateFavoriteButton(button, isFav) {
             if (isFav) {
                 button.classList.add('favorited');
@@ -1041,12 +1149,12 @@
                 button.title = 'Add to favorites';
             }
         }
-        
+
         function handleFavoriteClick(episodeId, title, date, showNotes, mp3url, url, buttonElement) {
             // Confirmation dialog for removal
             if (confirm('Remove this episode from your favorites?')) {
                 removeFromFavorites(episodeId, title, date);
-                
+
                 // Show brief feedback toast (will implement toast later if needed)
                 buttonElement.title = 'Removed from favorites!';
                 setTimeout(() => {
@@ -1284,9 +1392,24 @@
             resultsBody.innerHTML = html;
         }
         
-        function clearAllFavorites() {
+        async function clearAllFavorites() {
             if (confirm('Are you sure you want to remove all favorites? This action cannot be undone.')) {
-                localStorage.removeItem('tma_favorites');
+                if (USER_AUTH.isAuthenticated) {
+                    // Delete all favorites from API
+                    const favorites = getFavorites();
+                    for (const episodeId of Object.keys(favorites)) {
+                        try {
+                            await fetch(`/api/favorites/${episodeId}?podcast_name=TMA`, {
+                                method: 'DELETE'
+                            });
+                        } catch (error) {
+                            console.error('Error removing favorite:', error);
+                        }
+                    }
+                    _favoritesCache = {};
+                } else {
+                    localStorage.removeItem('tma_favorites');
+                }
                 loadFavorites();
             }
         }
@@ -1428,9 +1551,13 @@
         }
 
         // Load favorites when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             if (window.PlayerUI) {
                 PlayerUI.init({ defaultTitle: document.title });
+            }
+            // Load from API first if authenticated
+            if (USER_AUTH.isAuthenticated) {
+                await loadFavoritesFromAPI();
             }
             loadFavorites();
         });
