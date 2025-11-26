@@ -138,14 +138,17 @@
             background: linear-gradient(135deg, #ff6b6b, #ee5a52);
             color: white;
             border: none;
-            border-radius: 50px;
-            padding: 12px 32px;
+            border-radius: 8px;
+            padding: 12px 24px;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(255, 107, 107, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
         }
         
         /* Favorites Heart Button */
@@ -236,21 +239,27 @@
 
         .random-episode-btn:hover {
             background: linear-gradient(135deg, #ff5757, #e04848);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.35);
             color: white;
         }
-        
+
+        .random-episode-btn:active {
+            transform: translateY(0);
+        }
+
         .random-episode-btn:focus {
+            outline: 2px solid #ff6b6b;
+            outline-offset: 2px;
             box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.3);
             color: white;
         }
-        
+
         .random-episode-btn i {
             animation: spin 2s linear infinite;
             animation-play-state: paused;
         }
-        
+
         .random-episode-btn:hover i {
             animation-play-state: running;
         }
@@ -345,6 +354,79 @@
             outline: 2px solid #007bff;
             outline-offset: 2px;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Search Actions Container */
+        .search-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .search-actions .search-button {
+            flex: 1 1 50%;
+            min-width: 0;
+        }
+
+        .search-actions .utility-button,
+        .search-actions .random-episode-btn {
+            flex: 0 1 auto;
+            white-space: nowrap;
+        }
+
+        .search-actions .random-episode-btn {
+            padding: 12px 24px;
+            height: 44px;
+        }
+
+        /* Mobile: Icon-only buttons for space efficiency */
+        @media (max-width: 576px) {
+            .search-actions {
+                gap: 0.375rem;
+            }
+
+            .search-actions .btn-text {
+                display: none;
+            }
+
+            .search-actions button {
+                min-width: 44px;
+                padding: 12px 14px;
+                justify-content: center;
+            }
+
+            .search-actions .search-button {
+                flex: 1 1 auto;
+            }
+
+            .search-actions button i {
+                margin: 0;
+            }
+        }
+
+        /* Tablet: Show text on all buttons */
+        @media (min-width: 577px) and (max-width: 767px) {
+            .search-actions .utility-button,
+            .search-actions .random-episode-btn {
+                flex: 0 1 auto;
+                min-width: 100px;
+            }
+        }
+
+        /* Desktop: Comfortable spacing */
+        @media (min-width: 768px) {
+            .search-actions .search-button {
+                flex: 0 1 auto;
+                min-width: 140px;
+            }
+
+            .search-actions .utility-button {
+                min-width: 100px;
+            }
+
+            .search-actions .random-episode-btn {
+                min-width: 120px;
+            }
         }
 
         #back-to-top {
@@ -481,6 +563,95 @@
             margin-right: 4px;
         }
 
+        /* Mobile: Icons-only navigation */
+        @media (max-width: 479px) {
+            .nav-btn {
+                min-width: 48px;
+                min-height: 48px;
+                padding: 12px;
+                justify-content: center;
+            }
+
+            .nav-btn .nav-text {
+                display: none;
+            }
+
+            .nav-btn i {
+                font-size: 16px;
+                margin-right: 0;
+            }
+
+            .top-nav {
+                gap: 6px;
+            }
+
+            /* Hide Buy Me Coffee on mobile */
+            .header-coffee {
+                display: none;
+            }
+        }
+
+        /* Collapsible Advanced Search */
+        .advanced-search-toggle {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .advanced-search-toggle:hover {
+            color: #0056b3;
+        }
+
+        .dark-mode .advanced-search-toggle {
+            color: #63b3ed;
+        }
+
+        .dark-mode .advanced-search-toggle:hover {
+            color: #90cdf4;
+        }
+
+        .advanced-search-toggle i {
+            transition: transform 0.2s ease;
+            font-size: 10px;
+        }
+
+        .advanced-search-toggle.expanded i {
+            transform: rotate(90deg);
+        }
+
+        .advanced-search-fields {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.2s ease;
+            opacity: 0;
+        }
+
+        .advanced-search-fields.expanded {
+            max-height: 500px;
+            opacity: 1;
+        }
+
+        /* Desktop: always show advanced fields */
+        @media (min-width: 768px) {
+            .advanced-search-toggle {
+                display: none;
+            }
+
+            .advanced-search-fields {
+                max-height: none;
+                opacity: 1;
+                overflow: visible;
+            }
+        }
+
         /* Dark mode toggle as compact button */
         .dark-toggle {
             background: #6c757d;
@@ -601,8 +772,34 @@
             display: block;
         }
 
+        .keyboard-hint {
+            font-size: 0.75rem;
+            color: #6c757d;
+            font-weight: normal;
+            margin-left: 6px;
+        }
+
+        .keyboard-hint kbd {
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
         .dark-mode .form-label {
             color: #f9fafb;
+        }
+
+        .dark-mode .keyboard-hint {
+            color: #9ca3af;
+        }
+
+        .dark-mode .keyboard-hint kbd {
+            background: #374151;
+            border-color: #4b5563;
+            color: #e5e7eb;
         }
 
         /* Help icon styling */
@@ -653,28 +850,23 @@
                 margin-top: 1rem;
             }
 
+            .primary-actions,
             .secondary-actions {
-                /* Match tablet card-body padding */
                 padding: 0 1.25rem;
             }
 
-            .primary-action .btn {
-                height: 38px;
+            .primary-actions .btn {
+                height: 40px;
                 font-size: 15px;
             }
 
-            .secondary-actions .btn-share {
-                height: 34px;
-                font-size: 14px;
+            .primary-actions .btn-download {
+                width: 55px;
+                min-width: 55px;
             }
 
-            .secondary-actions .btn-download {
+            .secondary-actions .btn {
                 height: 34px;
-                font-size: 16px;
-            }
-
-            .tertiary-action .btn {
-                height: 32px;
                 font-size: 13px;
             }
         }
@@ -750,22 +942,22 @@
         }
 
         /* Button group centering and constraints */
-        .primary-action,
-        .secondary-actions,
-        .tertiary-action {
+        .primary-actions,
+        .secondary-actions {
             width: 100%;
             display: flex;
             justify-content: center;
             box-sizing: border-box;
+            gap: 0.5rem;
+            padding: 0 1rem;
         }
 
-        .primary-action {
-            margin-bottom: 0.4rem;
+        .primary-actions {
+            margin-bottom: 0.5rem;
         }
 
-        .primary-action .btn {
-            width: 100%;
-            height: 34px;
+        .primary-actions .btn {
+            height: 38px;
             font-weight: 600;
             font-size: 14px;
             display: flex;
@@ -774,53 +966,54 @@
             box-sizing: border-box;
         }
 
-        .secondary-actions {
-            gap: 0.5rem;
-            margin-bottom: 0.4rem;
-            align-items: stretch;
-            /* Fix: Match card-body padding to align with other content */
-            padding: 0 1rem;
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        .secondary-actions .btn-share {
-            flex: 0 0 calc(70% - 0.25rem);
-            height: 30px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            /* Ensure button respects content area */
-            max-width: calc(70% - 0.25rem);
-        }
-
-        .secondary-actions .btn-download {
-            flex: 0 0 calc(30% - 0.25rem);
-            height: 30px;
-            font-size: 14px;
+        .primary-actions .btn-download {
+            width: 50px;
+            min-width: 50px;
             padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
+            font-size: 15px;
+        }
+
+        /* Stream button - rectangular icon button */
+        .btn-stream {
+            flex: 1;
+            height: 38px;
+            border-radius: 8px;
+            padding: 0 16px;
+            font-size: 16px;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-stream:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.35);
+        }
+
+        .btn-stream:disabled {
+            opacity: 0.5;
+        }
+
+        .dark-mode .btn-stream {
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+
+        .dark-mode .btn-stream:hover:not(:disabled) {
+            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35);
+        }
+
+        .secondary-actions .btn {
+            flex: 1;
             min-width: 0;
-            /* Ensure button respects content area */
-            max-width: calc(30% - 0.25rem);
-        }
-
-        .tertiary-action {
-            justify-content: center;
-        }
-
-        .tertiary-action .btn {
-            width: 100%;
-            height: 28px;
+            height: 32px;
             font-size: 12px;
             font-weight: 500;
-            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1163,74 +1356,79 @@
         
         <!-- Single Row Navigation -->
         <nav class="top-nav" aria-label="Main navigation">
-            <a href="#" class="nav-btn active" onclick="fetchPodcast('TMA')" aria-label="View recent episodes">
-                <i class="fas fa-clock" aria-hidden="true"></i>Recent
+            <a href="#" class="nav-btn active" onclick="fetchPodcast('TMA')" title="Recent Episodes">
+                <i class="fas fa-clock" aria-hidden="true"></i><span class="nav-text">Recent</span>
             </a>
-            <a href="{{ url_for('tma_archive') }}" class="nav-btn" aria-label="Browse episode archive">
-                <i class="fas fa-archive" aria-hidden="true"></i>Archive
+            <a href="{{ url_for('tma_archive') }}" class="nav-btn" title="Episode Archive">
+                <i class="fas fa-archive" aria-hidden="true"></i><span class="nav-text">Archive</span>
             </a>
-            <a href="/favorites" class="nav-btn" id="favoritesNavLink" aria-label="View favorite episodes">
-                <i class="fas fa-heart" aria-hidden="true"></i>Favorites
+            <a href="/favorites" class="nav-btn" id="favoritesNavLink" title="Favorites">
+                <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
                 <span id="favoritesNavBadge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;" aria-label="Number of favorites"></span>
             </a>
-            <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal" aria-label="View update notifications">
-                <i class="fas fa-bell" aria-hidden="true"></i>Updates
+            <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal" title="Updates">
+                <i class="fas fa-bell" aria-hidden="true"></i><span class="nav-text">Updates</span>
                 <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none;" aria-label="New update available">•</span>
             </button>
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-                <i class="fas fa-moon" aria-hidden="true"></i><span id="dark-mode-text">Dark</span>
+            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
+                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
             </button>
         </nav>
         <!-- Primary Search Form -->
         <div class="search-form">
             <form id="searchForm">
+                <!-- Always visible: Title and Show Notes -->
                 <div class="form-group">
-                    <label for="matchType" class="form-label">
-                        Search Type
-                        <button type="button" class="help-icon" data-toggle="modal" data-target="#helpModal" aria-label="Open search help guide" style="background: none; border: none; padding: 0; cursor: pointer;">
-                            <i class="fas fa-question-circle" aria-hidden="true"></i>
-                        </button>
-                    </label>
-                    <select class="form-control" id="matchType" name="matchType">
-                        <option value="all">Match All Keywords</option>
-                        <option value="any">Match Any Keywords</option>
-                        <option value="exact">Exact Match</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="titleInput" class="form-label">Episode Title <span style="font-size: 0.75rem; color: #6c757d; font-weight: normal;">(Press <kbd>/</kbd> or <kbd>S</kbd>)</span></label>
+                    <label for="titleInput" class="form-label">Episode Title <span class="keyboard-hint"><kbd>/</kbd> or <kbd>S</kbd></span></label>
                     <input type="text" class="form-control" name="title" id="titleInput" placeholder="Search episode titles...">
                 </div>
-                
-                <div class="form-group">
-                    <label for="dateInput" class="form-label">Date</label>
-                    <input type="text" class="form-control" name="date" id="dateInput" placeholder="e.g., 2023, 05/2022, or 2023-11-06">
-                </div>
-                
+
                 <div class="form-group">
                     <label for="notesInput" class="form-label">Show Notes</label>
                     <input type="text" class="form-control" name="notes" id="notesInput" placeholder="Search show notes...">
                 </div>
-                
+
+                <!-- Collapsible: Search Type and Date -->
+                <button type="button" class="advanced-search-toggle" id="advancedSearchToggle" aria-expanded="false" aria-controls="advancedSearchFields">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    <span>Advanced Search</span>
+                </button>
+
+                <div class="advanced-search-fields" id="advancedSearchFields">
+                    <div class="form-group">
+                        <label for="matchType" class="form-label">
+                            Search Type
+                            <button type="button" class="help-icon" data-toggle="modal" data-target="#helpModal" aria-label="Open search help guide" style="background: none; border: none; padding: 0; cursor: pointer;">
+                                <i class="fas fa-question-circle" aria-hidden="true"></i>
+                            </button>
+                        </label>
+                        <select class="form-control" id="matchType" name="matchType">
+                            <option value="all">Match All Keywords</option>
+                            <option value="any">Match Any Keywords</option>
+                            <option value="exact">Exact Match</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dateInput" class="form-label">Date</label>
+                        <input type="text" class="form-control" name="date" id="dateInput" placeholder="e.g., 2023, 05/2022, or 2023-11-06">
+                    </div>
+                </div>
+
                 <input type="hidden" name="currentPodcast" id="currentPodcast" value="TMA">
-                
-                <div style="display: flex; gap: 0.5rem;">
-                    <button type="submit" class="search-button" style="flex: 1;">
-                        <i class="fas fa-search"></i>Search Episodes
+
+                <div class="search-actions">
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search"></i><span class="btn-text">Search</span>
                     </button>
-                    <button type="button" class="utility-button" onclick="clearSearch()" style="min-width: 100px;">
-                        <i class="fas fa-times"></i>Clear
+                    <button type="button" class="utility-button" onclick="clearSearch()">
+                        <i class="fas fa-times"></i><span class="btn-text">Clear</span>
+                    </button>
+                    <button type="button" class="random-episode-btn" onclick="getRandomEpisode()" aria-label="Get a random episode" title="Random episode (R)">
+                        <i class="fas fa-dice" aria-hidden="true"></i><span class="btn-text">Random</span>
                     </button>
                 </div>
             </form>
-            
-            <!-- Random Episode Button -->
-            <div class="text-center mt-3">
-                <button type="button" class="btn random-episode-btn" onclick="getRandomEpisode()" aria-label="Get a random episode (Press R)" title="Press R for random episode">
-                    <i class="fas fa-dice mr-2" aria-hidden="true"></i>Random Episode <span style="opacity: 0.7; font-size: 0.85em;">(R)</span>
-                </button>
-            </div>
         </div>
         </div>
         
@@ -1314,6 +1512,26 @@
                 document.addEventListener('DOMContentLoaded', function () {
                     if (window.PlayerUI) {
                         PlayerUI.init({ defaultTitle: document.title });
+                    }
+
+                    // Advanced Search Toggle
+                    var advancedToggle = document.getElementById('advancedSearchToggle');
+                    var advancedFields = document.getElementById('advancedSearchFields');
+                    if (advancedToggle && advancedFields) {
+                        // Check localStorage for saved state
+                        var savedState = localStorage.getItem('advancedSearchExpanded');
+                        if (savedState === 'true') {
+                            advancedToggle.classList.add('expanded');
+                            advancedFields.classList.add('expanded');
+                            advancedToggle.setAttribute('aria-expanded', 'true');
+                        }
+
+                        advancedToggle.addEventListener('click', function() {
+                            var isExpanded = advancedFields.classList.toggle('expanded');
+                            advancedToggle.classList.toggle('expanded', isExpanded);
+                            advancedToggle.setAttribute('aria-expanded', isExpanded);
+                            localStorage.setItem('advancedSearchExpanded', isExpanded);
+                        });
                     }
                 });
 
@@ -1676,33 +1894,31 @@
                         </div>
                     ` : '';
 
-                    // Primary action - Stream button (full width)
+                    // Row 1: Stream + Download
                     var streamButton = podcast.mp3url
-                        ? `<button class="btn btn-success" onclick="playEpisodeNow(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')">
-                           <i class="fas fa-play" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Episode</span></button>`
-                        : `<button class="btn btn-secondary" disabled>
-                           <i class="fas fa-ban" style="margin-right: 8px; font-size: 13px;"></i><span style="line-height: 1;">Stream Not Available</span></button>`;
-
-                    // Secondary actions - Share (70%) and Download (30%)
-                    var shareButton = podcast.id
-                        ? `<a href="${episodeLink}" class="btn btn-info btn-share" onclick="trackSearchResultInteraction('Shareable Page Click', '${safeTitle}', '${podcast.date}')">
-                           <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Segment Page</span></a>`
-                        : `<button class="btn btn-secondary btn-share" disabled>
-                           <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 12px;"></i><span style="line-height: 1;">Segment Page</span></button>`;
+                        ? `<button class="btn btn-success btn-stream" onclick="playEpisodeNow(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')" title="Stream Episode" aria-label="Stream Episode">
+                           <i class="fas fa-play"></i></button>`
+                        : `<button class="btn btn-secondary btn-stream" disabled title="Stream Not Available" aria-label="Stream Not Available">
+                           <i class="fas fa-ban"></i></button>`;
 
                     var downloadButton = podcast.mp3url
-                        ? `<a href="${podcast.mp3url}" download class="btn btn-success btn-download" onclick="trackSearchResultInteraction('Download Click', '${safeTitle}', '${podcast.date}')" title="Download Episode">
-                           <i class="fas fa-download" style="font-size: 14px;"></i></a>`
+                        ? `<a href="${podcast.mp3url}" download class="btn btn-info btn-download" onclick="trackSearchResultInteraction('Download Click', '${safeTitle}', '${podcast.date}')" title="Download Episode">
+                           <i class="fas fa-download"></i></a>`
                         : `<button class="btn btn-secondary btn-download" disabled title="Download Not Available">
-                           <i class="fas fa-ban" style="font-size: 14px;"></i></button>`;
+                           <i class="fas fa-ban"></i></button>`;
 
-                    // Tertiary action - TMASTL (smaller, full width) 
-                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary" onclick="trackSearchResultInteraction('TMASTL Click', '${safeTitle}', '${podcast.date}')">
-                                        <i class="fas fa-external-link-alt" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">Listen on TMASTL</span></a>`;
-                                        
-                    // Phase 3: Episodes on this day button
-                    var episodesOnThisDayButton = `<button class="btn btn-outline-secondary" onclick="searchByDate('${podcast.date}')" title="Find episodes from ${podcast.date}">
-                                                   <i class="fas fa-calendar" style="margin-right: 6px; font-size: 11px;"></i><span style="line-height: 1;">This Day</span></button>`;
+                    // Row 2: Episode Page + TMASTL + This Date
+                    var episodePageButton = podcast.id
+                        ? `<a href="${episodeLink}" class="btn btn-outline-secondary btn-sm" onclick="trackSearchResultInteraction('Episode Page Click', '${safeTitle}', '${podcast.date}')" title="View Episode Page">
+                           <i class="fas fa-file-alt" style="margin-right: 4px;"></i>Episode</a>`
+                        : `<button class="btn btn-outline-secondary btn-sm" disabled title="Page Not Available">
+                           <i class="fas fa-file-alt" style="margin-right: 4px;"></i>Episode</button>`;
+
+                    var tmastlButton = `<a href="${podcast.url}" class="btn btn-outline-primary btn-sm" onclick="trackSearchResultInteraction('TMASTL Click', '${safeTitle}', '${podcast.date}')" title="Listen on TMASTL.com">
+                                        <i class="fas fa-podcast" style="margin-right: 4px;"></i>TMASTL</a>`;
+
+                    var thisDateButton = `<button class="btn btn-outline-secondary btn-sm" onclick="searchByDate('${podcast.date}')" title="Find all episodes from ${podcast.date}">
+                                          <i class="fas fa-calendar-day" style="margin-right: 4px;"></i>This Date</button>`;
 
                     return `
         <div class="col-lg-4 col-md-6 col-12">
@@ -1719,25 +1935,17 @@
                     <div class="card-description flex-grow-1">${displayNotes}</div>
                     
                     <div class="card-actions">
-                        <!-- Primary Action -->
-                        <div class="primary-action">
+                        <!-- Row 1: Stream + Download -->
+                        <div class="primary-actions">
                             ${streamButton}
-                        </div>
-                        
-                        <!-- Secondary Actions -->
-                        <div class="secondary-actions">
-                            ${shareButton}
                             ${downloadButton}
                         </div>
-                        
-                        <!-- Tertiary Action -->
-                        <div class="tertiary-action">
+
+                        <!-- Row 2: Episode Page + TMASTL + This Date -->
+                        <div class="secondary-actions">
+                            ${episodePageButton}
                             ${tmastlButton}
-                        </div>
-                        
-                        <!-- Phase 3: Episodes on this day action -->
-                        <div class="tertiary-action" style="margin-top: 0.4rem;">
-                            ${episodesOnThisDayButton}
+                            ${thisDateButton}
                         </div>
                     </div>
                 </div>

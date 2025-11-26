@@ -1216,6 +1216,38 @@
     updatePlaybackLabels(restored);
   }
 
+  function bindModalEvents() {
+    // Listen for Bootstrap modal events to toggle body class
+    const playerModal = document.getElementById('audioPlayerModal');
+    if (!playerModal) {
+      return;
+    }
+
+    // Use jQuery events for Bootstrap 4 modals
+    if (typeof $ !== 'undefined' && window.$) {
+      $(playerModal).on('show.bs.modal', function() {
+        document.body.classList.add('player-modal-open');
+        scheduleAudioBarRefresh();
+      });
+
+      $(playerModal).on('hidden.bs.modal', function() {
+        document.body.classList.remove('player-modal-open');
+        scheduleAudioBarRefresh();
+      });
+    } else {
+      // Fallback for native Bootstrap 5 or vanilla JS
+      playerModal.addEventListener('show.bs.modal', function() {
+        document.body.classList.add('player-modal-open');
+        scheduleAudioBarRefresh();
+      });
+
+      playerModal.addEventListener('hidden.bs.modal', function() {
+        document.body.classList.remove('player-modal-open');
+        scheduleAudioBarRefresh();
+      });
+    }
+  }
+
   function init(options) {
     const configOptions = options || {};
     defaultDocumentTitle = configOptions.defaultTitle || document.title;
@@ -1230,6 +1262,7 @@
     initialised = true;
     hydrateQueueElements();
     bindQueuePanelEvents();
+    bindModalEvents();
     attachAudioListeners();
 
     window.addEventListener('tma-playqueue-updated', handleQueueUpdated);
