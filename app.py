@@ -11,9 +11,10 @@ from flask_login import LoginManager, current_user, login_required
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-# Load environment variables
-load_dotenv('.env')  # Flask config (SECRET_KEY, etc.)
-load_dotenv('spot.env')  # Spotify credentials
+# Load environment variables (use absolute paths for WSGI compatibility)
+basedir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(basedir, '.env'))  # Flask config (SECRET_KEY, etc.)
+load_dotenv(os.path.join(basedir, 'spot.env'))  # Spotify credentials
 
 
 app = Flask(__name__)
