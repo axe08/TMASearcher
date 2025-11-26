@@ -117,7 +117,79 @@
         .dark-mode .episode-progress-indicator i {
             color: #63b3ed !important;
         }
-        
+
+        /* Episode Comments Indicator */
+        .episode-comments-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(108, 117, 125, 0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .episode-comments-indicator i {
+            font-size: 0.7rem;
+        }
+
+        .dark-mode .episode-comments-indicator {
+            background: rgba(156, 163, 175, 0.15);
+            border-color: rgba(156, 163, 175, 0.3);
+            color: #9ca3af;
+        }
+
+        /* Episode Favorites Indicator */
+        .episode-favorites-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(220, 53, 69, 0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            font-size: 0.75rem;
+            color: #dc3545;
+        }
+
+        .episode-favorites-indicator i {
+            font-size: 0.7rem;
+        }
+
+        .dark-mode .episode-favorites-indicator {
+            background: rgba(248, 113, 113, 0.15);
+            border-color: rgba(248, 113, 113, 0.3);
+            color: #f87171;
+        }
+
+        /* Episode Likes Indicator */
+        .episode-likes-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            font-size: 0.75rem;
+            color: #3b82f6;
+        }
+
+        .episode-likes-indicator i {
+            font-size: 0.7rem;
+        }
+
+        .dark-mode .episode-likes-indicator {
+            background: rgba(96, 165, 250, 0.15);
+            border-color: rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+
         /* Search term highlighting */
         .search-highlight {
             background-color: #fff3cd;
@@ -162,6 +234,7 @@
         }
 
         .favorite-btn,
+        .like-btn,
         .queue-btn {
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid rgba(0, 0, 0, 0.05);
@@ -179,12 +252,14 @@
         }
 
         .favorite-btn:hover,
+        .like-btn:hover,
         .queue-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
         }
 
         .favorite-btn:focus,
+        .like-btn:focus,
         .queue-btn:focus {
             outline: 2px solid #007bff;
             outline-offset: 2px;
@@ -196,23 +271,43 @@
             transition: all 0.2s ease;
             color: #dc3545;
         }
-        
+
         .favorite-btn.favorited .heart {
             color: #dc3545;
         }
-        
+
         .favorite-btn:not(.favorited) .heart {
             color: #6c757d;
         }
-        
-        .dark-mode .favorite-btn {
+
+        /* Like button styles */
+        .like-btn .thumb {
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .like-btn.liked .thumb {
+            color: #3b82f6;
+        }
+
+        .like-btn:not(.liked) .thumb {
+            color: #6c757d;
+        }
+
+        .dark-mode .favorite-btn,
+        .dark-mode .like-btn {
             background: rgba(31, 41, 55, 0.92);
             border-color: rgba(255, 255, 255, 0.08);
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
         }
 
-        .dark-mode .favorite-btn:hover {
+        .dark-mode .favorite-btn:hover,
+        .dark-mode .like-btn:hover {
             background: rgba(55, 65, 81, 0.92);
+        }
+
+        .dark-mode .like-btn.liked .thumb {
+            color: #60a5fa;
         }
 
         .dark-mode .favorite-btn:not(.favorited) .heart {
@@ -666,6 +761,54 @@
             color: white;
         }
 
+        /* Fixed dark mode toggle - top right */
+        .dark-toggle-fixed {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: #6c757d;
+            border: 1px solid #6c757d;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .dark-toggle-fixed:hover {
+            background: #5a6268;
+            border-color: #545b62;
+        }
+
+        .dark-toggle-fixed i {
+            font-size: 14px;
+        }
+
+        .dark-mode .dark-toggle-fixed {
+            background: #4b5563;
+            border-color: #4b5563;
+        }
+
+        .dark-mode .dark-toggle-fixed:hover {
+            background: #6b7280;
+            border-color: #6b7280;
+        }
+
+        @media (max-width: 479px) {
+            .dark-toggle-fixed .nav-text {
+                display: none;
+            }
+            .dark-toggle-fixed {
+                padding: 10px;
+            }
+        }
 
         /* Updates button - compact */
         .updates-btn {
@@ -1367,6 +1510,9 @@
                 <i class="fas fa-heart" aria-hidden="true"></i><span class="nav-text">Favorites</span>
                 <span id="favoritesNavBadge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;" aria-label="Number of favorites"></span>
             </a>
+            <a href="/popular" class="nav-btn" title="Popular">
+                <i class="fas fa-fire" aria-hidden="true"></i><span class="nav-text">Popular</span>
+            </a>
             <button id="releaseModalButton" type="button" class="nav-btn updates-btn position-relative" data-toggle="modal" data-target="#releaseModal" title="Updates">
                 <i class="fas fa-bell" aria-hidden="true"></i><span class="nav-text">Updates</span>
                 <span id="new-update-badge" class="badge badge-danger position-absolute" style="top: -2px; right: -2px; font-size: 8px; display: none;" aria-label="New update available">•</span>
@@ -1386,10 +1532,12 @@
                 <i class="fas fa-user-plus" aria-hidden="true"></i><span class="nav-text">Sign Up</span>
             </a>
             {% endif %}
-            <button type="button" id="dark-mode-toggle" class="nav-btn dark-toggle" title="Toggle Dark Mode">
-                <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
-            </button>
         </nav>
+
+        <!-- Dark Mode Toggle - Fixed Position -->
+        <button type="button" id="dark-mode-toggle" class="dark-toggle-fixed" title="Toggle Dark Mode">
+            <i class="fas fa-moon" aria-hidden="true"></i><span class="nav-text" id="dark-mode-text">Dark</span>
+        </button>
         <!-- Primary Search Form -->
         <div class="search-form">
             <form id="searchForm">
@@ -1890,7 +2038,101 @@
                 if (USER_AUTH.isAuthenticated) {
                     loadFavoritesFromAPI();
                 }
-                
+
+                // ==========================================
+                // LIKES SYSTEM
+                // ==========================================
+                let userLikesCache = {};
+
+                async function loadUserLikesFromAPI() {
+                    if (!USER_AUTH.isAuthenticated) return;
+
+                    try {
+                        const response = await fetch('/api/user/likes');
+                        if (response.ok) {
+                            const data = await response.json();
+                            userLikesCache = {};
+                            data.likes.forEach(like => {
+                                userLikesCache[like.episode_id] = true;
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error loading user likes:', error);
+                    }
+                }
+
+                async function handleLikeClick(episodeId, buttonEl) {
+                    if (!USER_AUTH.isAuthenticated) {
+                        // Prompt login
+                        if (confirm('Sign in to like episodes. Go to login page?')) {
+                            window.location.href = '/auth/login?next=' + encodeURIComponent(window.location.pathname);
+                        }
+                        return;
+                    }
+
+                    buttonEl.disabled = true;
+                    const isCurrentlyLiked = userLikesCache[episodeId];
+
+                    try {
+                        const method = isCurrentlyLiked ? 'DELETE' : 'POST';
+                        const response = await fetch(`/api/likes/${episodeId}?podcast_name=TMA`, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            // Update cache
+                            if (isCurrentlyLiked) {
+                                delete userLikesCache[episodeId];
+                            } else {
+                                userLikesCache[episodeId] = true;
+                            }
+                            // Update button UI
+                            updateLikeButton(buttonEl, !isCurrentlyLiked);
+                            // Update likes count indicator if present
+                            updateLikesIndicator(episodeId, data.likes_count);
+                        }
+                    } catch (error) {
+                        console.error('Error toggling like:', error);
+                    } finally {
+                        buttonEl.disabled = false;
+                    }
+                }
+
+                function updateLikeButton(button, isLiked) {
+                    const thumb = button.querySelector('.thumb');
+                    if (isLiked) {
+                        button.classList.add('liked');
+                        thumb.classList.remove('far');
+                        thumb.classList.add('fas');
+                        button.title = 'Unlike';
+                    } else {
+                        button.classList.remove('liked');
+                        thumb.classList.remove('fas');
+                        thumb.classList.add('far');
+                        button.title = 'Like';
+                    }
+                }
+
+                function updateLikesIndicator(episodeId, count) {
+                    // Find card with this episode and update the likes indicator
+                    const indicator = document.querySelector(`.episode-likes-indicator[data-episode-id="${episodeId}"]`);
+                    if (indicator) {
+                        if (count > 0) {
+                            indicator.style.display = '';
+                            indicator.querySelector('span').textContent = count;
+                        } else {
+                            indicator.style.display = 'none';
+                        }
+                    }
+                }
+
+                // Load likes on page load for logged-in users
+                if (USER_AUTH.isAuthenticated) {
+                    loadUserLikesFromAPI();
+                }
+
                 // Clear search function
                 function clearSearch() {
                     // Clear all form fields
@@ -1950,7 +2192,7 @@
                             const minutes = Math.floor(progressTime / 60);
                             const seconds = Math.floor(progressTime % 60);
                             const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                            
+
                             progressHtml = `
                                 <div class="episode-progress-indicator" title="Resume from ${timeString}">
                                     <i class="fas fa-play-circle mr-1" style="color: #007bff; font-size: 0.8rem;"></i>
@@ -1958,6 +2200,39 @@
                                 </div>
                             `;
                         }
+                    }
+
+                    // Comment count indicator
+                    var commentsHtml = '';
+                    if (podcast.comments_count && podcast.comments_count > 0) {
+                        commentsHtml = `
+                            <span class="episode-comments-indicator" title="${podcast.comments_count} comment${podcast.comments_count > 1 ? 's' : ''}">
+                                <i class="fas fa-comment"></i>
+                                <span>${podcast.comments_count}</span>
+                            </span>
+                        `;
+                    }
+
+                    // Likes count indicator
+                    var likesHtml = '';
+                    if (podcast.likes_count && podcast.likes_count > 0) {
+                        likesHtml = `
+                            <span class="episode-likes-indicator" data-episode-id="${podcast.id}" title="${podcast.likes_count} like${podcast.likes_count > 1 ? 's' : ''}">
+                                <i class="fas fa-thumbs-up"></i>
+                                <span>${podcast.likes_count}</span>
+                            </span>
+                        `;
+                    }
+
+                    // Favorites count indicator
+                    var favoritesHtml = '';
+                    if (podcast.favorites_count && podcast.favorites_count > 0) {
+                        favoritesHtml = `
+                            <span class="episode-favorites-indicator" title="${podcast.favorites_count} favorite${podcast.favorites_count > 1 ? 's' : ''}">
+                                <i class="fas fa-heart"></i>
+                                <span>${podcast.favorites_count}</span>
+                            </span>
+                        `;
                     }
                     
                     // Favorite button - check if this episode is favorited
@@ -1981,17 +2256,34 @@
                     ` : '';
 
                     var favoriteButton = podcast.id ? `
-                        <button class="favorite-btn ${favClass}" 
-                                onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
+                        <button class="favorite-btn ${favClass}"
+                                onclick="handleFavoriteClick(${podcast.id}, '${safeTitle}', '${podcast.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)"
                                 title="${favTitle}"
                                 aria-label="${favTitle}">
                             <i class="heart ${heartIcon}"></i>
                         </button>
                     ` : '';
 
-                    var actionButtons = (queueButton || favoriteButton) ? `
+                    // Like button
+                    var isLiked = podcast.id && USER_AUTH.isAuthenticated ? userLikesCache[podcast.id] : false;
+                    var thumbIcon = isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up';
+                    var likeClass = isLiked ? 'liked' : '';
+                    var likeTitle = isLiked ? 'Unlike' : 'Like';
+
+                    var likeButton = podcast.id ? `
+                        <button class="like-btn ${likeClass}"
+                                onclick="handleLikeClick(${podcast.id}, this)"
+                                title="${likeTitle}"
+                                aria-label="${likeTitle}"
+                                data-episode-id="${podcast.id}">
+                            <i class="thumb ${thumbIcon}"></i>
+                        </button>
+                    ` : '';
+
+                    var actionButtons = (queueButton || likeButton || favoriteButton) ? `
                         <div class="episode-card-actions">
                             ${queueButton}
+                            ${likeButton}
                             ${favoriteButton}
                         </div>
                     ` : '';
@@ -2032,6 +2324,9 @@
                     </h5>
                     <div class="card-date">
                         <i class="fas fa-calendar mr-1"></i>${podcast.date}
+                        ${likesHtml}
+                        ${favoritesHtml}
+                        ${commentsHtml}
                         ${progressHtml}
                     </div>
                     <div class="card-description flex-grow-1">${displayNotes}</div>
@@ -2108,6 +2403,12 @@
                     }
 
                     trackSearchResultInteraction('Stream Click', episodeData.title, episodeData.date);
+
+                    // Track stream
+                    if (id) {
+                        fetch(`/api/stream/${id}?podcast_name=TMA`, { method: 'POST' })
+                            .catch(err => console.error('Stream tracking failed:', err));
+                    }
 
                     if (typeof PlayQueue !== 'undefined') {
                         PlayQueue.setCurrent(episodeData);
