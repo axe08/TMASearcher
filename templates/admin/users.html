@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<h1>Users ({{ users|length }})</h1>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Joined</th>
+            <th>Last Login</th>
+            <th>Stats</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr class="{% if not user.is_active %}inactive{% endif %}">
+            <td>{{ user.id }}</td>
+            <td>
+                {{ user.username }}
+                {% if user.is_admin %}<span class="badge badge-admin">Admin</span>{% endif %}
+            </td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.created_at[:10] }}</td>
+            <td>{{ user.last_login[:10] if user.last_login else 'Never' }}</td>
+            <td>
+                <span class="stat-mini" title="Favorites">{{ user.favorites }}</span>
+                <span class="stat-mini" title="Likes">{{ user.likes }}</span>
+                <span class="stat-mini" title="Comments">{{ user.comments }}</span>
+            </td>
+            <td>
+                {% if user.is_active %}
+                    <span class="badge badge-active">Active</span>
+                {% else %}
+                    <span class="badge badge-inactive">Inactive</span>
+                {% endif %}
+            </td>
+            <td class="actions">
+                <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}" class="inline-form">
+                    <button type="submit" class="btn btn-sm {% if user.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.toggle_user_admin', user_id=user.id) }}" class="inline-form">
+                    <button type="submit" class="btn btn-sm btn-secondary">
+                        {% if user.is_admin %}Remove Admin{% else %}Make Admin{% endif %}
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" class="inline-form" onsubmit="return confirm('Delete user {{ user.username }}? This will also delete all their favorites, likes, and comments.')">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

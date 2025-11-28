@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin{% endblock %} - TMASearcher</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <div class="admin-layout">
+        <nav class="admin-sidebar">
+            <div class="admin-logo">
+                <a href="{{ url_for('admin.dashboard') }}">TMA Admin</a>
+            </div>
+            <ul class="admin-nav">
+                <li><a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{{ url_for('admin.users') }}" class="{% if 'users' in request.endpoint %}active{% endif %}">Users</a></li>
+                <li><a href="{{ url_for('admin.comments') }}" class="{% if 'comments' in request.endpoint %}active{% endif %}">Comments</a></li>
+                <li><a href="{{ url_for('admin.episodes') }}" class="{% if 'episodes' in request.endpoint %}active{% endif %}">Episodes</a></li>
+            </ul>
+            <div class="admin-user">
+                <span>{{ current_user.username }}</span>
+                <a href="{{ url_for('index') }}">Back to Site</a>
+            </div>
+        </nav>
+
+        <main class="admin-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

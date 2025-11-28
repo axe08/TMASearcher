@@ -45,6 +45,11 @@ from auth import auth_bp, User, get_user_by_id
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
+# Import and register admin blueprint
+from admin import admin_bp
+
+app.register_blueprint(admin_bp, url_prefix='/admin')
+
 # Apply rate limits to auth routes (protect against brute force)
 limiter.limit("5 per minute")(app.view_functions['auth.login'])
 limiter.limit("5 per minute")(app.view_functions['auth.signup'])

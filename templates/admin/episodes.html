@@ -1,0 +1,74 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Episodes{% endblock %}
+
+{% block content %}
+<h1>Episodes ({{ total }})</h1>
+
+<div class="filters">
+    <form method="GET" action="{{ url_for('admin.episodes') }}" class="filter-form">
+        <select name="podcast" onchange="this.form.submit()">
+            <option value="TMA" {% if podcast == 'TMA' %}selected{% endif %}>TMA</option>
+            <option value="Balloon" {% if podcast == 'Balloon' %}selected{% endif %}>Balloon Party</option>
+            <option value="TMShow" {% if podcast == 'TMShow' %}selected{% endif %}>Tim McKernan Show</option>
+        </select>
+        <input type="text" name="search" value="{{ search }}" placeholder="Search title or date...">
+        <button type="submit" class="btn btn-primary">Search</button>
+        {% if search %}
+            <a href="{{ url_for('admin.episodes', podcast=podcast) }}" class="btn btn-secondary">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Engagement</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for episode in episodes %}
+        <tr>
+            <td>{{ episode.id }}</td>
+            <td class="truncate">
+                <a href="{{ url_for('episode', episode_id=episode.id) }}" target="_blank">
+                    {{ episode.title[:60] }}{% if episode.title|length > 60 %}...{% endif %}
+                </a>
+                {% if not episode.mp3url %}
+                    <span class="badge badge-warning">No MP3</span>
+                {% endif %}
+            </td>
+            <td>{{ episode.date }}</td>
+            <td>
+                <span class="stat-mini" title="Favorites">{{ episode.favorites_count or 0 }}</span>
+                <span class="stat-mini" title="Likes">{{ episode.likes_count or 0 }}</span>
+                <span class="stat-mini" title="Comments">{{ episode.comments_count or 0 }}</span>
+            </td>
+            <td class="actions">
+                <a href="{{ url_for('admin.edit_episode', episode_id=episode.id, podcast=podcast) }}" class="btn btn-sm btn-primary">Edit</a>
+                <form method="POST" action="{{ url_for('admin.delete_episode', episode_id=episode.id) }}" class="inline-form" onsubmit="return confirm('Delete this episode? This cannot be undone.')">
+                    <input type="hidden" name="podcast" value="{{ podcast }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+        <a href="{{ url_for('admin.episodes', page=page-1, search=search, podcast=podcast) }}" class="btn btn-sm">&laquo; Previous</a>
+    {% endif %}
+    <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+        <a href="{{ url_for('admin.episodes', page=page+1, search=search, podcast=podcast) }}" class="btn btn-sm">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

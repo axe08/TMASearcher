@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Comments{% endblock %}
+
+{% block content %}
+<h1>Comments ({{ total }})</h1>
+
+<table class="admin-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Comment</th>
+            <th>Episode</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for comment in comments %}
+        <tr>
+            <td>{{ comment.id }}</td>
+            <td>{{ comment.username }}</td>
+            <td class="comment-text">
+                {{ comment.comment_text }}
+                {% if comment.is_edited %}<span class="badge badge-edited">edited</span>{% endif %}
+                {% if comment.timestamp_ref %}
+                    <span class="timestamp-ref">@ {{ comment.timestamp_ref }}s</span>
+                {% endif %}
+            </td>
+            <td class="truncate">
+                <a href="{{ url_for('episode', episode_id=comment.episode_id) }}" target="_blank">
+                    {{ comment.episode_title[:40] if comment.episode_title else 'Episode #' + comment.episode_id|string }}{% if comment.episode_title and comment.episode_title|length > 40 %}...{% endif %}
+                </a>
+            </td>
+            <td>{{ comment.created_at[:16] }}</td>
+            <td class="actions">
+                <form method="POST" action="{{ url_for('admin.delete_comment', comment_id=comment.id) }}" class="inline-form" onsubmit="return confirm('Delete this comment?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+        <a href="{{ url_for('admin.comments', page=page-1) }}" class="btn btn-sm">&laquo; Previous</a>
+    {% endif %}
+    <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+        <a href="{{ url_for('admin.comments', page=page+1) }}" class="btn btn-sm">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

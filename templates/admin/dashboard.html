@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-number">{{ user_count }}</div>
+        <div class="stat-label">Users</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ episode_count }}</div>
+        <div class="stat-label">Episodes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ comment_count }}</div>
+        <div class="stat-label">Comments</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ favorite_count }}</div>
+        <div class="stat-label">Favorites</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ like_count }}</div>
+        <div class="stat-label">Likes</div>
+    </div>
+</div>
+
+<div class="dashboard-panels">
+    <div class="panel">
+        <h2>Recent Users</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in recent_users %}
+                <tr>
+                    <td>
+                        {{ user.username }}
+                        {% if user.is_admin %}<span class="badge badge-admin">Admin</span>{% endif %}
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.created_at[:16] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.users') }}" class="view-all">View all users</a>
+    </div>
+
+    <div class="panel">
+        <h2>Recent Comments</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Comment</th>
+                    <th>Episode</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comment in recent_comments %}
+                <tr>
+                    <td>{{ comment.username }}</td>
+                    <td class="truncate">{{ comment.comment_text[:50] }}{% if comment.comment_text|length > 50 %}...{% endif %}</td>
+                    <td class="truncate">{{ comment.title[:30] if comment.title else 'Unknown' }}{% if comment.title and comment.title|length > 30 %}...{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin.comments') }}" class="view-all">View all comments</a>
+    </div>
+</div>
+{% endblock %}
