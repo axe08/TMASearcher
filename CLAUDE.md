@@ -18,6 +18,7 @@ Central SQLite database: `TMASTL.db`
 **Episode Tables:**
 - `TMA`, `Balloon`, `TMShow` - Store episode metadata (title, date, URL, show notes)
 - `TMA` table includes `mp3url` field for direct MP3 playback (main playback method)
+- Social engagement columns: `comments_count`, `favorites_count`, `likes_count`, `streams_count`
 - Legacy fields: `transcribed_date`, `transcript` (AI transcription - not currently used)
 - `processed_date` tracks when episodes have been tagged
 
@@ -26,6 +27,16 @@ Central SQLite database: `TMASTL.db`
 
 **Tag Tables:**
 - `{Podcast}_Note_Tags` and `{Podcast}_Title_Tags` - Word frequency counts for search filtering
+
+**User Authentication Tables:**
+- `users` - User accounts (username, email, password_hash, is_admin, is_active)
+- `user_favorites` - User-to-episode favorites (user_id, podcast_name, episode_id)
+- `comments` - Episode comments with optional timestamp references
+- `comment_likes` - Comment like tracking
+- `episode_likes` - Episode like tracking
+- `password_reset_tokens` - Password reset functionality
+
+Database triggers automatically update `*_count` columns when social engagement tables change.
 
 ## Core Scripts
 
@@ -74,15 +85,17 @@ Execute via `scrape_all.py` which runs scripts in sequence:
 
 **Script:** `app.py`
 
-Flask application with multiple views and advanced playback features.
+Flask application with user authentication, social features, and advanced playback.
 
 **Key Pages:**
 - `/` - Main search interface (index.html)
 - `/favorites` - User's favorited episodes (favorites.html)
 - `/tma_archive` - Browse all TMA episodes (tma_archive.html)
 - `/episode/<id>` - Individual episode view with related episodes (episode.html)
+- `/popular` - Popular episodes sorted by engagement (popular.html)
+- `/auth/login`, `/auth/signup`, `/auth/profile` - User authentication pages
 
-**API Endpoints:**
+**Search & Browse API:**
 - `/search` - Episode search with title/date/notes filters and match types
 - `/search_archive` - Archive search with pagination
 - `/fetch_archive_episodes` - Paginated archive data
@@ -91,12 +104,27 @@ Flask application with multiple views and advanced playback features.
 - `/get_podcast_data` - All episodes for a podcast
 - `/random_episode` - Get a random TMA episode
 - `/related_episodes/<id>` - Episodes from ±1 week of target episode
+- `/api/popular_episodes` - Episodes sorted by engagement metrics
 - `/notes.json` - Episode notes export
+
+**User & Social API (require authentication):**
+- `/api/favorites` GET/POST - Get or add favorites
+- `/api/favorites/<id>` DELETE - Remove favorite
+- `/api/favorites/check/<id>` GET - Check if episode is favorited
+- `/api/comments/<episode_id>` GET - Get comments (public)
+- `/api/comments` POST - Add comment (rate-limited: 10/min)
+- `/api/comments/<id>` PUT/DELETE - Edit/delete own comments
+- `/api/likes/<episode_id>` POST/DELETE - Toggle episode like (rate-limited: 30/min)
+- `/api/likes/<episode_id>/status` GET - Check like status
+- `/api/stream/<episode_id>` POST - Track playback (rate-limited: 60/min)
+- `/api/auth/status` GET - Check authentication status
 
 **Frontend Architecture:**
 - `static/js/play_queue.js` - Persistent play queue using localStorage
 - `static/js/player_ui.js` - Audio player UI controls (exports `PlayerUI` global)
 - `static/css/player.css` - Player styling
+- `static/css/auth.css` - Authentication pages styling
+- `static/css/main.css` - Global styles
 
 **PlayerUI Module Pattern:**
 Templates must include these files and call `PlayerUI.init()` on page load:
@@ -120,7 +148,15 @@ All main templates share:
 - Favorites stored in localStorage
 - Episode progress tracking
 
+**Authentication Architecture:**
+- Flask-Login manages user sessions (`auth.py`)
+- bcrypt for password hashing
+- WTForms for form validation (`forms.py`)
+- Flask-Limiter for rate limiting (auth: 5/min, comments: 10/min, likes: 30/min)
+- Auth blueprint registered at `/auth` prefix
+
 **Environment:**
+- Reads `.env` for SECRET_KEY (required for sessions)
 - Reads `spot.env` for Spotify credentials
 - `DATABASE_URL` env var overrides default `TMASTL.db` path
 - Runs on `0.0.0.0:5000` (accessible from network)
@@ -168,6 +204,14 @@ python tagger.py
 # Processes episodes where processed_date IS NULL
 ```
 
+**Run user auth database migration:**
+```bash
+python migrate_user_auth.py
+# Creates users, user_favorites, comments, episode_likes tables
+# Also creates triggers for automatic count updates
+python migrate_user_auth.py --dry-run  # Preview SQL without executing
+```
+
 ## Environment Setup
 
 **Required environment files:**
@@ -188,6 +232,7 @@ Generate a SECRET_KEY with: `python -c "import secrets; print(secrets.token_hex(
 
 **Python dependencies:** See `requirements.txt`
 - Flask, requests, BeautifulSoup (web scraping/serving)
+- Flask-Login, Flask-WTF, Flask-Limiter, bcrypt (authentication)
 - faster-whisper, spacy, pytube (transcription)
 - fuzzywuzzy (Spotify episode matching)
 - python-dotenv (config)
@@ -207,6 +252,12 @@ python -m spacy download en_core_web_sm
     'The Tim McKernan Show': 'TMShow'
 }
 ```
+
+**Authentication flow:**
+- `auth.py` defines the `auth_bp` Blueprint with `/login`, `/signup`, `/logout`, `/profile`, `/change-password`
+- `forms.py` contains WTForms classes with validation (LoginForm, SignupForm, ChangePasswordForm)
+- Flask-Login's `@login_required` decorator protects routes; `current_user` provides user context
+- Passwords hashed with bcrypt; rate limits prevent brute force attacks
 
 **Search match types:**
 - `exact` - Phrase match in title/notes
@@ -237,6 +288,12 @@ python -m spacy download en_core_web_sm
 - Returns 4 random episodes from nearby time period
 - Excludes current episode from results
 
+**Social Engagement Counts:**
+- Database triggers in `migrate_user_auth.py` auto-update `*_count` columns
+- `favorites_count`, `comments_count`, `likes_count` on episode tables
+- When a user favorites/comments/likes, trigger increments the count
+- When removed, trigger decrements the count
+
 **Script paths:** Some scripts have hardcoded shebangs (`#!/home/axe08admin/.virtualenvs/tmaenv/bin/python`) - adjust for local environment if needed.
 
 ## UI Features
@@ -255,10 +312,17 @@ python -m spacy download en_core_web_sm
 - Related episodes based on air date proximity
 
 **Episode Management:**
-- Favorites system (localStorage-based)
+- Favorites system (server-side for logged-in users, localStorage fallback)
 - Play queue with drag-and-drop reordering
 - Episode cards with quick actions (play, queue, favorite)
 - Archive view with pagination
+- Popular episodes page sorted by likes/favorites/comments
+
+**Social Features:**
+- User authentication (signup, login, profile, password change)
+- Episode likes and favorites (per-user)
+- Episode comments with timestamp references
+- Engagement indicators (like/favorite/comment counts on episode cards)
 
 **Responsive Design:**
 - Mobile-first CSS approach
