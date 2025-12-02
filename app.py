@@ -25,11 +25,10 @@ if not app.secret_key:
     raise RuntimeError("SECRET_KEY environment variable must be set in .env")
 db_path = os.environ.get('DATABASE_URL', 'TMASTL.db')  # 'TMASTL.db' is the default value if the environment variable is not set
 
-# Rate limiting for security
+# Rate limiting for security (only applied to specific sensitive endpoints)
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://"
 )
 
