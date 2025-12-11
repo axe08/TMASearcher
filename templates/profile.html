@@ -15,8 +15,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=2"></script>
-    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=2"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=4"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=4"></script>
 
     <style>
         * {
@@ -477,8 +477,8 @@
 
     <!-- Dark Mode Script -->
     <script>
-        // Check for saved dark mode preference
-        if (localStorage.getItem('darkMode') === 'enabled') {
+        // Check for saved dark mode preference - default to dark unless explicitly disabled
+        if (localStorage.getItem('darkMode') !== 'disabled') {
             document.body.classList.add('dark-mode');
         }
 

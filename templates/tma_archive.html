@@ -14,8 +14,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=2"></script>
-    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=2"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=4"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=4"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -452,6 +452,132 @@
         color: #ffffff;
     }
 
+    /* Episode Card Action Buttons */
+    .episode-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .favorite-btn,
+    .like-btn,
+    .queue-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 12px;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .favorite-btn:hover,
+    .like-btn:hover,
+    .queue-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .favorite-btn .heart {
+        font-size: 16px;
+        transition: all 0.2s ease;
+        color: #dc3545;
+    }
+
+    .favorite-btn.favorited .heart {
+        color: #dc3545;
+    }
+
+    .favorite-btn:not(.favorited) .heart {
+        color: #6c757d;
+    }
+
+    .like-btn .thumb {
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .like-btn.liked .thumb {
+        color: #3b82f6;
+    }
+
+    .like-btn:not(.liked) .thumb {
+        color: #6c757d;
+    }
+
+    .queue-btn i {
+        font-size: 16px;
+        color: #007bff;
+    }
+
+    .dark-mode .favorite-btn,
+    .dark-mode .like-btn,
+    .dark-mode .queue-btn {
+        background: rgba(31, 41, 55, 0.92);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    }
+
+    .dark-mode .favorite-btn:hover,
+    .dark-mode .like-btn:hover,
+    .dark-mode .queue-btn:hover {
+        background: rgba(55, 65, 81, 0.92);
+    }
+
+    .dark-mode .like-btn.liked .thumb {
+        color: #60a5fa;
+    }
+
+    .dark-mode .favorite-btn:not(.favorited) .heart {
+        color: #9ca3af;
+    }
+
+    .dark-mode .queue-btn i {
+        color: #63b3ed;
+    }
+
+    @keyframes heartPulse {
+        0%, 100% { transform: scale(1); }
+        25% { transform: scale(1.3); }
+        50% { transform: scale(1.1); }
+        75% { transform: scale(1.25); }
+    }
+
+    .favorite-btn.just-favorited .heart {
+        animation: heartPulse 0.6s ease;
+    }
+
+    /* Progress indicator */
+    .episode-progress-indicator {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(0,123,255,0.1);
+        border-radius: 12px;
+        padding: 2px 6px;
+        border: 1px solid rgba(0,123,255,0.2);
+        margin-left: 0.5rem;
+    }
+
+    .dark-mode .episode-progress-indicator {
+        background: rgba(99,179,237,0.15);
+        border-color: rgba(99,179,237,0.3);
+    }
+
+    .dark-mode .episode-progress-indicator span {
+        color: #63b3ed !important;
+    }
+
+    .dark-mode .episode-progress-indicator i {
+        color: #63b3ed !important;
+    }
+
     .dark-mode #controlPlayPauseBtn, .dark-mode #modalPlayPauseBtn {
         background-color: #555;
         color: #ffffff;
@@ -618,7 +744,7 @@
                     <div class="control-secondary-actions">
                         <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
                         <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
-                        <div class="control-speed-display" onclick="reopenPlayer()" title="Click to change speed">
+                        <div class="control-speed-display" onclick="cyclePlaybackSpeed()" title="Click to cycle speed">
                             <span id="controlBarSpeed">1×</span>
                         </div>
                     </div>
@@ -628,6 +754,21 @@
 
         <!-- Back to Top Button -->
         <button id="back-to-top" title="Go to top">↑ Top</button>
+
+        <!-- Play Queue Panel -->
+        <div id="playQueuePanel" class="play-queue-panel collapsed" style="display: none;">
+            <div class="play-queue-header" id="playQueueHeader">
+                <h6><i class="fas fa-list"></i> Queue <span id="queueCount" class="queue-count">(0)</span></h6>
+                <button type="button" id="queueCollapseBtn">Hide</button>
+            </div>
+            <div class="play-queue-body">
+                <div id="queueEmptyState" class="play-queue-empty">Your play queue is empty.</div>
+                <div id="playQueueList"></div>
+            </div>
+            <div class="play-queue-footer">
+                <button type="button" id="queueClearBtn">Clear Queue</button>
+            </div>
+        </div>
 
         <!-- Audio Player Modal -->
         <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true">
@@ -716,7 +857,8 @@
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
         });
-        if (localStorage.getItem('darkMode') === 'enabled') {
+        // Default to dark mode unless explicitly disabled
+        if (localStorage.getItem('darkMode') !== 'disabled') {
             document.body.classList.add('dark-mode');
         }
 
@@ -735,28 +877,98 @@
         };
 
         function createArchiveCard(podcast) {
-            var safeFilename = podcast.filename.replace(/'/g, "\'");
-            
+            var safeFilename = podcast.filename.replace(/'/g, "\\'");
+            var cleanMp3Url = (podcast.mp3url || '').replace(/'/g, "\\'");
+
+            // Use episode ID if available, otherwise generate from filename
+            var episodeId = podcast.id || ('archive-' + podcast.filename.replace(/[^a-zA-Z0-9]/g, '-'));
+
+            // Check for progress indicator
+            var progressHtml = '';
+            var savedProgress = localStorage.getItem('progress-' + episodeId);
+            if (savedProgress) {
+                var progressTime = parseFloat(savedProgress);
+                var minutes = Math.floor(progressTime / 60);
+                var seconds = Math.floor(progressTime % 60);
+                var timeString = minutes + ':' + seconds.toString().padStart(2, '0');
+
+                progressHtml = `
+                    <div class="episode-progress-indicator" title="Resume from ${timeString}">
+                        <i class="fas fa-play-circle mr-1" style="color: #007bff; font-size: 0.8rem;"></i>
+                        <span style="font-size: 0.75rem; color: #007bff; font-weight: 500;">Resume ${timeString}</span>
+                    </div>
+                `;
+            }
+
+            // Check favorites and likes state
+            var isFavorited = isFavorite(episodeId);
+            var isLiked = isEpisodeLiked(episodeId);
+            var favClass = isFavorited ? 'favorited' : '';
+            var favTitle = isFavorited ? 'Remove from favorites' : 'Add to favorites';
+            var heartIcon = isFavorited ? 'fas fa-heart' : 'far fa-heart';
+            var likeClass = isLiked ? 'liked' : '';
+            var likeTitle = isLiked ? 'Unlike' : 'Like';
+            var thumbIcon = isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up';
+
+            // Action buttons
+            var queueButton = podcast.mp3url ? `
+                <button class="queue-btn"
+                        onclick="queueEpisode('${episodeId}', '${safeFilename}', '${podcast.date}', '', '${cleanMp3Url}', '')"
+                        title="Add to queue"
+                        aria-label="Add to queue">
+                    <i class="fas fa-plus"></i>
+                </button>
+            ` : '';
+
+            var likeButton = `
+                <button class="like-btn ${likeClass}"
+                        onclick="handleLikeClick('${episodeId}', this)"
+                        title="${likeTitle}"
+                        aria-label="${likeTitle}"
+                        data-episode-id="${episodeId}">
+                    <i class="thumb ${thumbIcon}"></i>
+                </button>
+            `;
+
+            var favoriteButton = `
+                <button class="favorite-btn ${favClass}"
+                        onclick="handleFavoriteClick('${episodeId}', '${safeFilename}', '${podcast.date}', '', '${cleanMp3Url}', '', this)"
+                        title="${favTitle}"
+                        aria-label="${favTitle}">
+                    <i class="heart ${heartIcon}"></i>
+                </button>
+            `;
+
+            var actionButtons = `
+                <div class="episode-card-actions">
+                    ${queueButton}
+                    ${likeButton}
+                    ${favoriteButton}
+                </div>
+            `;
+
             var playButton = podcast.mp3url
-                ? `<button class="btn btn-success" onclick="trackStream('${safeFilename}', '${podcast.date}', '${podcast.mp3url}')">
-                   <i class="fas fa-play mr-1"></i>Stream</button>` 
+                ? `<button class="btn btn-success" onclick="playAndTrackStream('${episodeId}', '${safeFilename}', '${podcast.date}', '${cleanMp3Url}')">
+                   <i class="fas fa-play mr-1"></i>Stream</button>`
                 : `<button class="btn btn-secondary" disabled>
                    <i class="fas fa-ban mr-1"></i>No Stream</button>`;
 
             var downloadButton = podcast.mp3url
-                ? `<a href="${podcast.mp3url}" download class="btn btn-info" 
+                ? `<a href="${podcast.mp3url}" download class="btn btn-info"
                    onclick="trackArchiveDownload('${safeFilename}', '${podcast.date}')">
-                   <i class="fas fa-download mr-1"></i>Download</a>` 
+                   <i class="fas fa-download mr-1"></i>Download</a>`
                 : '';
 
             return `
                 <div class="col-lg-4 col-md-6 col-12">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
+                            ${actionButtons}
                             <h5 class="card-title">${podcast.filename}</h5>
                             <p class="card-text mb-3">
                                 <small class="text-muted">
                                     <i class="fas fa-calendar mr-1"></i>${podcast.date}
+                                    ${progressHtml}
                                 </small>
                             </p>
                             <div class="btn-group-mobile mt-auto">
@@ -777,12 +989,248 @@
             }
         }
 
-        // Add the missing trackStream function
-        function trackStream(filename, date, mp3url) {
+        // Track stream and open player
+        function playAndTrackStream(episodeId, filename, date, mp3url) {
             if (typeof umami !== 'undefined') {
                 umami.track('Archive Stream Click', { episode: filename, date: date });
             }
-            openPlayer(filename, mp3url, date);
+            openPlayer(episodeId, filename, mp3url, date);
+
+            // Track stream with de-duplication
+            if (episodeId && !episodeId.startsWith('archive-')) {
+                if (typeof window.trackStream === 'function') {
+                    window.trackStream(episodeId, 'TMA');
+                }
+            }
+        }
+
+        // User authentication status (provided by template)
+        var USER_AUTH = {
+            isAuthenticated: {{ 'true' if current_user.is_authenticated else 'false' }}
+        };
+
+        // Favorites management
+        var _favoritesCache = null;
+
+        function getFavorites() {
+            if (_favoritesCache !== null) {
+                return _favoritesCache;
+            }
+            try {
+                var stored = localStorage.getItem('tma_favorites');
+                _favoritesCache = stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                _favoritesCache = {};
+            }
+            return _favoritesCache;
+        }
+
+        function saveFavorites(favorites) {
+            _favoritesCache = favorites;
+            localStorage.setItem('tma_favorites', JSON.stringify(favorites));
+        }
+
+        function isFavorite(episodeId) {
+            var favorites = getFavorites();
+            return favorites.hasOwnProperty(episodeId);
+        }
+
+        // Likes management
+        var _likesCache = null;
+
+        function getLikes() {
+            if (_likesCache !== null) {
+                return _likesCache;
+            }
+            try {
+                var stored = localStorage.getItem('tma_likes');
+                _likesCache = stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                _likesCache = {};
+            }
+            return _likesCache;
+        }
+
+        function saveLikes(likes) {
+            _likesCache = likes;
+            localStorage.setItem('tma_likes', JSON.stringify(likes));
+        }
+
+        function isEpisodeLiked(episodeId) {
+            var likes = getLikes();
+            return likes.hasOwnProperty(episodeId);
+        }
+
+        // Queue episode
+        function queueEpisode(id, title, date, showNotes, mp3url, url) {
+            if (typeof PlayQueue === 'undefined' || typeof PlayerUI === 'undefined') {
+                alert('Queue is not available right now. Please try again after the page finishes loading.');
+                return;
+            }
+
+            var episodeData = {
+                id: id,
+                title: title,
+                date: date,
+                show_notes: showNotes || '',
+                mp3url: mp3url,
+                url: url || ''
+            };
+
+            if (!episodeData.mp3url) {
+                alert('Stream not available for this episode.');
+                return;
+            }
+
+            if (typeof PlayQueue.contains === 'function' && PlayQueue.contains(episodeData.id)) {
+                alert('Already in queue');
+                return;
+            }
+
+            PlayQueue.add(episodeData);
+            alert('Added to queue');
+
+            if (typeof getQueueState === 'function' && typeof renderQueuePanel === 'function') {
+                renderQueuePanel(getQueueState());
+            }
+        }
+
+        // Handle favorite click
+        async function handleFavoriteClick(episodeId, title, date, showNotes, mp3url, url, buttonElement) {
+            var episodeData = {
+                title: title,
+                date: date,
+                show_notes: showNotes || '',
+                mp3url: mp3url,
+                url: url || ''
+            };
+
+            var favorites = getFavorites();
+            var isCurrentlyFavorited = favorites.hasOwnProperty(episodeId);
+
+            if (isCurrentlyFavorited) {
+                // Remove from favorites
+                if (USER_AUTH.isAuthenticated) {
+                    try {
+                        await fetch('/api/favorites/' + episodeId + '?podcast_name=TMA', { method: 'DELETE' });
+                    } catch (error) {
+                        console.error('Error removing favorite:', error);
+                    }
+                }
+                delete favorites[episodeId];
+                saveFavorites(favorites);
+
+                // Update button
+                buttonElement.classList.remove('favorited');
+                buttonElement.title = 'Add to favorites';
+                buttonElement.setAttribute('aria-label', 'Add to favorites');
+                var heartIcon = buttonElement.querySelector('.heart');
+                if (heartIcon) {
+                    heartIcon.classList.remove('fas');
+                    heartIcon.classList.add('far');
+                }
+            } else {
+                // Add to favorites
+                if (USER_AUTH.isAuthenticated) {
+                    try {
+                        await fetch('/api/favorites', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ episode_id: episodeId, podcast_name: 'TMA' })
+                        });
+                    } catch (error) {
+                        console.error('Error adding favorite:', error);
+                    }
+                }
+                favorites[episodeId] = {
+                    id: episodeId,
+                    ...episodeData,
+                    addedAt: Date.now()
+                };
+                saveFavorites(favorites);
+
+                // Update button with animation
+                buttonElement.classList.add('favorited', 'just-favorited');
+                buttonElement.title = 'Remove from favorites';
+                buttonElement.setAttribute('aria-label', 'Remove from favorites');
+                var heartIcon = buttonElement.querySelector('.heart');
+                if (heartIcon) {
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas');
+                }
+                setTimeout(function() {
+                    buttonElement.classList.remove('just-favorited');
+                }, 600);
+            }
+        }
+
+        // Handle like click
+        async function handleLikeClick(episodeId, buttonElement) {
+            if (!USER_AUTH.isAuthenticated) {
+                if (confirm('Sign in to like episodes. Go to login page?')) {
+                    window.location.href = '/auth/login?next=' + encodeURIComponent(window.location.pathname);
+                }
+                return;
+            }
+
+            var likes = getLikes();
+            var isCurrentlyLiked = likes.hasOwnProperty(episodeId);
+
+            try {
+                if (isCurrentlyLiked) {
+                    // Unlike
+                    await fetch('/api/likes/' + episodeId + '?podcast_name=TMA', { method: 'DELETE' });
+                    delete likes[episodeId];
+                    saveLikes(likes);
+
+                    buttonElement.classList.remove('liked');
+                    buttonElement.title = 'Like';
+                    buttonElement.setAttribute('aria-label', 'Like');
+                    var thumbIcon = buttonElement.querySelector('.thumb');
+                    if (thumbIcon) {
+                        thumbIcon.classList.remove('fas');
+                        thumbIcon.classList.add('far');
+                    }
+                } else {
+                    // Like
+                    await fetch('/api/likes/' + episodeId + '?podcast_name=TMA', { method: 'POST' });
+                    likes[episodeId] = { likedAt: Date.now() };
+                    saveLikes(likes);
+
+                    buttonElement.classList.add('liked');
+                    buttonElement.title = 'Unlike';
+                    buttonElement.setAttribute('aria-label', 'Unlike');
+                    var thumbIcon = buttonElement.querySelector('.thumb');
+                    if (thumbIcon) {
+                        thumbIcon.classList.remove('far');
+                        thumbIcon.classList.add('fas');
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        // Load user data from API on init
+        async function loadUserDataFromAPI() {
+            if (!USER_AUTH.isAuthenticated) return;
+
+            try {
+                // Load favorites
+                var favResponse = await fetch('/api/favorites?podcast_name=TMA');
+                if (favResponse.ok) {
+                    var favData = await favResponse.json();
+                    if (favData.favorites) {
+                        var favorites = {};
+                        favData.favorites.forEach(function(fav) {
+                            favorites[fav.id] = fav;
+                        });
+                        _favoritesCache = favorites;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
         }
 
         let currentPage = 1;
@@ -873,7 +1321,7 @@
             });
         }
 
-        $(document).ready(function() {
+        $(document).ready(async function() {
             // Initialize tooltips
             $('[data-toggle="tooltip"]').tooltip();
 
@@ -881,6 +1329,9 @@
             if (typeof PlayerUI !== 'undefined' && PlayerUI.init) {
                 PlayerUI.init({ defaultTitle: 'TMA Archive | TMA Searcher' });
             }
+
+            // Load user data from API if authenticated
+            await loadUserDataFromAPI();
 
             fetchArchive(); // Fetch archive episodes on page load
 
@@ -890,18 +1341,24 @@
             });
         });
 
-        function openPlayer(filename, mp3url, date) {
+        function openPlayer(episodeId, filename, mp3url, date) {
             // Use shared PlayerUI module for playback
             if (typeof PlayerUI !== 'undefined' && PlayerUI.startPlayback) {
                 // Build episode object compatible with PlayerUI
                 var episode = {
-                    id: 'archive-' + filename.replace(/[^a-zA-Z0-9]/g, '-'),
+                    id: episodeId,
                     title: filename,
                     date: date,
                     mp3url: mp3url,
                     show_notes: '',
                     url: ''
                 };
+
+                // Set in queue and start playback
+                if (typeof PlayQueue !== 'undefined') {
+                    PlayQueue.setCurrent(episode, { enqueueIfMissing: false });
+                }
+
                 PlayerUI.startPlayback(episode, { openModal: true, resumeProgress: true });
             } else {
                 console.error('PlayerUI not available');

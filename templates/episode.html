@@ -18,8 +18,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=2"></script>
-    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=2"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=4"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=4"></script>
 
     <style>
         * {
@@ -1216,7 +1216,7 @@
                 <div class="control-secondary-actions">
                     <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
                     <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
-                    <div class="control-speed-display" onclick="reopenPlayer()" title="Click to change speed">
+                    <div class="control-speed-display" onclick="cyclePlaybackSpeed()" title="Click to cycle speed">
                         <span id="controlBarSpeed">1×</span>
                     </div>
                 </div>
@@ -1289,10 +1289,9 @@
             const playbackOptions = { autoScroll: true, ...options };
             const playbackEpisode = { ...episode };
 
-            // Track stream
-            if (episode.id) {
-                fetch(`/api/stream/${episode.id}?podcast_name=TMA`, { method: 'POST' })
-                    .catch(err => console.error('Stream tracking failed:', err));
+            // Track stream with de-duplication
+            if (episode.id && typeof trackStream === 'function') {
+                trackStream(episode.id, 'TMA');
             }
 
             if (typeof PlayQueue !== 'undefined') {
@@ -1306,8 +1305,8 @@
 
         // Apply dark mode
         document.addEventListener("DOMContentLoaded", function () {
-            // Restore dark mode
-            if (localStorage.getItem('darkMode') === 'enabled') {
+            // Restore dark mode - default to dark unless explicitly disabled
+            if (localStorage.getItem('darkMode') !== 'disabled') {
                 document.body.classList.add('dark-mode');
             }
     
