@@ -33,6 +33,51 @@
     id: null,
   };
 
+  // Stream tracking de-duplication state
+  const streamTracking = {
+    lastTrackedTime: new Map(),
+    cooldownMs: 300000, // 5 minutes
+  };
+
+  function shouldTrackStream(episodeId) {
+    if (!episodeId) return false;
+    const now = Date.now();
+    const lastTracked = streamTracking.lastTrackedTime.get(String(episodeId));
+    if (!lastTracked) {
+      return true; // Never tracked
+    }
+    // Only track again if cooldown has passed
+    return (now - lastTracked) > streamTracking.cooldownMs;
+  }
+
+  function markStreamTracked(episodeId) {
+    if (!episodeId) return;
+    streamTracking.lastTrackedTime.set(String(episodeId), Date.now());
+  }
+
+  function trackStream(episodeId, podcastName) {
+    if (!episodeId) return Promise.resolve(false);
+
+    const podcast = podcastName || 'TMA';
+
+    if (!shouldTrackStream(episodeId)) {
+      return Promise.resolve(false); // Already tracked recently
+    }
+
+    return fetch(`/api/stream/${episodeId}?podcast_name=${podcast}`, { method: 'POST' })
+      .then(response => {
+        if (response.ok) {
+          markStreamTracked(episodeId);
+          return true;
+        }
+        return false;
+      })
+      .catch(err => {
+        console.error('Stream tracking failed:', err);
+        return false;
+      });
+  }
+
   function cloneEpisode(episode) {
     return episode ? { ...episode } : null;
   }
@@ -128,7 +173,7 @@
     const validSpeed = Math.max(0.5, Math.min(2.5, parseFloat(speed) || 1));
     currentPlaybackSpeed = validSpeed;
     player.playbackRate = validSpeed;
-    savePlaybackSpeed(validSpeed);
+    // Don't persist speed - each episode starts fresh at 1x
 
     // Update UI
     document.querySelectorAll('.speed-btn').forEach((btn) => {
@@ -139,11 +184,37 @@
     const controlBarSpeed = document.getElementById('controlBarSpeed');
     if (controlBarSpeed) {
       controlBarSpeed.textContent = `${validSpeed}×`;
+      // Highlight when speed is not normal (1x)
+      if (validSpeed !== 1) {
+        controlBarSpeed.style.color = '#ff9800';
+        controlBarSpeed.style.fontWeight = 'bold';
+      } else {
+        controlBarSpeed.style.color = '';
+        controlBarSpeed.style.fontWeight = '';
+      }
     }
 
     if (typeof umami !== 'undefined') {
       umami.track('playback_speed_changed', { speed: validSpeed });
     }
+  }
+
+  // Available playback speeds for cycling
+  const PLAYBACK_SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2];
+
+  function cyclePlaybackSpeed() {
+    const currentIndex = PLAYBACK_SPEEDS.indexOf(currentPlaybackSpeed);
+    let nextIndex;
+
+    if (currentIndex === -1) {
+      // If current speed isn't in the list, go to 1x
+      nextIndex = PLAYBACK_SPEEDS.indexOf(1);
+    } else {
+      // Cycle to next speed, wrap around to beginning
+      nextIndex = (currentIndex + 1) % PLAYBACK_SPEEDS.length;
+    }
+
+    setPlaybackSpeed(PLAYBACK_SPEEDS[nextIndex]);
   }
 
   function updateMediaSession(metadata) {
@@ -929,10 +1000,10 @@
     }
     player.load();
 
-    // Apply saved playback speed
-    currentPlaybackSpeed = loadPlaybackSpeed();
-    player.playbackRate = currentPlaybackSpeed;
-    setPlaybackSpeed(currentPlaybackSpeed);
+    // Always start at normal speed (1x) - don't persist across episodes
+    currentPlaybackSpeed = 1;
+    player.playbackRate = 1;
+    setPlaybackSpeed(1);
 
     if (playbackOptions.resumeProgress) {
       const saved = localStorage.getItem(`${PROGRESS_PREFIX}${episode.id}`);
@@ -1307,6 +1378,10 @@
   window.reopenPlayer = reopenPlayer;
   window.scheduleAudioBarRefresh = scheduleAudioBarRefresh;
   window.setPlaybackSpeed = setPlaybackSpeed;
+  window.cyclePlaybackSpeed = cyclePlaybackSpeed;
   window.retryAudio = retryAudio;
   window.updateProgressBar = updateProgressBar;
+  window.trackStream = trackStream;
+  window.shouldTrackStream = shouldTrackStream;
+  window.markStreamTracked = markStreamTracked;
 })(window, document);

@@ -16,8 +16,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=2"></script>
-    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=2"></script>
+    <script defer src="{{ url_for('static', filename='js/play_queue.js') }}?v=4"></script>
+    <script defer src="{{ url_for('static', filename='js/player_ui.js') }}?v=4"></script>
     
     <style>
         /* Base styles with mobile-first approach */
@@ -77,6 +77,7 @@
 
         /* Favorites Heart Button */
         .favorite-btn,
+        .like-btn,
         .queue-btn {
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid rgba(0, 0, 0, 0.05);
@@ -94,12 +95,14 @@
         }
 
         .favorite-btn:hover,
+        .like-btn:hover,
         .queue-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
         }
 
         .favorite-btn:focus,
+        .like-btn:focus,
         .queue-btn:focus {
             outline: none;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -110,23 +113,43 @@
             transition: all 0.2s ease;
             color: #dc3545;
         }
-        
+
         .favorite-btn.favorited .heart {
             color: #dc3545;
         }
-        
+
         .favorite-btn:not(.favorited) .heart {
             color: #6c757d;
         }
-        
-        .dark-mode .favorite-btn {
+
+        /* Like button styles */
+        .like-btn .thumb {
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .like-btn.liked .thumb {
+            color: #3b82f6;
+        }
+
+        .like-btn:not(.liked) .thumb {
+            color: #6c757d;
+        }
+
+        .dark-mode .favorite-btn,
+        .dark-mode .like-btn {
             background: rgba(31, 41, 55, 0.92);
             border-color: rgba(255, 255, 255, 0.08);
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
         }
 
-        .dark-mode .favorite-btn:hover {
+        .dark-mode .favorite-btn:hover,
+        .dark-mode .like-btn:hover {
             background: rgba(55, 65, 81, 0.92);
+        }
+
+        .dark-mode .like-btn.liked .thumb {
+            color: #60a5fa;
         }
 
         .queue-btn i {
@@ -142,6 +165,53 @@
 
         .dark-mode .queue-btn:hover {
             background: rgba(55, 65, 81, 0.92);
+        }
+
+        /* Social engagement indicators */
+        .episode-likes-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            font-size: 0.75rem;
+            color: #3b82f6;
+        }
+
+        .episode-likes-indicator i {
+            font-size: 0.7rem;
+        }
+
+        .dark-mode .episode-likes-indicator {
+            background: rgba(96, 165, 250, 0.15);
+            border-color: rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+
+        .episode-comments-indicator {
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(108, 117, 125, 0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .episode-comments-indicator i {
+            font-size: 0.7rem;
+        }
+
+        .dark-mode .episode-comments-indicator {
+            background: rgba(156, 163, 175, 0.15);
+            border-color: rgba(156, 163, 175, 0.3);
+            color: #9ca3af;
         }
 
         /* Primary search button */
@@ -1045,7 +1115,7 @@
                 <div class="control-secondary-actions">
                     <button class="btn btn-outline-light btn-sm" onclick="seekAudio(-30)">-30s</button>
                     <button class="btn btn-outline-light btn-sm" onclick="seekAudio(30)">+30s</button>
-                    <div class="control-speed-display" onclick="reopenPlayer()" title="Click to change speed">
+                    <div class="control-speed-display" onclick="cyclePlaybackSpeed()" title="Click to cycle speed">
                         <span id="controlBarSpeed">1×</span>
                     </div>
                 </div>
@@ -1163,6 +1233,78 @@
             }
         }
 
+        // Likes Management System
+        let _likesCache = null;
+
+        function getLikes() {
+            if (_likesCache !== null) {
+                return _likesCache;
+            }
+            try {
+                const stored = localStorage.getItem('tma_likes');
+                _likesCache = stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                _likesCache = {};
+            }
+            return _likesCache;
+        }
+
+        function saveLikes(likes) {
+            _likesCache = likes;
+            localStorage.setItem('tma_likes', JSON.stringify(likes));
+        }
+
+        function isEpisodeLiked(episodeId) {
+            const likes = getLikes();
+            return likes.hasOwnProperty(String(episodeId));
+        }
+
+        async function handleLikeClick(episodeId, buttonElement) {
+            if (!USER_AUTH.isAuthenticated) {
+                if (confirm('Sign in to like episodes. Go to login page?')) {
+                    window.location.href = '/auth/login?next=' + encodeURIComponent(window.location.pathname);
+                }
+                return;
+            }
+
+            const likes = getLikes();
+            const isCurrentlyLiked = likes.hasOwnProperty(String(episodeId));
+
+            try {
+                if (isCurrentlyLiked) {
+                    // Unlike
+                    await fetch('/api/likes/' + episodeId + '?podcast_name=TMA', { method: 'DELETE' });
+                    delete likes[String(episodeId)];
+                    saveLikes(likes);
+
+                    buttonElement.classList.remove('liked');
+                    buttonElement.title = 'Like';
+                    buttonElement.setAttribute('aria-label', 'Like');
+                    const thumbIcon = buttonElement.querySelector('.thumb');
+                    if (thumbIcon) {
+                        thumbIcon.classList.remove('fas');
+                        thumbIcon.classList.add('far');
+                    }
+                } else {
+                    // Like
+                    await fetch('/api/likes/' + episodeId + '?podcast_name=TMA', { method: 'POST' });
+                    likes[String(episodeId)] = { likedAt: Date.now() };
+                    saveLikes(likes);
+
+                    buttonElement.classList.add('liked');
+                    buttonElement.title = 'Unlike';
+                    buttonElement.setAttribute('aria-label', 'Unlike');
+                    const thumbIcon = buttonElement.querySelector('.thumb');
+                    if (thumbIcon) {
+                        thumbIcon.classList.remove('far');
+                        thumbIcon.classList.add('fas');
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
         // Search term highlighting function (copied from main page)
         function highlightSearchTerms(text, searchTerm) {
             if (!text || !searchTerm || searchTerm.trim() === '') return text;
@@ -1254,18 +1396,35 @@
             }
             
             const queueButton = favorite.mp3url ? `
-                <button class="queue-btn" 
-                        onclick="queueEpisode(${favorite.id}, '${safeTitle}', '${favorite.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')" 
+                <button class="queue-btn"
+                        onclick="queueEpisode(${favorite.id}, '${safeTitle}', '${favorite.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}')"
                         title="Add to queue"
                         aria-label="Add to queue">
                     <i class="fas fa-plus"></i>
                 </button>
             ` : '';
 
+            // Check likes state
+            const isLiked = isEpisodeLiked(favorite.id);
+            const likeClass = isLiked ? 'liked' : '';
+            const likeTitle = isLiked ? 'Unlike' : 'Like';
+            const thumbIcon = isLiked ? 'fas fa-thumbs-up' : 'far fa-thumbs-up';
+
+            // Like button
+            const likeButton = `
+                <button class="like-btn ${likeClass}"
+                        onclick="handleLikeClick(${favorite.id}, this)"
+                        title="${likeTitle}"
+                        aria-label="${likeTitle}"
+                        data-episode-id="${favorite.id}">
+                    <i class="thumb ${thumbIcon}"></i>
+                </button>
+            `;
+
             // Favorite button (always shows as favorited since we're on favorites page)
             const favoriteButton = `
-                <button class="favorite-btn favorited" 
-                        onclick="handleFavoriteClick(${favorite.id}, '${safeTitle}', '${favorite.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)" 
+                <button class="favorite-btn favorited"
+                        onclick="handleFavoriteClick(${favorite.id}, '${safeTitle}', '${favorite.date}', '${cleanShowNotes}', '${cleanMp3Url}', '${cleanUrl}', this)"
                         title="Remove from favorites"
                         aria-label="Remove from favorites">
                     <i class="heart fas fa-heart"></i>
@@ -1275,6 +1434,7 @@
             const actionButtons = `
                 <div class="episode-card-actions">
                     ${queueButton}
+                    ${likeButton}
                     ${favoriteButton}
                 </div>
             `;
@@ -1509,6 +1669,11 @@
 
             PlayerUI.startPlayback(episodeData, { openModal: true });
 
+            // Track stream with de-duplication
+            if (id && typeof trackStream === 'function') {
+                trackStream(id, 'TMA');
+            }
+
             if (typeof getQueueState === 'function' && typeof renderQueuePanel === 'function') {
                 renderQueuePanel(getQueueState());
             }
@@ -1546,7 +1711,8 @@
         });
 
         // Check for saved user preference on page load
-        if (localStorage.getItem('darkMode') === 'enabled') {
+        // Default to dark mode unless explicitly disabled
+        if (localStorage.getItem('darkMode') !== 'disabled') {
             document.body.classList.add('dark-mode');
         }
 
